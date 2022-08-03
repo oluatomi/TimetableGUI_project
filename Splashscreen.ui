@@ -81,7 +81,7 @@
       <widget class="QProgressBar" name="progressBar">
        <property name="geometry">
         <rect>
-         <x>80</x>
+         <x>40</x>
          <y>375</y>
          <width>200</width>
          <height>5</height>
@@ -101,12 +101,13 @@
        </property>
        <property name="styleSheet">
         <string notr="true">QProgressBar{
-	background:#1a1a1a;
+	background:red;
 }
 
 QProgressBar::chunk{
-	background-color:qconicalgradient(cx:0.5, cy:0.5, angle:0, stop:0.136364 rgba(116, 116, 116, 255), stop:0.306818 rgba(198, 198, 198, 255), stop:0.534091 rgba(188, 188, 188, 255), stop:0.772727 rgba(81, 81, 81, 255));
-	border-radius:2px;
+	background-color:#5c5c5c;
+	border-top-right-radius:2px;
+	border-bottom-right-radius:2px;
 }
 </string>
        </property>
@@ -118,6 +119,9 @@ QProgressBar::chunk{
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="invertedAppearance">
+        <bool>false</bool>
        </property>
       </widget>
      </widget>

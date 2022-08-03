@@ -9,7 +9,7 @@
 
 from Tt_models import TimeTable
 from Tt_algo import TimetableSorter
-from Tt_algo_calc import XLXReflection, CenterCluster, LeapFrog
+from Tt_algo_calc import XLXReflection, CenterCluster, LeapFrog, SortAlgorithms
 import string, Tt_manager
 from collections import namedtuple
 import random
@@ -66,7 +66,7 @@ print("-"*80)
 
 
 for y in my_tt.list_of_school_class_groups:
-    for x in range(3):
+    for x in range(1,4):
         my_tt.create_school_class(x, y)
 
 print()
@@ -77,15 +77,15 @@ print()
 # Teachers are being created here
 for dept in my_tt.list_of_departments:
     for _ in range(14):
-        my_tt.create_teacher(dept_obj=dept)
+        my_tt.create_teacher(dept_obj=dept, teaching_days=my_tt.list_of_days)
 
 # Assign select teaching days for select teachers
 
 
-for teacher in my_tt.list_of_all_teachers:
-    # Every two teachers in a department
-    for e_day in my_tt.list_of_days:
-        teacher.add_day_to_teacher(e_day)
+                        # for teacher in my_tt.list_of_all_teachers:
+                        #     # Every two teachers in a department
+                        #     for e_day in my_tt.list_of_days:
+                        #         teacher.add_day_to_teacher(e_day)
 
         # Add everyday to teachers except thursdays, corpmembers
     
@@ -148,8 +148,8 @@ print("*"*84)
 print(my_tt.list_of_school_classes)
 
 for m in my_tt.list_of_school_classes:
-    for x in range(7):
-        my_tt.create_school_class_arm(x, m, as_alpha=True)
+    for _ in range(7):
+        my_tt.create_school_class_arm(m, as_alpha=True)
 
 
 print(my_tt.list_of_school_class_arms)
@@ -158,7 +158,7 @@ print(my_tt.list_of_school_class_arms)
 for arm in my_tt.list_of_school_class_arms:
     for dept, per, day in zip(my_tt.list_of_departments, periods_, my_tt.list_of_days):
         my_tt.create_period(per.start, day=day, end=per.end, sch_class_arm_obj=arm, dept_=None, 
-            is_fav=False, title_of_fav=f"Special period for {arm.arm_id}, on {day.day}")
+            is_fav=False, title_of_fav=f"Special period for {arm.id}, on {day.day}")
 
 
 print("_"*120)
@@ -308,7 +308,7 @@ def really_run():
 
     # for arm in my_tt.list_of_school_class_arms:
     #     print(arm, arm.depts_and_teachers.keys())
-    print(my_sort.Algosort_teachers_per_day(d, CenterCluster))
+    print(my_sort.Algosort_teachers_per_day(d, SortAlgorithms.centercluster))
     
 
 really_run()

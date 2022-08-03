@@ -966,7 +966,7 @@ def Moveover(list_arg, array):
 
     list_arg = list(enumerate(list_arg.copy()))
 
-    sorted_list = sorted(list_arg, key=lambda ind_item:max(ind_item[1]) if isinstance(ind_item[1], list) else ind_item[1])
+    sorted_list = sorted(list_arg, key=lambda ind_item:max(strip_list_wrapper(ind_item[1])) if isinstance(ind_item[1], list) else ind_item[1])
     s_list = [item for index, item in sorted_list]
     w_list = s_list.copy()
 
@@ -976,20 +976,20 @@ def Moveover(list_arg, array):
         # keep sliding over till there are no overlaps or at least till the cycle is exhausted
 
         bowl = []
-        print()
         # print(f"List before switching: {in_list}")
 
         listarg = in_list.copy() if forward else list(reversed(in_list))
 
-        print()
+        # print()
         # print(f"The working list_arg in function: {listarg}")
-        print()
+        # print()
 
         trans = 1 if forward else -1
         
         for elem in listarg:
-            # If there is a match, i.e the elem has featured before in 'bowl', translate it and add
-            if abs_match_list_int(bowl, elem) or abs_match_list_int([array], elem):
+            # If there is a match (even just in one place), i.e the elem has featured before in 'bowl', translate it and append
+            if abs_match_list_int(bowl, elem) or abs_match_list_int(list(range(array, array*3)), elem) or abs_match_list_int(list(range(-1, -3*array, -1)), elem):
+                # print(f"Elem: {elem} features in bowl: {bowl} so we translate ")
                 el = PlainTranslate(elem, trans)
                 bowl.append(el)
             
@@ -1014,6 +1014,7 @@ def Moveover(list_arg, array):
         
         # time.sleep(1)
         # preserves the old value of fin in case it needs to retrace its steps with the var _keep
+        print(f"This is fin: {fin}")
         _keep = fin.copy() if max(strip_list_wrapper(fin)) < array else w_list.copy()
 
         # print(f"Fin uptop: {fin} and keep: {_keep}")
@@ -1031,7 +1032,7 @@ def Moveover(list_arg, array):
             if max(strip_list_wrapper(fin)) >= array:
                 # print("Going left")
                 forward = False
-                fin = _keep
+                # fin = _keep     ?????
 
             elif min(strip_list_wrapper(fin)) < 0:
                 # print("Going right again")
@@ -1040,7 +1041,10 @@ def Moveover(list_arg, array):
                 # print(f"This is fin going backwards: {fin}")
                 # print("-"*30)
 
-            fin = _keep.copy()
+            # fin = _keep.copy()    ?????
+
+
+
             # else:
             #     if min(strip_list_wrapper(fin)) < 0:
             #         loop = False
@@ -1048,7 +1052,7 @@ def Moveover(list_arg, array):
 
         
   
-        if count >= array*5:
+        if count >= array*10:
             raise StopIteration(f"OVERLOADED!! {fin} did not work")  
 
         # Reconstitute the list to its previous order
@@ -1118,6 +1122,12 @@ def moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
 
     # global fin_dict, pos, sorted_list_arg
     # Get the fixed (const) item either from the item itself of from its index in the list_arg
+
+    # In the event that list_arg is just one item and part_chunk is [] return list_arg back
+    if len(list_arg) <= 1:
+        return list_arg
+
+
     if fixed_item and abs_match_list_int(list_arg, fixed_item, strict=True):
         const_item = fixed_item
         # fixed_index = list_arg.index(fixed_item)
@@ -1136,6 +1146,7 @@ def moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
     list_len = len(list_arg)
 
     # Put the const item in the finished_list for now
+    const_item = const_item if isinstance(const_item, list) else [const_item]
     const_list = const_item
     # print(f"This is const item {const_item}")
 
@@ -1146,7 +1157,7 @@ def moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
 
     # -------------
     pos = [(index, item) for index, item in enumerate(list_arg)]
-    sorted_list_arg_index = sorted(pos, key=lambda ind_item:max(ind_item[1]) if isinstance(ind_item[1], list) else ind_item[1])
+    sorted_list_arg_index = sorted(pos, key=lambda ind_item:max(strip_list_wrapper(ind_item[1])) if isinstance(ind_item[1], list) else ind_item[1])
     # map a list of just the items to the sorted_list_arg_index
     sorted_list_arg = [item for _,item in sorted_list_arg_index]
     # ---------------
@@ -1227,7 +1238,7 @@ def possible_combs(list_arg, array):
     sec_list_arg = [(index,item) for index,item in enumerate(list_arg)]
 
     # Sort the sec_list_arg based on the max item in each list item if it is a list or the same number if it is an integer
-    sorted_sec_list_arg = sorted(sec_list_arg, key=lambda ind_item:max(ind_item[1]) if isinstance(ind_item[1],list) else ind_item[1])
+    sorted_sec_list_arg = sorted(sec_list_arg, key=lambda ind_item:max(strip_list_wrapper(ind_item[1])) if isinstance(ind_item[1],list) else ind_item[1])
 
     # We hold a constant copy  of the sorted_sec_list_arg
     _sec_list_arg = [item for _,item in sorted_sec_list_arg]
@@ -1385,7 +1396,7 @@ class SortAlgorithms:
     centercluster algorithms, for a length of periods per class "array" """
 
     @staticmethod
-    def leap_frog(array, chunk_list={2:2, 1:2}):
+    def leap_frog(array, chunk_list={2:2, 1:2}, shift_value=0):
         """ Revised leapfrog algorithm """
 
         # sort the chunk_list itms by the chunk_number from largest to smallest
@@ -1412,7 +1423,7 @@ class SortAlgorithms:
                 # If after contracting, it still spills beyond array
                 # raise ValueError(f"Can't be helped! {check} is more than {array}")
                 # IMPLEMENT HERE -- COLLAPSE THE WHOLE THING AND REBUILD!
-                SortAlgorithms.collapse(array, chunk_list)
+                SortAlgorithms.collapse(array, chunk_list, shift_value=shift_value)
             else:
                 compromise = True
         
@@ -1431,10 +1442,16 @@ class SortAlgorithms:
                 ans.append(item)
 
             count += 1
-        return ans
+        # Translate everthing back by 1.
+        semi_ans = PlainTranslate(SortAlgorithms._semi_strip_list(ans), -1)
+
+        # In case it is shifted by shift_val, refine afterward
+        spit_out = Translatebyshift(semi_ans, shift_value, array)
+        return refine_translate(spit_out, array)
+
 
     @staticmethod
-    def xlx_reflection(array, chunk_list={2:1, 1:1}):
+    def xlx_reflection(array, chunk_list={2:1, 1:1}, shift_value=0):
         """The xlx chunking algorithm (revised)"""
         ans = []
         items_list = sorted(chunk_list.items(), key=lambda item: item[0], reverse=True)
@@ -1447,9 +1464,7 @@ class SortAlgorithms:
             # If the number of singles and doubles all put together exceeds the array
             raise ValueError(f"Not compatible. {chunks_squished} greater than {array}")
 
-
         # Second check needs to be raised to we can determine the moment of collapse
-
 
         items_freqlist = []
 
@@ -1490,18 +1505,23 @@ class SortAlgorithms:
                 lfocal = added
 
         if not check_for_overlap(ans):
-            return ans
+            # Translate everything back by 1 and then "refine"
+            semi_ans = PlainTranslate(SortAlgorithms._semi_strip_list(ans), -1)
 
-        return SortAlgorithms.collapse(array, chunk_list)
+            # In case it is shifted by shift_val, refine afterward
+            spit_out = Translatebyshift(semi_ans, shift_value, array)
+            return refine_translate(spit_out, array)
+
+
+        return SortAlgorithms.collapse(array, chunk_list, shift_value=shift_value)
 
 
     @staticmethod
-    def centercluster(array, chunk_list={2:3}):
+    def centercluster(array, chunk_list={2:3}, shift_value=0):
         """The center cluster algorithm"""
 
         ans = []
         chunk_list_sorted = sorted(chunk_list.items(), key=lambda item:item[0], reverse=True)
-
         # The check part
         chunks_squished = sum([chunk*freq for chunk, freq in chunk_list_sorted])
 
@@ -1556,14 +1576,19 @@ class SortAlgorithms:
                 else:
                     # If it hits sthe ground but still has not run out
                     backwardable = False
-                    return SortAlgorithms.collapse(array, chunk_list)
-
-        return ans
+                    return SortAlgorithms.collapse(array, chunk_list, shift_value=shift_value)
 
 
+        # The raw for 'ans is shifted cack by 1, as the cunking is zero-based'
+        semi_ans = PlainTranslate(SortAlgorithms._semi_strip_list(ans), -1)
+        
+        # In case it is shifted by shift_val, refine afterward
+        spit_out = Translatebyshift(semi_ans, shift_value, array)
+        return refine_translate(spit_out, array)
 
 
-    def collapse(array, chunk_list={2:2, 1:2}):
+    @staticmethod
+    def collapse(array, chunk_list={2:2, 1:2}, shift_value=0):
         """Spacing out chunk values that somehow collapsed during chunking with the selected algorithm"""
 
         chunk_list_sorted = sorted(chunk_list.items(), key=lambda item:item[0], reverse=True)
@@ -1573,7 +1598,6 @@ class SortAlgorithms:
         w_chunk_list = []
 
         for index, item in enumerate(init_chunk_list):
-
             if index == 0:
                 # Append the first item freely
                 w_chunk_list.append(item)
@@ -1585,7 +1609,6 @@ class SortAlgorithms:
 
 
         # print(f"This is w_chunk_list: {w_chunk_list}")
-
 
         # Number of items in the init chunk list
         len_init  = len(init_chunk_list)
@@ -1610,13 +1633,36 @@ class SortAlgorithms:
             # Place it back into the init_chunk_list
             w_chunk_list[slice_point:] = slice_items
 
+        # The process is done at this point. Translate everything back by 1  and then "refine"
+        semi_ans = PlainTranslate(SortAlgorithms._semi_strip_list(w_chunk_list), -1)
+        
+        # In case it is shifted by shift_val, refine afterward
+        spit_out = Translatebyshift(semi_ans, shift_value, array)
+        return refine_translate(spit_out, array)
 
-        return w_chunk_list
-    
+
+    @staticmethod
+    def _semi_strip_list(list_arg):
+        """Private method used to strip elements in a list of its length is one. This method strips the abouve chunked values into values
+        usable by the rest of the software, i.e. from [[1,2], [3]] to [[1,2], 3]"""
+
+        ans = []
+        for elem in list_arg:
+            # If it is a list...
+            if isinstance(elem, list):
+                # ... and has a length of more than 1
+                if len(elem) != 1:
+                    ans.append(elem)
+                else:
+                    ans.append(elem[0])
+            # If it is not a even a list to begin with
+            else:
+                ans.append(elem)
+        return ans
 
 
 if __name__ == "__main__":
-    chunk_test = {4:2, 2:1}
+    chunk_test = {2:2, 1:3}
     test_liste = [[0,1],[7,8],[8,9]]
     me_test = [4, 5, 6, 7, 8, [0, 1], 3]
     again = [4, [5, 6], 7, 8, 9, [0, 1], [3, 4]]
@@ -1624,9 +1670,10 @@ if __name__ == "__main__":
 
     tt = [[0,1],[8,9],[8,9], [1,2]]
     
-    # my = Moveover(test_liste, 10)
+    my = Moveover([0, [0, 1], 1, 1, 6, [6, 7], 8, 9], 10)
+    op = Moveover([[3, 4], 6, 11], 10)
     # print()
-    # print(my)
+    print(my, op)
     # print(moveover_fixed(me_test, 10, fixed_item=[[0,1]]))
 
     # print(possible_combs(my,10))
@@ -1634,5 +1681,7 @@ if __name__ == "__main__":
     # print("Hello")
     # print(possible_combs_with_fixed(test_liste,[[0,1]], 10))
 
-    print(SortAlgorithms.centercluster(12, chunk_test))
+    # print(SortAlgorithms.centercluster(10, chunk_test, shift_value=0))
+    # print(SortAlgorithms._semi_strip_list([[1,2,3], [1], [5],[7], [4,6,7,89]]))
+
     # print(collapse(10, chunk_test))

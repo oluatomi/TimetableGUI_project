@@ -11,9 +11,9 @@
 # -------This could be very confusing, I know.
 # -------This is because when i started writing the code, i had used department to denote the Subject/course and so
 # -------had to use FACULTY to denote the DEPARTMENT from which the subject hails... I only changed my mind later, but my code was 
-# ------- already to complex to be changes by a find and replace  shortcut.
+# ------- already to complex to be changed by a find and replace  shortcut.
 
-# ------- Also, CLASS CATEGORY in the GUI is the CLASSGROUP. For the same reason as above.
+# ------- Also, CLASS CATEGORY in the GUI is the CLASSGROUP in the code. For the same reason as above.
 
 # -------
 # -------Bear with me.
@@ -778,9 +778,8 @@ class UITimetable(QtWidgets.QMainWindow):
         """BOOLEAN. This method handles checking the given fields in a particular case. If any of the fields_VALUES (not the classes alone) are empty
         ring out an error with title 'error_title' """
 
-        if all(fields_values_list) and isinstance(fields_values_list, list):
-            return True
-        return False
+        return all(fields_values_list) and isinstance(fields_values_list, list)
+            
 
 
     @staticmethod

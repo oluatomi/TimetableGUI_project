@@ -10,9 +10,8 @@
 from collections import Counter, namedtuple
 from Tt_models import TimeTable
 import Tt_algo_calc, Tt_exceptions
-from Tt_algo_calc import XLXReflection
+from Tt_algo_calc import XLXReflection, SortAlgorithms
 import itertools
-
 
 
 class TimetableSorter:
@@ -553,7 +552,7 @@ class TimetableSorter:
 
     # =========================================
      # Couple the new chunked value [a,b] and the arm into a dictionary {arm:[(dept,[a,b])]}
-        # declare a namedtuple to hold values
+        # declare namedtuples to hold values
         arm_n_chunk = namedtuple("particulars", "dept, chunk, teacher")
         teacher_n_chunk = namedtuple("t_particulars", "arm, chunk, dept")
     # -----------------------------------------------------------------------------------------------------------------
@@ -605,18 +604,9 @@ class TimetableSorter:
                 # count_dict is a dict object!!!
                 # The Count_with_order function is used instead of counter, to preserve the order of the items
                 count_dict[teacher] = Tt_algo_calc.Count_with_order(list((Tt_algo_calc.Count_with_order(todays_teachers_arm_depts_dupli[teacher])).values()))
-                # print(f"This is the count_dict for chunking: {count_dict[teacher]} for Teacher: {teacher}")
-                # print()
+                print(f"This is the count_dict for chunking: {count_dict[teacher]} for Teacher: {teacher}")
                 
-                # There might not always be a value for one or the other, hence the try-except clause 
-                p_attrs = {1:"single", 2:"double", 3:"otherble"}
-
-                # the sing_doub var is for the integer (1,2 or maybe 3) representing single or double NOT
-                # the frequency of the single or double
-                for sing_doub_int, freq in count_dict[teacher].items():
-                    # the attribute of the P_sinDoub class
-                    attr = p_attrs[sing_doub_int]
-                    setattr(p_singDoub, attr, freq)
+                
 
         # -------------------------------------------------------------------------------------------------
         # --------------------------- FEED INTO THE CHUNKING ALGORITHM ------------------------------------
@@ -626,14 +616,16 @@ class TimetableSorter:
                 # this_teacher = algorithm.doubles_and_singles(p_singDoub.single, p_singDoub.double, array, 
                 #     shift_value=ArmsPeriodsLeft_objs[ref_arm].periodsint_list[shift_val])
 
-                this_teacher = algorithm.doubles_and_singles(p_singDoub.single, p_singDoub.double, array, 
-                    shift_value=shift_val)
+                this_teacher = algorithm(array,chunk_list=count_dict[teacher], shift_value=shift_val)
+
+                # return f"This is this_teachers chunk: {this_teacher}"
 
                 # print(f"This teachers chunk: {this_teacher}")
                 # Couple the new chunked value [a,b] and the arm into a dictionary {arm:[(dept,[a,b])]}
-                # declare a namedtuple to hold values
-                arm_n_chunk = namedtuple("particulars", "dept, chunk, teacher")
-                teacher_n_chunk = namedtuple("t_particulars", "arm, chunk, dept")
+
+                                    # # declare a namedtuple to hold values
+                                    # arm_n_chunk = namedtuple("particulars", "dept, chunk, teacher")
+                                    # teacher_n_chunk = namedtuple("t_particulars", "arm, chunk, dept")
 
                 # define a quick class to hold the values in the namedtuple(which we may no longer need)
 
@@ -654,10 +646,6 @@ class TimetableSorter:
                 # print(Arm_and_chunked_val)
                 # print("="*30)
                 # print(Teachers_and_chunked_val)
-
-
-                # YOU ARE HERE!!!!!!!!!!!!!!!!!
-                # --------------------------------------
 
 
                 # shift_val is the value to shift by which is the length of all the previous chunk lists
@@ -712,7 +700,7 @@ class TimetableSorter:
 
                         # Replace the old value with the new
                         # print()
-                        print("HERE BOYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
+                        # print("HERE BOYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
                         
                         Teachers_and_chunked_val[teacher][index] = det
 
@@ -729,6 +717,7 @@ class TimetableSorter:
                 # print(f"This is the part chunk:{part_chunk}, and full: {full_chunk}")
 
                 # Now moveover_fixed with part_chunk as the const item
+                print(f"This is part chunk: {part_chunk}")
                 adjusted_chunk = Tt_algo_calc.moveover_fixed(full_chunk, array,fixed_item=part_chunk)
                 # print(f"THIS IS THE MOVEDOVER_ADJ FIXED: {adjusted_chunk}")
 
@@ -769,10 +758,6 @@ class TimetableSorter:
             # print(Arm_and_chunked_val[ref_arm])
             # print()
 
-            
-
-
-            print()
             # print("="*50)
             
             # print(f"NEW AND IMPROVED Arms_and_chunk_val")
@@ -796,27 +781,33 @@ class TimetableSorter:
                     replace_val = teacher_n_chunk(arm, details_repval[1], dept)
                     # Replace this teachers values at position 'index'
                     Teachers_and_chunked_val[teacher_obj][index] = replace_val
-
-
             # ------------------------------------------------------------------------------------------
+            
             # --------------------------------------------------------------------------------------
             # OUTSIDE THE FUNCTION...
 
             # Go through all the teachers for this class arm (which are now perfect!?) and 
             # TRY removing all the chunked values, OR any COMBINATION that favours it and also remove the dept
             # from the list of arms. We are done with said teacher
+            settled_teachers = []
 
             for index, elem in enumerate(Arm_and_chunked_val[ref_arm]):
                 # print(f"This is elem: {elem}")
                 teacher = elem.teacher
 
-                if index != 0:
-                    # If this teacher has already been treated before, skip them
-                    if teacher == Arm_and_chunked_val[ref_arm][index - 1].teacher:
-                        continue
+                # if index != 0:
+                #     # If this teacher has already been treated before, skip them
+                #     if teacher == Arm_and_chunked_val[ref_arm][index - 1].teacher:
+                #         continue
+
+                if teacher in settled_teachers:
+                    continue
+
+                # Add this teacher to the list of teachers that already have been touched
+                settled_teachers.append(teacher)
+
 
                 # The t_particulars of the teacher of interest, i.e. (arm, chunk and dept)
-     
                 # First gather all his chunk values
                 all_teachers_chunk = [teacher_details.chunk for teacher_details in Teachers_and_chunked_val[teacher]]
                 # The fixed part of the chunk, that is, all the chunks already settled for the reference arm
@@ -829,35 +820,63 @@ class TimetableSorter:
                 poss_arr_length = len(possible_arrangement)
                 count,loop = 0, True
 
+
+                # dictionary with segment_number(value) and index (count) of teachers combination (key).
+                teacher_crash_record = {x:0 for x in range(len(possible_arrangement))}
+
                 while loop:
                     # Reconstitute up-top, first with the original value, or it it doesnt work, all the possible arrangements of the teacher's chunk
 
                     # The old ArmsPeriods_left values remaining before this teacher
                     # Doing this so that if a teacher crashes through despite all the combinations the ArmsPeriods_left is reconstituted
-                    periods_left_for_arm = A
+                    
+                    # ----------------------------------
+                    # periods_left_for_arm = ArmsPeriodsLeft_objs
+                    # ---------------------------------------------
 
-                    # If count does not exceed the length of the paossible_arrangement variable
+                    # If count does not exceed the length of the possible_arrangement variable
                     if count < poss_arr_length:     
                         Teacher_and_chunk_reconstruct(teacher,possible_arrangement[count])
 
+                        # ----------------------------------
+                        # The teacher crash record is only needed when none of the possible combinations fit, and so
+                        # we choose the one that best fits (i.e. with hte most working segments) and record it up to the point where it breaks and go with that
+                        # pushing the defaulting part to another day.
+
+                        
+                        segment_number = 0
+
+                        # count for each segment
+                        inner_count = 0
+
                         for teacher_particulars in Teachers_and_chunked_val[teacher]:
                             arm, chunk_val = teacher_particulars.arm, teacher_particulars.chunk
+
 
                             # Go to the arm in Armsleft... and Try removing chunk
                             try:
                                 ArmsPeriodsLeft_objs[arm].pop_out_period_val(chunk_val)
                             except ValueError:
                                 # Break out of the for-loop
-                                worked = False
+
+                                # Let's see where this arrangement broke
+                                print(teacher_crash_record[count])
+
                                 print("NOPE! CRASHED! CHECKING FOR ANOTHER POSSIBLE ARRANGEMENT")
                                 break
+
                             else:
-                                print("TEACHERS CHUNKED NUMBERS WORKS")
+                                # If it works fine, increase the segment number by 1
+                                segment_number += 1
+                                teacher_crash_record[count] = segment_number
+                                print(f"WORKING COUNT: {teacher_crash_record[count]}")
+
+                        
                         else:
                             # Satisfied! Outside the for loop and end the while loop ends!
+                            # Teacher's combination works, then
             
-                            # print()
-                            worked = True
+                            # worked = True
                             print("--"*50)
                             print("WORKED! IT (FINALLY) WORKED")
                             loop = False
@@ -865,17 +884,35 @@ class TimetableSorter:
                             for details in Teachers_and_chunked_val[teacher]:
                                 arm, dept = details.arm, details.dept
 
-                                # POP out the department from the dictionary ArmPeriodsLeft_objs
+                                # POP out the department from the dictionary ArmPeriodsLeft_objs?
 
                                 # ArmsPeriodsLeft_objs[arm].pop_out_dept(dept)
-                                Tt_algo_calc.remove_all_sub_from_list(todays_teachers_dupli[teacher], dept)
 
+                                # todays_teachers_dupli is the list (is it?) of all the subjects taken by all teachers today ([math, math, eng,eng...])
+                                # So we remove this dept from that list, since we've settled tit already
+                                Tt_algo_calc.remove_all_sub_from_list(todays_teachers_dupli[teacher], dept)
 
                         count += 1
                     else:
-                        if not worked:
-                            print("COULDN'T BE HELPED EVEN WITH COMBINATION. FIND ANOTHER SOLUTION!")
-                            loop = False
+                        # If the teachers combination does not fit and count has run past the number of possible arrangements for the teacher,
+                        # that means it did not work, so break out of the loop
+                        print("COULDN'T BE HELPED EVEN WITH COMBINATION. FIND ANOTHER SOLUTION!")
+                        loop = False
+                        print()
+                        print(f"All the crashes: {teacher_crash_record}")
+
+                        # Of all the elements choose which one  best fits that is the first one with the greatest value
+                        best_fit = sorted(teacher_crash_record.items(), key=lambda item:item[1], reverse=True)[0]
+
+                        # slice the Teachers_and_chu... list(at the teacher) at the index directly next to best_fit (i.e. where the error began)
+                        best_fit = best_fit[1]
+
+                        carryover = Teachers_and_chunked_val[teacher][best_fit:]
+
+                        # del Teachers_and_chunked_val[teacher][best_fit:]
+                        print()
+                        print(f"Teachers carryover: {carryover}. Teacher's chunk left after pull out: {Teachers_and_chunked_val[teacher]}")
+
 
             print()
             # print(f"ArmsPeriodsLeft_objs: {[periods.periodsint_list for arms,periods in ArmsPeriodsLeft_objs.items()]}")
@@ -891,9 +928,6 @@ class TimetableSorter:
         all_classes = [arms_teachers_sort(arm) for arm in self.list_from_reference_arm[:]]
         # all_classes = arms_teachers_sort(ref_arm)
         return all_classes
-
-
-
 
 
     def summon_all(self,day_obj, algorithm, reference_arm=None,reference_arm_index=0):

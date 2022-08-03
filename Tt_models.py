@@ -793,7 +793,7 @@ class TimeTable:
             """Returns every school day for which the class runs"""
             
             days_for_classarm = [day for day in self.periods]
-            days_for_classarm.sort(key=lambda day: day.rate_with())
+            days_for_classarm.sort(key=lambda day: day.id)
             return days_for_classarm
         
 
@@ -805,7 +805,7 @@ class TimeTable:
 
             This adds a new subject for learning to the class arm """
 
-            if dept_obj in self.depts_and_teachers.keys():
+            if dept_obj in self.depts_and_teachers:
                 pass
             else:                
                 # Now register the assigned teacher with the class arm
@@ -882,12 +882,11 @@ class TimeTable:
 
 
         def __repr__(self):
-            return self.get_full_arm_name
+            return self.full_arm_name
 
         @property
         def full_name(self):
             return f"Arm ID:{self.id}. {self.full_arm_name}"
-        
         
 
     class Period:
@@ -900,7 +899,6 @@ class TimeTable:
 
             # Just an attribute to indicate that this is a special 'favourite' period
             self.is_favourite = False
-
 
             # ------------------------------------------------
             self.subject = dept_obj # the department (subject)
@@ -926,7 +924,6 @@ class TimeTable:
 
             self.start = start  # The start time for the period
 
-
             if duration:
                 # -- if duration is given, calculate the end from the duration
                 self.duration = duration
@@ -941,19 +938,14 @@ class TimeTable:
             # self.school_class_arm.periods.append(self)
 
             self.day.school_class_arms_today.add(self.school_class_arm)
-
             self.period_name = f"'{self.subject.dept_name}' period for {self.school_class_arm}" if self.subject else "Free Period"
-            
-
             self.add_to_armses_periods()
 
             # -- Update the period counter of the school_class arm
             # self.school_class_arm.period_id_counter += 1
 
             self.period_id = self.school_class_arm.period_id_counter
-
             return self
-
 
 
         def fav_period(self, day_obj, duration, spot=None, start=None, dept_obj=None, sch_class_arm_obj=None, title_of_fav=None):
@@ -1009,7 +1001,7 @@ class TimeTable:
 
         @property
         def get_period_name(self):
-            num_name = f"{self.day.day_name} - {self.school_class_arm.periods[self.day].index(self) + 1}"
+            num_name = f"{self.day.day} - {self.school_class_arm.periods[self.day].index(self) + 1}"
             return f"Period_{num_name}: {self.period_name}"
 
 
@@ -1294,7 +1286,7 @@ class TimeTable:
 
 
         def __repr__(self):
-            return self.day_name
+            return self.day
 
         @property
         def full_name(self):

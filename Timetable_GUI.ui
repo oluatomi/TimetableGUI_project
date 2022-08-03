@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1204</width>
+    <width>1210</width>
     <height>716</height>
    </rect>
   </property>
@@ -100,7 +100,6 @@ QLabel{
       <property name="styleSheet">
        <string notr="true">*{
 	background:transparent;
-	color:#dddddd;
 	font: 63 11px &quot;Yu Gothic UI Semibold&quot;;
 }
 QFrame[objectName=&quot;nav_bar&quot;]{
@@ -176,7 +175,7 @@ QScrollBar::handle::horizontal{
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1198</width>
+            <width>1204</width>
             <height>129</height>
            </rect>
           </property>
@@ -208,13 +207,17 @@ QScrollBar::handle::horizontal{
               <string/>
              </property>
              <property name="styleSheet">
-              <string notr="true">QTabBar::tab{
+              <string notr="true">*{
+	color:#efefef;
+}
+
+QTabBar::tab{
 	background:transparent;
 	padding: 7px 15px;
 }
 
 QTabBar::tab:selected{
-	background:qlineargradient(spread:reflect, x1:0.0397727, y1:0.546, x2:0.989, y2:0.534, stop:0.0454545 rgba(0, 0, 0, 255), stop:0.255682 rgba(90, 90, 90, 255), stop:0.738636 rgba(90, 90, 90, 255), stop:1 rgba(0, 0, 0, 255));
+	background:qlineargradient(spread:pad, x1:0.926, y1:0.528682, x2:0.0626818, y2:0.54, stop:0.0625 rgba(0, 0, 0, 255), stop:0.454545 rgba(147, 147, 147, 255), stop:0.551136 rgba(147, 147, 147, 255), stop:0.909091 rgba(0, 0, 0, 255));
 }
 
 QWidget{
@@ -252,7 +255,7 @@ QPushButton::pressed{
               <enum>QTabWidget::Rounded</enum>
              </property>
              <property name="currentIndex">
-              <number>0</number>
+              <number>1</number>
              </property>
              <property name="iconSize">
               <size>
@@ -660,7 +663,7 @@ Class</string>
                   <x>145</x>
                   <y>1</y>
                   <width>176</width>
-                  <height>76</height>
+                  <height>71</height>
                  </rect>
                 </property>
                 <property name="toolTip">
@@ -744,8 +747,8 @@ Class</string>
                <widget class="QPushButton" name="pushButton_29">
                 <property name="geometry">
                  <rect>
-                  <x>140</x>
-                  <y>80</y>
+                  <x>145</x>
+                  <y>75</y>
                   <width>191</width>
                   <height>21</height>
                  </rect>
@@ -877,7 +880,7 @@ Class</string>
                 <rect>
                  <x>115</x>
                  <y>0</y>
-                 <width>336</width>
+                 <width>346</width>
                  <height>101</height>
                 </rect>
                </property>
@@ -891,9 +894,9 @@ Class</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>5</y>
-                  <width>251</width>
-                  <height>91</height>
+                  <y>10</y>
+                  <width>266</width>
+                  <height>86</height>
                  </rect>
                 </property>
                 <property name="title">
@@ -929,7 +932,7 @@ Class</string>
                  <item row="2" column="0">
                   <widget class="QPushButton" name="pushButton_8">
                    <property name="text">
-                    <string> Class Groups </string>
+                    <string> Class Categories</string>
                    </property>
                    <property name="icon">
                     <iconset>
@@ -2352,7 +2355,7 @@ Class</string>
                 <rect>
                  <x>150</x>
                  <y>20</y>
-                 <width>341</width>
+                 <width>311</width>
                  <height>61</height>
                 </rect>
                </property>
@@ -2645,13 +2648,13 @@ QGroupBox[objectName =&quot;bigfontgbox&quot;]{
         <number>1</number>
        </property>
        <property name="topMargin">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="rightMargin">
         <number>1</number>
        </property>
        <property name="bottomMargin">
-        <number>1</number>
+        <number>0</number>
        </property>
        <item>
         <widget class="QFrame" name="sidebar">
@@ -2673,13 +2676,12 @@ QGroupBox[objectName =&quot;bigfontgbox&quot;]{
 }
 
 QFrame[objectName=&quot;sidebar&quot;]{
-	background:#070707;
-border-radius:10px;
+	background:#000;
 	
 }
 
 QFrame[objectName=&quot;sidebar&quot;] QScrollArea{
-	background:#494949;
+	background:;
 }
 
 QPushButton{
@@ -2801,7 +2803,7 @@ QPushButton::hover{
           <property name="geometry">
            <rect>
             <x>5</x>
-            <y>120</y>
+            <y>125</y>
             <width>126</width>
             <height>231</height>
            </rect>
@@ -3981,7 +3983,7 @@ QLineEdit, QTextEdit, QComboBox{
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>-374</y>
+                   <y>0</y>
                    <width>234</width>
                    <height>836</height>
                   </rect>
@@ -4819,8 +4821,8 @@ QLabel{
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>733</width>
-                   <height>469</height>
+                   <width>382</width>
+                   <height>380</height>
                   </rect>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_18">
@@ -4888,8 +4890,8 @@ QLabel{
                          <rect>
                           <x>0</x>
                           <y>0</y>
-                          <width>264</width>
-                          <height>459</height>
+                          <width>172</width>
+                          <height>436</height>
                          </rect>
                         </property>
                         <layout class="QVBoxLayout" name="verticalLayout_11">
@@ -5148,7 +5150,7 @@ QLabel{
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>450</height>
+               <height>0</height>
               </size>
              </property>
              <property name="maximumSize">
@@ -5165,23 +5167,53 @@ QLabel{
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1023</width>
-                <height>469</height>
+                <width>1029</width>
+                <height>471</height>
                </rect>
               </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>450</height>
+               </size>
+              </property>
               <layout class="QHBoxLayout" name="horizontalLayout_19">
+               <property name="leftMargin">
+                <number>1</number>
+               </property>
+               <property name="topMargin">
+                <number>1</number>
+               </property>
+               <property name="rightMargin">
+                <number>1</number>
+               </property>
+               <property name="bottomMargin">
+                <number>1</number>
+               </property>
                <item>
                 <widget class="QGroupBox" name="groupBox_5">
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
-                   <height>400</height>
+                   <height>0</height>
                   </size>
                  </property>
                  <property name="title">
                   <string/>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_4">
+                  <property name="leftMargin">
+                   <number>4</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>4</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>4</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>4</number>
+                  </property>
                   <item>
                    <widget class="QGroupBox" name="groupBox_12">
                     <property name="maximumSize">
@@ -5322,7 +5354,7 @@ QPushButton::hover{
                         <x>165</x>
                         <y>5</y>
                         <width>146</width>
-                        <height>336</height>
+                        <height>326</height>
                        </rect>
                       </property>
                       <property name="title">
@@ -5432,8 +5464,8 @@ QPushButton::hover{
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>107</width>
-                            <height>84</height>
+                            <width>124</width>
+                            <height>38</height>
                            </rect>
                           </property>
                           <layout class="QVBoxLayout" name="verticalLayout_23">
@@ -5452,28 +5484,6 @@ QPushButton::hover{
                            <property name="bottomMargin">
                             <number>2</number>
                            </property>
-                           <item>
-                            <widget class="QGroupBox" name="teahing_day_gbox">
-                             <property name="minimumSize">
-                              <size>
-                               <width>0</width>
-                               <height>80</height>
-                              </size>
-                             </property>
-                             <property name="title">
-                              <string/>
-                             </property>
-                             <layout class="QVBoxLayout" name="verticalLayout_24">
-                              <item>
-                               <widget class="QCheckBox" name="checkBox">
-                                <property name="text">
-                                 <string>Drorsday</string>
-                                </property>
-                               </widget>
-                              </item>
-                             </layout>
-                            </widget>
-                           </item>
                           </layout>
                          </widget>
                         </widget>
@@ -5790,6 +5800,170 @@ QPushButton::hover{
            </item>
           </layout>
          </widget>
+         <widget class="QWidget" name="page">
+          <layout class="QVBoxLayout" name="verticalLayout_24">
+           <item>
+            <widget class="QScrollArea" name="scrollArea_3">
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents_12">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>1029</width>
+                <height>471</height>
+               </rect>
+              </property>
+              <widget class="QGroupBox" name="groupBox_47">
+               <property name="geometry">
+                <rect>
+                 <x>230</x>
+                 <y>40</y>
+                 <width>381</width>
+                 <height>406</height>
+                </rect>
+               </property>
+               <property name="title">
+                <string>All subjects</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_38">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
+                <property name="leftMargin">
+                 <number>2</number>
+                </property>
+                <property name="topMargin">
+                 <number>2</number>
+                </property>
+                <property name="rightMargin">
+                 <number>2</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>2</number>
+                </property>
+                <item>
+                 <widget class="QTableWidget" name="tableWidget">
+                  <column>
+                   <property name="text">
+                    <string>Subjects/Courses</string>
+                   </property>
+                   <property name="icon">
+                    <iconset>
+                     <normaloff>../Icons-mine/subject.png</normaloff>../Icons-mine/subject.png</iconset>
+                   </property>
+                  </column>
+                  <column>
+                   <property name="text">
+                    <string>Weekly frequency</string>
+                   </property>
+                  </column>
+                  <column>
+                   <property name="text">
+                    <string>Chunk value</string>
+                   </property>
+                  </column>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QLabel" name="label_89">
+               <property name="geometry">
+                <rect>
+                 <x>390</x>
+                 <y>15</y>
+                 <width>136</width>
+                 <height>16</height>
+                </rect>
+               </property>
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Parameters page</string>
+               </property>
+              </widget>
+              <widget class="QGroupBox" name="groupBox_11">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>40</y>
+                 <width>211</width>
+                 <height>406</height>
+                </rect>
+               </property>
+               <property name="title">
+                <string>Class Arms tree</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_40">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
+                <property name="leftMargin">
+                 <number>2</number>
+                </property>
+                <property name="topMargin">
+                 <number>2</number>
+                </property>
+                <property name="rightMargin">
+                 <number>2</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>2</number>
+                </property>
+                <item>
+                 <widget class="QTreeWidget" name="treeWidget">
+                  <property name="headerHidden">
+                   <bool>true</bool>
+                  </property>
+                  <column>
+                   <property name="text">
+                    <string notr="true">1</string>
+                   </property>
+                  </column>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QGroupBox" name="groupBox_52">
+               <property name="geometry">
+                <rect>
+                 <x>620</x>
+                 <y>65</y>
+                 <width>101</width>
+                 <height>96</height>
+                </rect>
+               </property>
+               <property name="title">
+                <string>GroupBox</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_43">
+                <item>
+                 <widget class="QPushButton" name="pushButton">
+                  <property name="text">
+                   <string>Begin Edit</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_2">
+                  <property name="text">
+                   <string>Commit</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
          <widget class="QWidget" name="semi_output_stacked_page">
           <widget class="QLabel" name="label_24">
            <property name="geometry">
@@ -5996,7 +6170,7 @@ QPushButton::hover{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1204</width>
+     <width>1210</width>
      <height>21</height>
     </rect>
    </property>
