@@ -62,7 +62,7 @@ class TtSplashScreen(QtWidgets.QMainWindow):
             self.tt_mainwindow = UITimetable()
             self.tt_mainwindow.show()
 
-        self.counter += 2
+        self.counter += 1
 
 # ----------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------
@@ -718,6 +718,9 @@ class UITimetable(QtWidgets.QMainWindow):
                 self.load_faculty_dept_teachers_tree()
                 self.generate_all_staff_table()
 
+                # Reset the mark button to read mark
+                self.mark_btn.setText("Mark")
+
             else:
                 UITimetable.messagebox(title="Empty field error",icon="critical",text="Either courses or days have not been specified")
 
@@ -758,8 +761,10 @@ class UITimetable(QtWidgets.QMainWindow):
     def generate_all_staff_table(self):
         """This method generates the table for all the members of staff and their details"""
 
-        self.all_staff_table.clear()
+        # Clear the contents of the table first
+        self.all_staff_table.clearContents()
 
+        # Reload the contents of table from scratch
         self.all_staff_table.setRowCount(len(self.Timetable.Timetable_obj.list_of_all_teachers))
 
         for index,teacher in enumerate(self.Timetable.Timetable_obj.list_of_all_teachers):

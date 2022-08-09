@@ -45,7 +45,6 @@ for subj in SUBJECT_LIST:
     faculty = my_tt.create_faculty(subj)
     my_tt.create_department(subj, faculty=faculty)
 
-#                                        
 
 for day in DAYS:
     my_tt.create_day(day)
@@ -152,6 +151,12 @@ for m in my_tt.list_of_school_classes:
         my_tt.create_school_class_arm(m, as_alpha=True)
 
 
+# Add all the day objs to each arm
+for arm in my_tt.list_of_school_class_arms:
+    for day in my_tt.list_of_days:
+        arm.add_day_to_arm(day)
+
+
 print(my_tt.list_of_school_class_arms)
 
 
@@ -179,19 +184,6 @@ print()
 
 m = my_tt.list_of_school_class_arms[2]
 d = my_tt.list_of_days[2]
-
-
-
-# for arm in my_tt.list_of_school_class_arms:
-#     print(arm.periods)
-
-
-
-# print(my_tt.get_class_arm_periods_thru_week(m))
-
-# print(periods_)
-
-
 
 
 # ----- A SECOND CONTAINER
@@ -260,10 +252,9 @@ iter_list = []
 
 
 def really_run():
-
     for subj in my_tt.list_of_departments:
         b = iterable(subj, random.randint(1,4), random.randint(1,2))
-        # b = iterable(subj, 3, 2)
+        b = iterable(subj, 4, 2)
         iter_list.append(b)
 
     print(iter_list)
@@ -294,11 +285,7 @@ def really_run():
 
     print("-*"*30)
     print(d.school_class_arms_today)
-    print()
 
-
-
-    print()
     print("-"*90)
     print("The algo sort")
     print()
@@ -308,9 +295,8 @@ def really_run():
 
     # for arm in my_tt.list_of_school_class_arms:
     #     print(arm, arm.depts_and_teachers.keys())
-    print(my_sort.Algosort_teachers_per_day(d, SortAlgorithms.centercluster))
+    print(my_sort.Sort_manager(SortAlgorithms.centercluster, reference_arm=m))
     
-
 really_run()
 
 # count=0

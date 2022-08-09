@@ -324,12 +324,10 @@ class TimeTable:
         @property
         def detailed_info(self):
             return f"""
-            <ul>
-            <li>Department name: {self.full_name}.\n </li>
-            <li>Department headed by: {self.HOD}.\n </li>
-            <li>Child Subject Number: {len(self.course_list)}.\n </li>
-            <li>Description: {self.description} </li>
-            </ul>
+            <p>Department name: {self.full_name}.\n </p>
+            <p>Department headed by: {self.HOD}.\n </p>
+            <p>Child Subject Number: {len(self.course_list)}.\n </p>
+            <p>Description: {self.description} </p>
             """
         
         def delete(self, tt_obj):
@@ -585,8 +583,8 @@ class TimeTable:
             if not day_diff:
                 return "All"
 
-            day_diff_list = [day.full_name for day in day_diff]
-            return "All Except " ", ".join(day_diff_list)
+            day_diff_list = [day.day for day in day_diff]
+            return "All Except " + ", ".join(day_diff_list)
 
 
         def regular_or_no(self, tt_obj):
@@ -757,6 +755,7 @@ class TimeTable:
 
             self.school_class = school_class_obj
             self.id = 0
+            self.days_list = []
 
             # --A dictionary of all the periods for every day (the dict has a key-value pair of the day_obj: list of periods)
             self.periods = {}
@@ -770,14 +769,11 @@ class TimeTable:
             else:
                 self.local_id = self.local_identifier + 1
 
-
             # -- This is the list of departments (str) that the school class arm offers
             self.depts_and_teachers = {}
-
             # --- Tentative dictionary (below) to hold the list of subjects offered per day
             #  'day' is the key and the list of subjects is the value. It is first put as None for ease
             self.temp_dept_holder_for_days = {x:None for x in self.get_class_arm_days}
-
             #-------------------------------------------------------- 
             # container for when a dept has been actively assigned 
             self.depts_assigned_by_algo_per_day = {}
@@ -795,6 +791,17 @@ class TimeTable:
             days_for_classarm = [day for day in self.periods]
             days_for_classarm.sort(key=lambda day: day.id)
             return days_for_classarm
+
+
+        def add_day_to_arm(self, day_obj):
+            """ Adds a day object to the days_list for this classarm. """
+            self.days_list.append(day_obj)
+
+        def remove_day_from_arm(self, day_obj):
+            """Removes a day object from the list of days of this class arm"""
+            if day_obj in self.days_list:
+                self.days_list.remove(day_obj)
+
         
 
         def add_dept_to_class_arm(self, dept_obj, descent=False, auto=True, teacher_index=None):
@@ -951,9 +958,7 @@ class TimeTable:
         def fav_period(self, day_obj, duration, spot=None, start=None, dept_obj=None, sch_class_arm_obj=None, title_of_fav=None):
             """Short for 'favourite period'. This is a period which MUST occupy a 
             particular spot on the time-table. A static period.
-
             'end' is not given here. just the 'start' and 'duration' parameters are needed
-
             START has to be a time tuple.
             so also DURATION.
             """
@@ -1026,18 +1031,21 @@ class TimeTable:
             """ Method to add this period object to the dictionary of the school_class_arm
             adds a period one at a time """
 
-            #  To update the list of periods
-            if self.day in self.school_class_arm.periods.keys():
-                self.school_class_arm.periods[self.day].append(self)
-            else:
-                self.school_class_arm.periods[self.day] = [self]
+            if self.day in self.school_class_arm.days_list:
+                #  To update the list of periods
+                if self.day in self.school_class_arm.periods:
+                    self.school_class_arm.periods[self.day].append(self)
+                else:
+                    self.school_class_arm.periods[self.day] = [self]
 
+                # To update the period counter
+                if self.day in self.school_class_arm.period_id_counter.keys():
+                    self.school_class_arm.period_id_counter[self.day] += 1
+                else:
+                    self.school_class_arm.period_id_counter[self.day] = 1
 
-            # To update the period counter
-            if self.day in self.school_class_arm.period_id_counter.keys():
-                self.school_class_arm.period_id_counter[self.day] += 1
             else:
-                self.school_class_arm.period_id_counter[self.day] = 1
+                return ProjectExceptions.SomethingWentWrong(f"{self.day} is not in the days_list of {self.school_class_arm}")
 
 
     class Day:
@@ -1186,35 +1194,30 @@ class TimeTable:
             return all_teachers
 
 
-        def get_all_teachers_and_dept_dupli(self):
+        def teachers_n_depts_today_dupli(self):
             """
                 This method gets into a DICT all the teachers(keys) and all the (depts they teach and the arm)(values)
                 considering all the duplicates.
             """
             
             teach_dept_dupli = {}
-
             # depts_today = self.get_all_depts_for_today()
-
             # every dept that features today
         
-
             for arm in self.school_class_arms_today:
 
                 # For each dept in the container (dict) of the departments that were assigned to today by the packeting algorithm
                 for dept in arm.temp_dept_holder_for_days[self]:
                     
                     teacher = dept.teachers_for_client_class_arms[arm]
-
                     # Now add teacher into the dictionary, but first check if it already exists
                     if teacher in teach_dept_dupli:
-                        teach_dept_dupli[teacher].append((dept, arm))
+                        teach_dept_dupli[teacher].append((arm, dept))
                     else:
-                        teach_dept_dupli[teacher] = [(dept, arm)]
+                        teach_dept_dupli[teacher] = [(arm, dept)]
 
             # finally return the dictionary with teachers (as keys) and the list of depts[as values]
             # for every class arm that features today
-
             return teach_dept_dupli
 
 

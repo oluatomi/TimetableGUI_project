@@ -27,8 +27,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget[objectName=&quot;Form&quot;]{
-	background:#252525;
-	
+	background:qconicalgradient(cx:0.5, cy:0.5, angle:245.9, stop:0.0511364 rgba(36, 36, 36, 255), stop:0.329545 rgba(0, 0, 0, 255), stop:0.636364 rgba(79, 79, 79, 255), stop:0.8125 rgba(54, 54, 54, 255));
 }
 
 QLabel{
@@ -99,9 +98,9 @@ QLabel{
      <widget class="QGroupBox" name="groupBox_2">
       <property name="geometry">
        <rect>
-        <x>55</x>
+        <x>95</x>
         <y>145</y>
-        <width>366</width>
+        <width>281</width>
         <height>116</height>
        </rect>
       </property>
@@ -158,7 +157,7 @@ QLabel{
            <widget class="QLineEdit" name="lineEdit_2">
             <property name="minimumSize">
              <size>
-              <width>160</width>
+              <width>80</width>
               <height>0</height>
              </size>
             </property>

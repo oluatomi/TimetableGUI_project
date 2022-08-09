@@ -82,7 +82,7 @@
        <property name="geometry">
         <rect>
          <x>40</x>
-         <y>375</y>
+         <y>370</y>
          <width>200</width>
          <height>5</height>
         </rect>
@@ -101,11 +101,14 @@
        </property>
        <property name="styleSheet">
         <string notr="true">QProgressBar{
-	background:red;
+	background:transparent;
+	border-top-right-radius:2px;
+	border-bottom-right-radius:2px;
 }
 
+
 QProgressBar::chunk{
-	background-color:#5c5c5c;
+	background:qconicalgradient(cx:0.5, cy:0.5, angle:199, stop:0.136364 rgba(67, 67, 67, 255), stop:0.306818 rgba(198, 198, 198, 255), stop:0.534091 rgba(139, 139, 139, 255), stop:0.772727 rgba(68, 68, 68, 255));
 	border-top-right-radius:2px;
 	border-bottom-right-radius:2px;
 }

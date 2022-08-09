@@ -952,7 +952,6 @@ def f_check_for_overlap(list_arg, const=None, _list=None, const_index=0):
 
         # Return True if there are still overlaps AND the numbers from the constant variable show up the chunking, wo we can re_moveover
     # return len(strip_list_wrapper(list_arg)) > len(set(strip_list_wrapper(list_arg))) and bool(set(strip_list_wrapper(list_arg)) & const_set)
-
     return len(strip_list_wrapper(list_arg + const_list)) > len(set(strip_list_wrapper(list_arg + const_list))) or bool(set(strip_list_wrapper(list_arg)) & const_set)
 
 
@@ -962,6 +961,10 @@ def Moveover(list_arg, array):
 
     if len(strip_list_wrapper(list_arg)) > array:
         return ValueError(f"Length of list_arg is greater than {array}")
+
+    if not list_arg:
+        # If the list argument passed in is empty
+        return []
 
 
     list_arg = list(enumerate(list_arg.copy()))
@@ -1014,7 +1017,7 @@ def Moveover(list_arg, array):
         
         # time.sleep(1)
         # preserves the old value of fin in case it needs to retrace its steps with the var _keep
-        print(f"This is fin: {fin}")
+        # print(f"This is fin: {fin}")
         _keep = fin.copy() if max(strip_list_wrapper(fin)) < array else w_list.copy()
 
         # print(f"Fin uptop: {fin} and keep: {_keep}")
@@ -1066,7 +1069,7 @@ def Moveover(list_arg, array):
 
 
 
-def moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
+def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
     """This function does the work of the moveover function except for the fact that it holds an item (if given), or it's 
     index (if given) fixed.
     It is done this way, we pop out the fixed item and moveover whats left. Then we concatenate what's left"""
@@ -1221,7 +1224,7 @@ def moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
     return final_val
 
 
-def possible_combs(list_arg, array):
+def Possible_combs(list_arg, array):
     """This function finds out all the possible legal spaces a chunked list can have when a piece is held constant
     Legal in the sense that it doesn't run past 0 or past the array and its items do not overlap
 
@@ -1232,6 +1235,10 @@ def possible_combs(list_arg, array):
     # Move list_arg if it hasn't been moved before
     # --------------------------------------------------------
     list_arg = Moveover(list_arg, array)
+
+    if not list_arg:
+        # If the list argument passed in empty
+        return []
     # ----------------------------------------------------------
 
     possible_list = []
@@ -1662,7 +1669,7 @@ class SortAlgorithms:
 
 
 if __name__ == "__main__":
-    chunk_test = {2:2, 1:3}
+    chunk_test = {1:1, 2:2}
     test_liste = [[0,1],[7,8],[8,9]]
     me_test = [4, 5, 6, 7, 8, [0, 1], 3]
     again = [4, [5, 6], 7, 8, 9, [0, 1], [3, 4]]
@@ -1671,7 +1678,7 @@ if __name__ == "__main__":
     tt = [[0,1],[8,9],[8,9], [1,2]]
     
     my = Moveover([0, [0, 1], 1, 1, 6, [6, 7], 8, 9], 10)
-    op = Moveover([[3, 4], 6, 11], 10)
+    op = Moveover([[6,7], [6,7], 9], 10)
     # print()
     print(my, op)
     # print(moveover_fixed(me_test, 10, fixed_item=[[0,1]]))
@@ -1681,7 +1688,7 @@ if __name__ == "__main__":
     # print("Hello")
     # print(possible_combs_with_fixed(test_liste,[[0,1]], 10))
 
-    # print(SortAlgorithms.centercluster(10, chunk_test, shift_value=0))
+    print(SortAlgorithms.centercluster(10, chunk_test, shift_value=0))
     # print(SortAlgorithms._semi_strip_list([[1,2,3], [1], [5],[7], [4,6,7,89]]))
 
     # print(collapse(10, chunk_test))
