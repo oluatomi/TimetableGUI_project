@@ -63,6 +63,6 @@ if __name__ == "__main__":
     # ui = Ui_Form()
     # ui.setupUi(Form)
     # Form.show()
-    widget_for_tree()
+    # widget_for_tree()
 
     sys.exit(app.exec_())

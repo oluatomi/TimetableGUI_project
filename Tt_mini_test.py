@@ -143,8 +143,8 @@ print()
 
 print()
 print("*"*84)
-
 print(my_tt.list_of_school_classes)
+
 
 for m in my_tt.list_of_school_classes:
     for _ in range(7):
@@ -312,23 +312,4 @@ really_run()
 # else:
 #     print("ABSOLUTE SUCCESS")
 
-
-
-
-
 # print(my_sort.summon_all(d, CenterCluster))
-
-
-# for x,y in my_sort. _nail_int_to_arms(d).items():
-#     print(x, y.periodsint_list)
-                                                                # print(len(my_sort.Algosort_teachers_per_day(d, CenterCluster)))
-                                                                # print(my_sort.Algosort_teachers_per_day(aa, CenterCluster))
-                                                                # print()
-                                                                # print(my_sort.Algosort_teachers_per_day(d, CenterCluster))
-                                                                # print()
-                                                                # print(my_sort.Algosort_teachers_per_day(bb, CenterCluster))
-                                                                # print()
-                                                                # print(my_sort.Algosort_teachers_per_day(gg, CenterCluster))
-                                                                # print()
-
-                                                                # print(d.school_class_arms_today)

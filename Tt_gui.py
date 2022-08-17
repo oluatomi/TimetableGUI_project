@@ -25,12 +25,8 @@ import Tt_manager
 from Tt_manager import get_obj_from_param as object_getter
 from Tt_gui_handler import load_manual
 from Tt_GuiExtras import WidgetTree
-
-
-# class MyHighlighter(QtGui.QSyntaxHighlighter):
-
-#     def __init__(self, parent=None, format_text):
-#         super().__init__(parent, format_text)
+from collections import namedtuple
+from PyQt5.QtCore import Qt
 
 
 class TtSplashScreen(QtWidgets.QMainWindow):
@@ -183,14 +179,47 @@ class UITimetable(QtWidgets.QMainWindow):
 
         # The button to mark courses in bulk
         self.mark_btn = self.findChild(QtWidgets.QPushButton, "mark_courses_btn")
-
         self.mark_btn.pressed.connect(self.enable_mark_depts)
-
         self.try_btn = self.findChild(QtWidgets.QPushButton, "try_btn")
 
     # ---------------------------- Generate all staff table (and details) -------------------------------
         self.all_staff_table = self.findChild(QtWidgets.QTableWidget, "all_staff_tablewidget")
 
+    # ------------------ Handles mapping depts to class arms as well as their frequencies and chunk values --------------------
+        self.subj_freq_chunk_table = self.findChild(QtWidgets.QTableWidget, "subject_freq_chunk_table")
+        self.arms_for_chunk_tree = self.findChild(QtWidgets.QTreeWidget, "arms_for_chunk_tree")
+        self.arms_for_chunk_tree.expandAll()
+
+
+    # -------------------------------- Template textedit operations -------------------------------------------------------
+        self.template = self.findChild(QtWidgets.QTextEdit, "template_textedit")
+
+        self.bold_btn = self.findChild(QtWidgets.QPushButton, "bold_btn")
+        self.underline = self.findChild(QtWidgets.QPushButton, "underline_btn")
+        self.rightalign = self.findChild(QtWidgets.QPushButton, "align_right_btn")
+        self.leftalign = self.findChild(QtWidgets.QPushButton, "align_left_btn")
+        self.centeralign = self.findChild(QtWidgets.QPushButton, "align_center_btn")
+        self.justify = self.findChild(QtWidgets.QPushButton, "justify_btn")
+        self.italics = self.findChild(QtWidgets.QPushButton, "italics_btn")
+
+        # Start coupling signals---------------------
+        self.rightalign.clicked.connect(lambda :self.template.setAlignment(Qt.AlignRight))
+        self.leftalign.clicked.connect(lambda :self.template.setAlignment(Qt.AlignLeft))
+        self.centeralign.clicked.connect(lambda :self.template.setAlignment(Qt.AlignCenter))
+        self.underline.clicked.connect(self.underline_text)
+        self.bold_btn.clicked.connect(self.bold_text)
+        self.italics.clicked.connect(self.italics_text)
+
+        self.cut = self.findChild(QtWidgets.QAction, "actionCut")
+        self.cut.triggered.connect(self.template.cut)
+        self.copy = self.findChild(QtWidgets.QAction, "actionCopy")
+        self.copy.triggered.connect(self.template.copy)
+        self.paste = self.findChild(QtWidgets.QAction, "actionPaste")
+        self.paste.triggered.connect(self.template.paste)
+        self.redo = self.findChild(QtWidgets.QAction, "actionRedo")
+        self.redo.triggered.connect(self.template.redo)
+        self.undo = self.findChild(QtWidgets.QAction, "actionUndo")
+        self.undo.triggered.connect(self.template.undo)
         
     # ------------------ LOADS ALLTHE TREES especially for when app is starting from an existing file ------------------
         # Loads the faculty/department-courses tree widget
@@ -280,17 +309,34 @@ class UITimetable(QtWidgets.QMainWindow):
     def colourDialog(self):
         """Colours the font of the highlighted part of the text edit in the finished version"""
         colour = QtWidgets.QColorDialog.getColor()
-        text_edit = self.findChild(QtWidgets.QTextEdit, "temp_text_edit")
-        text_edit.setTextColor(colour)
+        self.template.setTextColor(colour)
 
 
     def fontDialog(self):
         """handles font design such as font-face, size and bold"""
-        text_edit = self.findChild(QtWidgets.QTextEdit, "temp_text_edit")
         font, ok = QtWidgets.QFontDialog().getFont()
 
         if ok:
-            text_edit.setCurrentFont(font)
+            self.template.setCurrentFont(font)
+
+    def underline_text(self):
+        """ Handles underline operation for the template textedit """
+        state = self.template.fontUnderline()   # Boolean. Checks whether it has already been underlined
+        self.template.setFontUnderline(not(state))
+
+    def italics_text(self):
+        """ Handles italics operation for the template textedit """
+        state = self.template.fontItalic()
+        self.template.setFontItalic(not(state))
+
+
+    def bold_text(self):
+        """ Handles bold operation for the template textedit. """
+        if self.template.fontWeight != QtGui.QFont.Bold:
+            self.template.setFontWeight(QtGui.QFont.Bold)
+            return
+        self.template.setFontWeight(QtGui.QFont.Normal)
+
             
     # --------------------------------------------------------------------------------------------------
     # ------------------------------- BACKEND-INTO-GUI FUNCTIONS ---------------------------------------
@@ -303,7 +349,6 @@ class UITimetable(QtWidgets.QMainWindow):
         fac_name_text = fac_name.text().strip()
         HOD_name_text = HOD_name.text().strip()
         description_text = description.toPlainText().strip()
-
         
         # check if fields are filled else raise an error message box
         if UITimetable.check_fields_or_error(fields_values_list=[fac_name_text, description_text]):
@@ -317,7 +362,6 @@ class UITimetable(QtWidgets.QMainWindow):
         else:
            UITimetable.messagebox(title="Fields error",icon="critical",text="Required field(s) left blank, please fill them.")
 
-        
         # Load up up the faculties created!
         self.load_fac_courses_tree()
         self.load_faculty_dept_teachers_tree()
@@ -381,7 +425,6 @@ class UITimetable(QtWidgets.QMainWindow):
             else:
                 # If it is a non-academic department
                 self.Timetable.create_special_department(course_name_text)
-
         else:
             UITimetable.messagebox(title="Empty field error",icon="critical",text="You have not entered the name of the course.")
 
@@ -393,9 +436,10 @@ class UITimetable(QtWidgets.QMainWindow):
         # Load up up the faculties created!
         self.load_fac_courses_tree()
         self.load_nonacad_courses_list()
+        # table for imputtimg subjects frequency and chunk values
+        self.gen_subjects_freq_chunk_table()
         # Load the tree containing faculty, couses and teachers
         self.load_faculty_dept_teachers_tree()
-
 
 
     def load_fac_courses_tree(self):
@@ -423,20 +467,17 @@ class UITimetable(QtWidgets.QMainWindow):
     def load_nonacad_courses_list(self):
         """Loads the Listwidget displaying all the created non-academic courses, e.g. break"""
         self.non_acad_depts_listwidget.clear()
-
         all_nonacad = [nonacad.full_name for nonacad in self.Timetable.Timetable_obj.list_of_nonacad_depts]
-
         self.non_acad_depts_listwidget.addItems(all_nonacad)
 
 
-
     def fac_courses_tree_clicked(self):
-        """This function fires when any element in the Department-subject tree widget is clicked"""
+        """ This function fires when any element in the Department-subject tree widget is clicked
+        and loads their details onto the blackboard icon """
         current_item = self.fac_courses_treewidget.currentItem()
         c_text = current_item.text(0)
 
         obj = "list_of_departments" if current_item.parent() else "list_of_faculties"
-
         cast_ = lambda obj:getattr(self.Timetable.Timetable_obj, obj)
         # print(f"This is cast: {cast_}")
 
@@ -472,6 +513,8 @@ class UITimetable(QtWidgets.QMainWindow):
 
         # load the treewidget function to display newly registered class group, class and arm
         self.load_group_class_arm_tree()
+        # Generate tree of arms for chunk and freq
+        self.gen_arms_freq_chunk_tree()
 
 
     def register_school_class(self):
@@ -494,6 +537,8 @@ class UITimetable(QtWidgets.QMainWindow):
             UITimetable.messagebox(title="Empty field error",icon="critical",text="No class category specified under which to make class.")
 
         self.load_group_class_arm_tree()
+        # Generate tree of arms for chunk and freq
+        self.gen_arms_freq_chunk_tree()
 
 
     def generate_arms(self):
@@ -521,6 +566,23 @@ class UITimetable(QtWidgets.QMainWindow):
         spin_id.setValue(1)
         # Load the classgroup-class-arm tree widget
         self.load_group_class_arm_tree()
+        # Generate tree of arms for chunk and freq
+        self.gen_arms_freq_chunk_tree()
+
+        # Enable bulk marking of arms when a class is clicked
+        root = self.arms_for_chunk_tree.invisibleRootItem()
+        child_count = root.childCount()
+
+        # If it has no parents, that is it is the class clicked and not the class arm
+        for index in range(child_count):
+            class_item = root.child(index)
+            class_widget = self.arms_for_chunk_tree.itemWidget(class_item, 0)
+            # The above returns the widgetTree class I defined myself
+            class_checkbox = class_widget.checkBox
+
+            # Add a signal to the class_checkBox
+            class_checkbox.stateChanged.connect(lambda checked: self.bulk_mark_class_arms(checked=checked, tree_item=class_item))
+
 
 
     def load_group_class_arm_tree(self):
@@ -535,7 +597,7 @@ class UITimetable(QtWidgets.QMainWindow):
             # Load the  class group(category) name into the tree widget
             item = QtWidgets.QTreeWidgetItem([f"{class_group.full_name}"])
 
-            # Add the class group to the comcobox for school class registration
+            # Add the class group to the combobox for school class registration
             self.combo_with_classgroup.addItem(class_group.full_name)
             
             self.classgroup_class_arm_tree.addTopLevelItem(item)
@@ -566,7 +628,6 @@ class UITimetable(QtWidgets.QMainWindow):
         return None
         
 
-
     def register_day(self):
         """handles the resgistration of days"""
 
@@ -587,6 +648,7 @@ class UITimetable(QtWidgets.QMainWindow):
         day_name.clear()
         self.day_position_spinbox.setValue(1)
         self.day_position_spinbox.setEnabled(False)
+        self.day_checkbox.setCheckState(False)
         
         self.load_days_list()
         # Load teachers days with checkboxes
@@ -605,23 +667,20 @@ class UITimetable(QtWidgets.QMainWindow):
 # ------------------------------------------------------------------------------------------
     # ----------------- Generate Teachers for department
     def load_faculty_dept_teachers_tree(self, markable=False, expanded=False):
-        """This function loads the tree showing each faculty, the departments under it, and the geneatated teachers"""
+        """ This function loads the tree showing each faculty, the depts
+        under it, and the generated teachers under each dept"""
+
         self.dept_and_teachers_tree.clear()
         self.gen_teachers_combobox.clear()
 
         # the class reg combox will also be cleared too below!
         for faculty in self.Timetable.Timetable_obj.list_of_faculties:
             # Load the  class group(category) name into the tree widget
-
             item = QtWidgets.QTreeWidgetItem()
-
-            fac_widg = WidgetTree(label_text=faculty.full_name, icon_path='../Icons-mine/classgroup.png')
-            
+            fac_widg = WidgetTree(label_text=faculty.full_name, icon_path='../Icons-mine/classgroup.png')  
             self.dept_and_teachers_tree.addTopLevelItem(item)
             item.setExpanded(expanded)
             self.dept_and_teachers_tree.setItemWidget(item, 0, fac_widg)
-
-
 
             # Go for each of the courses in the faculty's course list
             for dept_obj in faculty.course_list:
@@ -633,7 +692,6 @@ class UITimetable(QtWidgets.QMainWindow):
                 dept_widg = WidgetTree(label_text=dept_obj.full_name, icon_path="../Icons-mine/subject.png",with_checkbox=markable)
                 item.addChild(dept_tree_item)
                 self.dept_and_teachers_tree.setItemWidget(dept_tree_item, 0, dept_widg)
-
 
                 for teacher in dept_obj.teachers_list:
                     # create custom widget for the teacher
@@ -647,7 +705,6 @@ class UITimetable(QtWidgets.QMainWindow):
                     # teacher_tree_item = QtWidgets.QTreeWidgetItem([teacher_widg])
                     dept_tree_item.addChild(teacher_tree_item)
                     self.dept_and_teachers_tree.setItemWidget(teacher_tree_item, 0, teacher_widg)
-
 
 
     def generate_teachers(self):
@@ -683,7 +740,6 @@ class UITimetable(QtWidgets.QMainWindow):
             else:
                 # Spit out error message
                 UITimetable.messagebox(title="Empty field error",icon="critical",text="No course for which to generate teachers")
-
 
         else:
             # ----------------------------------------------------------------------------------------------------------
@@ -723,7 +779,6 @@ class UITimetable(QtWidgets.QMainWindow):
 
             else:
                 UITimetable.messagebox(title="Empty field error",icon="critical",text="Either courses or days have not been specified")
-
         # Clear fields
         
         teachers_freq.setValue(0)
@@ -757,7 +812,6 @@ class UITimetable(QtWidgets.QMainWindow):
             self.gen_teachers_combobox.setEnabled(True)
 
 
-
     def generate_all_staff_table(self):
         """This method generates the table for all the members of staff and their details"""
 
@@ -774,6 +828,83 @@ class UITimetable(QtWidgets.QMainWindow):
             self.all_staff_table.setItem(row, 2, QtWidgets.QTableWidgetItem(teacher.str_teaching_days(self.Timetable.Timetable_obj)))
             self.all_staff_table.setItem(row, 3, QtWidgets.QTableWidgetItem(teacher.regular_or_no(self.Timetable.Timetable_obj)))
 
+
+    def gen_arms_freq_chunk_tree(self):
+        """ Generate class arms (and classes) into the tree  upon which selection for chunking would be carried out """
+
+        # clear the table first
+        self.arms_for_chunk_tree.clear()
+
+        # Loop through all the school classes and sift out their arms
+        for clss in self.Timetable.Timetable_obj.list_of_school_classes:
+
+            clss_item = QtWidgets.QTreeWidgetItem()
+            clss_widg = WidgetTree(icon_path="../Icons-mine/classgroup.png",label_text=clss.full_name, with_checkbox=True)
+            self.arms_for_chunk_tree.addTopLevelItem(clss_item)
+            self.arms_for_chunk_tree.setItemWidget(clss_item, 0, clss_widg)
+
+
+            for arm in clss.school_class_arm_list:
+                arm_item = QtWidgets.QTreeWidgetItem()
+                arm_widg = WidgetTree(icon_path="../Icons-mine/class.png",label_text=arm.full_name, with_checkbox=True)
+
+                clss_item.addChild(arm_item)
+                self.arms_for_chunk_tree.setItemWidget(arm_item, 0, arm_widg)
+                # self.arms_for_chunk_tree.setItemWidget(arm_item, 1, QtWidgets.QLabel("Done")
+
+
+    def gen_subjects_freq_chunk_table(self):
+        """This method handles the table bearing all the generated subjects and their frequencies and chunk values"""
+
+        # Clear contents of the table 
+        self.subj_freq_chunk_table.clearContents()
+        # Make first column have a width of 140
+        self.subj_freq_chunk_table.setColumnWidth(0,200)
+
+        all_depts = self.Timetable.Timetable_obj.list_of_departments
+        self.subj_freq_chunk_table.setRowCount(len(all_depts))
+
+        for index,dept in enumerate(all_depts):
+            dept_widget = WidgetTree(icon_path="../Icons-mine/subject.png",label_text=dept.full_name, with_checkbox=True)
+            # SET a widget into the first row of the cells of a table
+            self.subj_freq_chunk_table.setCellWidget(index, 0, dept_widget)
+            self.subj_freq_chunk_table.setItem(index, 1, QtWidgets.QTableWidgetItem("0"))
+            self.subj_freq_chunk_table.setItem(index, 2, QtWidgets.QTableWidgetItem("None"))
+
+
+    def bulk_mark_class_arms(self, checked=False, tree_item=None):
+        """ Specifically for school class objects. It marks (checks) all the arms under it if is checked """
+
+        if checked:
+            child_count = tree_item.childCount()
+
+            for i in range(child_count):
+                arm_item = tree_item.child(i)
+                # Locate the WidgetTree class I defined myself
+                arm_widget = self.arms_for_chunk_tree.itemWidget(arm_item, 0)
+                arm_widget.checkBox.setCheckState(True)
+
+
+    def map_depts_to_freq_chunk(self):
+        """ This function maps the frequencies and chunk that have been selected in the table to the class arms
+        that have also been selected. """
+        
+        selected_arms, selected_subj_freq_chunk = [], []
+        subj_freq_chunk = namedtuple("subj_freq_chunk", "subj freq, chunk")
+
+        root = self.arms_for_chunk_tree.invisibleRootItem()
+        child_count = root.childCount()
+
+        # Sniff through the tree for arms that have been clicked!
+        for x in range(child_count):
+            class_item = self.arms_for_chunk_tree.child(x)
+
+            for y in range(class_item.childCount()):
+                arm_item = class_item.child(y)
+                arm_widget = self.class_item.itemWidget(arm_item, 0)
+                # if the checkbox in the custom widget of the arm is checked,
+                if arm_widget.get_checkbox().isChecked():
+                    selected_arms.append(arm_widget.full_name_label)
 
 
 # ------------------------------------------------------------------------------------------------------------

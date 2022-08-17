@@ -956,24 +956,8 @@ def f_check_for_overlap(list_arg, const=None, _list=None, const_index=0):
 
 
 
-def Moveover(list_arg, array):
+def Moveover(listarg, array):
     # Spreads a list to ensure that no members overlap
-
-    if len(strip_list_wrapper(list_arg)) > array:
-        return ValueError(f"Length of list_arg is greater than {array}")
-
-    if not list_arg:
-        # If the list argument passed in is empty
-        return []
-
-
-    list_arg = list(enumerate(list_arg.copy()))
-
-    sorted_list = sorted(list_arg, key=lambda ind_item:max(strip_list_wrapper(ind_item[1])) if isinstance(ind_item[1], list) else ind_item[1])
-    s_list = [item for index, item in sorted_list]
-    w_list = s_list.copy()
-
-
     # ---------------------------------------------------------
     def slide_over_one(in_list, forward=True):
         # keep sliding over till there are no overlaps or at least till the cycle is exhausted
@@ -1006,6 +990,24 @@ def Moveover(list_arg, array):
 
         return bowl
 # --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+    # return listarg
+    if len(strip_list_wrapper(listarg)) > array:
+        return ValueError(f"Length of list_arg is greater than {array}")
+
+    if not listarg:
+        # If the list argument passed in is empty
+        return []
+
+    mark = listarg.copy()
+
+    list_arg = list(enumerate(listarg.copy()))
+
+    sorted_list = sorted(list_arg, key=lambda ind_item:max(strip_list_wrapper(ind_item[1])) if isinstance(ind_item[1], list) else ind_item[1])
+    s_list = [item for index, item in sorted_list]
+    w_list = s_list.copy()
+
+
     fin = w_list.copy()
     loop = True
     forward = True
@@ -1041,22 +1043,10 @@ def Moveover(list_arg, array):
                 # print("Going right again")
                 forward = True
 
-                # print(f"This is fin going backwards: {fin}")
-                # print("-"*30)
 
-            # fin = _keep.copy()    ?????
-
-
-
-            # else:
-            #     if min(strip_list_wrapper(fin)) < 0:
-            #         loop = False
-            #         print("Bailed out!")
-
-        
-  
-        if count >= array*10:
-            raise StopIteration(f"OVERLOADED!! {fin} did not work")  
+        if count >= array*4:
+            raise StopIteration(f"OVERLOADED!! {mark} did not work")
+            
 
         # Reconstitute the list to its previous order
         # fin is one-one mapped to sorted_list
@@ -1066,7 +1056,6 @@ def Moveover(list_arg, array):
     fin = [elem for index,elem in fin]
 
     return fin
-
 
 
 def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
@@ -1089,8 +1078,7 @@ def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
                     if x in strip_list_wrapper(test_list + const_list):
                         print()
                         new = Translatebyshift(item, trans, array)
-                        # print(f"Translating first item: {item} forwards!:{x}, to: {new} ")
-                        # Translate it forward by 1 (By default)
+                        
                         test_list.append(new)
                         break 
 
@@ -1105,18 +1093,9 @@ def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
                 if item in strip_list_wrapper(test_list + const_list):
                     val = (item + trans) % array
                     test_list.append(val)
-                    # print()
-                    # print("Translating int forwards!")
                     
                 else:
                     test_list.append(item)
-                    # print("int appended")
-                    
-
-        # print("-"*70)
-        # print(f"This is test_list in the function: {test_list}")
-        # print("-"*70)
-        # print()
 
         return test_list
 
@@ -1224,21 +1203,19 @@ def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
     return final_val
 
 
-def Possible_combs(list_arg, array):
+def Possible_combs(listarg, array):
     """This function finds out all the possible legal spaces a chunked list can have when a piece is held constant
     Legal in the sense that it doesn't run past 0 or past the array and its items do not overlap
 
     The list_arg must have been "moved over", i.e no overlaps 
 
     """
-
+    if not listarg:
+            # If the list argument passed in empty
+        return []
     # Move list_arg if it hasn't been moved before
     # --------------------------------------------------------
-    list_arg = Moveover(list_arg, array)
-
-    if not list_arg:
-        # If the list argument passed in empty
-        return []
+    list_arg = Moveover(listarg, array) 
     # ----------------------------------------------------------
 
     possible_list = []
@@ -1314,11 +1291,11 @@ def Possible_combs(list_arg, array):
     return final_list
 
 
-def possible_combs_with_fixed(list_arg,const,array):
+def Possible_combs_with_fixed(list_arg,const,array):
     # Gets all the possible combinations with a fixed item inside. 
     # const is now an iterable holding all values
     
-    all_ = possible_combs(list_arg, array)
+    all_ = Possible_combs(list_arg.copy(), array)
 
     if not bool(const):
         return all_
@@ -1368,14 +1345,24 @@ def abs_match_list_int(list_arg, match_val, strict=False):
 
 def remove_all_sub_from_list(list_arg, sub_list):
     """Removes all the elements of sub_list from list_arg or 'dies trying', i.e 
-    raises a valueerror sub_list is not a proper subset of list_arg"""
-    ans_list = strip_list_wrapper(list_arg.copy())
+    raises a valueError sub_list is not a proper subset of list_arg"""
+    ans_list = strip_list_wrapper(list_arg)
 
     # cast into a list in the event that it an object or an int
     sub_list = [sub_list]
     for elem in strip_list_wrapper(sub_list):
         ans_list.remove(elem)
     return ans_list
+
+
+def casual_removeall(list_arg, elem):
+    """Removes all the occurences of elem in list_arg"""
+
+    for item in list_arg:
+        if item == elem:
+            list_arg.remove(elem)
+
+    # Should it return list_arg?
 
 
 def Count_with_order(list_arg):
@@ -1407,7 +1394,12 @@ class SortAlgorithms:
         """ Revised leapfrog algorithm """
 
         # sort the chunk_list itms by the chunk_number from largest to smallest
-        chunk_list_items = sorted(chunk_list.items(), key=lambda item:item[0], reverse=True)
+        c = list(enumerate(chunk_list.items()))
+
+        chunk_list_itz = sorted(c, key=lambda item:item[1][0], reverse=True)
+        
+        # Elem contains is the tuple of the kev-val pair from chunk_list.items()
+        chunk_list_items = [elem for _, elem in chunk_list_itz]
         # the length of the sequences, 3 if (triples, singles and doubles) or 2 (doubles, and singles) so we can see if we can space them
         chunk_sequence = len(chunk_list)
         # The variable checks whther we can add one space after each chunk sequejnce, else it "compromises" and contracts without collapsing just yet!
@@ -1454,14 +1446,29 @@ class SortAlgorithms:
 
         # In case it is shifted by shift_val, refine afterward
         spit_out = Translatebyshift(semi_ans, shift_value, array)
-        return refine_translate(spit_out, array)
+        final_ans = refine_translate(spit_out, array)
+
+        # Reconstitute, the final answer to its initial order
+        # Putting the original index of the chunk_list_sort...
+        final_ans = [(index_chunk[0],elem) for index_chunk, elem in zip(chunk_list_sort, final_ans)]
+        final_ans = sorted(final_ans, key=lambda item:item[0])
+        final_ans = [elem for _, elem in final_ans]
+
+        return final_ans
 
 
     @staticmethod
     def xlx_reflection(array, chunk_list={2:1, 1:1}, shift_value=0):
         """The xlx chunking algorithm (revised)"""
         ans = []
-        items_list = sorted(chunk_list.items(), key=lambda item: item[0], reverse=True)
+
+        # The 'elem' below is the Key,value tuple in chunk_list.items()
+        old_chunklist_elem_only = [elem for elem in chunk_list.items()]
+    
+
+        items_ind = sorted(list(enumerate(old_chunklist_elem_only)), key=lambda item: item[1][0], reverse=True)
+        # Elem contains is the tuple of the kev-val pair from chunk_list.items()
+        items_list = [elem for _, elem in items_ind]
         # make the first two items of the list
         # first item (the first item of the first item which is a tuple (chunkval, freq))
         chunks_squished = sum([chunk*freq for chunk, freq in items_list])
@@ -1483,33 +1490,46 @@ class SortAlgorithms:
                 # append to the items_freqlist freq number of times
                 items_freqlist.append(m)
 
-        # print(f"This is item_freqlist {items_freqlist}")
+        print(f"This is item_freqlist {items_freqlist}")
 
 
         focal = items_freqlist[0]
-        # second_in the items_list, which will be the last in our algorithm
-        lfocal = PlainTranslate(items_freqlist[1].copy(), array - len(items_freqlist[1]))
 
-        # print(f"This is focal {focal}; and lfocal: {lfocal}")
+        if len(items_freqlist) == 1:
+            ans = items_freqlist[0]
 
-        ans += [focal, lfocal]
+        else:
+            # second_in the items_list, which will be the last in our algorithm
+            lfocal = PlainTranslate(items_freqlist[1].copy(), array - len(items_freqlist[1]))
 
-        for index, item in enumerate(items_freqlist[2:]):
+            # print(f"This is focal {focal}; and lfocal: {lfocal}")
 
-                # As long as tgere are no overlaps in the ans, add to it
-            if not index % 2:
-                # If is even, add forward
-                added = PlainTranslate(focal.copy()[:len(item)], len(focal) + 1)
-                ans.append(added.copy())
-                # Update the leftward focal point
-                focal = added
+            ans += [focal, lfocal]
 
-            else:
-                # if odd, subtract backwards
-                added = PlainTranslate(lfocal.copy()[:len(item)], -1*(len(item) + 1))
-                ans.append(added.copy())
-                # update lfocal variable the rightward focal point
-                lfocal = added
+            for index, item in enumerate(items_freqlist[2:]):
+
+                    # As long as tgere are no overlaps in the ans, add to it
+                if not index % 2:
+                    # If is even, add forward
+                    added = PlainTranslate(focal.copy()[:len(item)], len(focal) + 1)
+                    ans.append(added.copy())
+                    # Update the leftward focal point
+                    focal = added
+
+                else:
+                    # if odd, subtract backwards
+                    added = PlainTranslate(lfocal.copy()[:len(item)], -1*(len(item) + 1))
+                    ans.append(added.copy())
+                    # update lfocal variable the rightward focal point
+                    lfocal = added
+
+        # REconstitute this ans in its particular order
+
+        # Reconstitute, the final answer to its initial order
+        # Putting the original index of the chunk_list_sort...
+        ans = [(index_chunk[0],elem) for index_chunk, elem in zip(items_ind, ans)]
+        ans.sort(key=lambda item:item[0])
+        ans = [elem for _, elem in ans]
 
         if not check_for_overlap(ans):
             # Translate everything back by 1 and then "refine"
@@ -1528,9 +1548,16 @@ class SortAlgorithms:
         """The center cluster algorithm"""
 
         ans = []
+        # we take into account the indices that is the particular order the chunk_list takes
+
+        # The 'elem' below is the Key,value tuple in chunk_list.items()
+        old_chunklist_elem_only = [elem for elem in chunk_list.items()]
+
         chunk_list_sorted = sorted(chunk_list.items(), key=lambda item:item[0], reverse=True)
+        # The 'elem' below is the Key,value tuple in chunk_list.items()
+        # ---chunk_list_sorted = [elem for _, elem in chunk_list_sort] 
         # The check part
-        chunks_squished = sum([chunk*freq for chunk, freq in chunk_list_sorted])
+        chunks_squished = sum([chunk*freq for chunk,freq in chunk_list_sorted])
 
         # FIRST CHECK, IF IT THE CHUNKLIST IS IN ITS SPECS LARGER THAN THE ARRAY, BAIL!!!
         if chunks_squished > array:
@@ -1539,7 +1566,12 @@ class SortAlgorithms:
 
 
         # the initial chunklist with no translations yet e.g. [[1,2],[1,2],[1], [1]]
-        dummy_chunk_list = [list(range(1, chunk+1)) for chunk, freq in chunk_list_sorted for _ in range(freq)]
+        # The one without the sorting into doubles first then singles or so
+        order_preserved_dummy = [list(range(1, chunk+1)) for chunk, freq in old_chunklist_elem_only for _ in range(freq)]
+
+        dummy_chunk_ = sorted(list(enumerate(order_preserved_dummy)), key=lambda item:len(item))
+        dummy_chunk_list = [item for _, item in dummy_chunk_]
+
 
         # The list of integers up to the first item of the first item of the chunk_list_sorted list.
         focal = PlainTranslate(dummy_chunk_list[0], (array - 1)//2)     #This is also the min point of the array
@@ -1586,22 +1618,41 @@ class SortAlgorithms:
                     return SortAlgorithms.collapse(array, chunk_list, shift_value=shift_value)
 
 
-        # The raw for 'ans is shifted cack by 1, as the cunking is zero-based'
+
+        # The raw for 'ans is shifted cack by 1, as the chunking is zero-based'
         semi_ans = PlainTranslate(SortAlgorithms._semi_strip_list(ans), -1)
         
         # In case it is shifted by shift_val, refine afterward
         spit_out = Translatebyshift(semi_ans, shift_value, array)
-        return refine_translate(spit_out, array)
+        final_ans = refine_translate(spit_out, array)
+
+        # Reconstitute, the final answer to its initial order
+        # Putting the original index of the chunk_list_sort...
+        final_ans = [(index_chunk[0],elem) for index_chunk, elem in zip(dummy_chunk_, final_ans)]
+        final_ans.sort(key=lambda item:item[0])
+        final_ans = [elem for _, elem in final_ans]
+
+        return final_ans
 
 
     @staticmethod
     def collapse(array, chunk_list={2:2, 1:2}, shift_value=0):
         """Spacing out chunk values that somehow collapsed during chunking with the selected algorithm"""
 
+        # The 'elem' below is the Key,value tuple in chunk_list.items()
+        old_chunklist_elem_only = [elem for elem in chunk_list.items()]
+
         chunk_list_sorted = sorted(chunk_list.items(), key=lambda item:item[0], reverse=True)
         # the initial chunklist with no translations yet e.g. [[1,2],[1,2],[1], [1]]
-        init_chunk_list = [list(range(1, chunk+1))for chunk, freq in chunk_list_sorted for _ in range(freq)]
-            
+
+
+        order_preserved_dummy = [list(range(1, chunk+1)) for chunk, freq in old_chunklist_elem_only for _ in range(freq)]
+
+        dummy_chunk_ = sorted(list(enumerate(order_preserved_dummy)), key=lambda item:len(item))
+
+        init_chunk_list = [item for _, item in dummy_chunk_]
+        # init_chunk_list = [list(range(1, chunk+1))for chunk, freq in chunk_list_sorted for _ in range(freq)]
+        
         w_chunk_list = []
 
         for index, item in enumerate(init_chunk_list):
@@ -1645,7 +1696,15 @@ class SortAlgorithms:
         
         # In case it is shifted by shift_val, refine afterward
         spit_out = Translatebyshift(semi_ans, shift_value, array)
-        return refine_translate(spit_out, array)
+        final_ans = refine_translate(spit_out, array)
+
+        # Handles the reconstitution into the original order in which it came
+        final_ans = [(index_chunk[0],elem) for index_chunk, elem in zip(dummy_chunk_, final_ans)]
+        final_ans.sort(key=lambda item:item[0])
+        final_ans = [elem for _, elem in final_ans]
+
+        return final_ans
+
 
 
     @staticmethod
@@ -1669,7 +1728,7 @@ class SortAlgorithms:
 
 
 if __name__ == "__main__":
-    chunk_test = {1:1, 2:2}
+    chunk_test = {1:1, 4:2, 3:3}
     test_liste = [[0,1],[7,8],[8,9]]
     me_test = [4, 5, 6, 7, 8, [0, 1], 3]
     again = [4, [5, 6], 7, 8, 9, [0, 1], [3, 4]]
@@ -1677,18 +1736,19 @@ if __name__ == "__main__":
 
     tt = [[0,1],[8,9],[8,9], [1,2]]
     
-    my = Moveover([0, [0, 1], 1, 1, 6, [6, 7], 8, 9], 10)
-    op = Moveover([[6,7], [6,7], 9], 10)
+    # my = Moveover([0, [0, 1], 1, 1, 6, [6, 7], 8, 9], 10)
+    op = Moveover([[7,8], [7,8]], 10)
     # print()
-    print(my, op)
+    # print(op)
     # print(moveover_fixed(me_test, 10, fixed_item=[[0,1]]))
+    # print()
 
-    # print(possible_combs(my,10))
+    # print(Possible_combs([[5, 6], 7, [5, 6]],10))
 
     # print("Hello")
     # print(possible_combs_with_fixed(test_liste,[[0,1]], 10))
 
-    print(SortAlgorithms.centercluster(10, chunk_test, shift_value=0))
+    print(SortAlgorithms.xlx_reflection(40, chunk_test, shift_value=0))
     # print(SortAlgorithms._semi_strip_list([[1,2,3], [1], [5],[7], [4,6,7,89]]))
 
     # print(collapse(10, chunk_test))

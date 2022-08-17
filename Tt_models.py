@@ -788,21 +788,23 @@ class TimeTable:
         def get_class_arm_days(self):
             """Returns every school day for which the class runs"""
             
-            days_for_classarm = [day for day in self.periods]
-            days_for_classarm.sort(key=lambda day: day.id)
-            return days_for_classarm
+            self.days_list.sort(key=lambda day: day.id)
+            return self.days_list
 
 
         def add_day_to_arm(self, day_obj):
             """ Adds a day object to the days_list for this classarm. """
             self.days_list.append(day_obj)
+            # Add this class arm to the day_obj
+            day_obj.school_class_arms_today.append(self)
 
         def remove_day_from_arm(self, day_obj):
             """Removes a day object from the list of days of this class arm"""
             if day_obj in self.days_list:
                 self.days_list.remove(day_obj)
+            # Remove this arm from the list of arms in the day_obj
+                day_obj.school_class_arms_today.remove(self)
 
-        
 
         def add_dept_to_class_arm(self, dept_obj, descent=False, auto=True, teacher_index=None):
             """ Adds to the dictionary the department as the key and the teacher object as the value.
@@ -821,7 +823,6 @@ class TimeTable:
 
         def remove_dept_from_class_arm(self, dept_obj):
             """ Removes a subject from the subjects stored by the class arm """
-
             del self.depts_and_teachers[dept_obj]
 
 
@@ -944,7 +945,7 @@ class TimeTable:
                 
             # self.school_class_arm.periods.append(self)
 
-            self.day.school_class_arms_today.add(self.school_class_arm)
+            # self.day.school_class_arms_today.add(self.school_class_arm)
             self.period_name = f"'{self.subject.dept_name}' period for {self.school_class_arm}" if self.subject else "Free Period"
             self.add_to_armses_periods()
 
@@ -1065,36 +1066,36 @@ class TimeTable:
             # This var below helps to sort the day in the list of days especially when rating is not None
             self.sort_id = rating
 
-            self.school_class_arms_today = set()
+            self.school_class_arms_today = []
 
 
         @property
         def arms_today_list(self):
             # Attribute to return the set of arms today in a list
-            return list(self.school_class_arms_today)
+            return self.school_class_arms_today
         
 
-        def add_sch_class_arm(self, clss_arm_obj):
-            """ This function adds a schoolclass arm to the list held by the day object"""
+        # def add_sch_class_arm(self, clss_arm_obj):
+        #     """ This function adds a schoolclass arm to the list held by the day object"""
 
-            self.school_class_arms_today.add(clss_arm_obj)
+        #     if not clss_arm_obj in self.school_class_arms_today:
+        #         self.school_class_arms_today.append(clss_arm_obj)
+        #         clss_arm_obj.periods[self] = []
 
             # -- Add the day object to the classarms list of periods
-            if clss_arm_obj.periods[self] in clss_arm_obj.periods.keys():
-                return
+                            # if clss_arm_obj.periods[self]:
+                            #     return
 
             # Add this day (as the key) to the periods dictionary of the class arm along with the list of periods
             # as the value
-            clss_arm_obj.periods[self] = []
+            
 
 
         def remove_sch_class_arm(self, clss_arm_obj):
             """Removes a school class arm from the records of the day object"""
 
             self.school_class_arms_today.remove(clss_arm_obj)
-
             # Remove the day object from the dictionary of the class arm along with the list of periods.
-
             del clss_arm_obj.periods[self]
 
 
@@ -1124,8 +1125,14 @@ class TimeTable:
         def get_depts_of_arm_today(self, class_arm, duplicate=True):
             """ Gets all the depts for today for a class arm
             if duplicate is False, it returns a list of a set of a list of the depts today"""
-
-            return class_arm.temp_dept_holder_for_days[self] if duplicate else list(set(class_arm.temp_dept_holder_for_days[self]))
+            if duplicate:
+                return class_arm.temp_dept_holder_for_days[self] 
+            
+            unique_depts = []
+            for dept in class_arm.temp_dept_holder_for_days[self]:
+                if not dept in unique_depts:
+                    unique_depts.append(dept)
+            return unique_depts
 
 
         def get_all_depts_today(self, duplicate=True):
@@ -1344,7 +1351,6 @@ class TimeTable:
         else:
             time2 = time_tuple2
         # the above unpacks the tuple arguments.
-
         time1 = TimeTable.tuple_to_num(time_tuple1, 60)
         
         # The above converts the time to absolute time in 
