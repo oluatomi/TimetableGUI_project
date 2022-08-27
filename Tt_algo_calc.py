@@ -1,6 +1,6 @@
 import random, inspect, time
 
-# Algoroithm for putting subjects into days.
+# Algorithms for putting subjects into days.
 # Each class here is prefixed with a 'D' representing Days
 
 class DXLXReflection:
@@ -830,7 +830,8 @@ def Translatebyshift(list_arg, shift, array):
 
 
 def TotTranslate(elem, shift, array):
-    """Container for TranslateByShift. This method translates both list objects and integer objects"""
+    """Container for TranslateByShift. This method translates both list objects and integer objects
+    with modulo array. elem can be list (of integers) or a single integer in a list """
 
     if isinstance(elem, list):
         element = Translatebyshift(elem, shift, array)
@@ -1344,8 +1345,10 @@ def abs_match_list_int(list_arg, match_val, strict=False):
 
 
 def remove_all_sub_from_list(list_arg, sub_list):
-    """Removes all the elements of sub_list from list_arg or 'dies trying', i.e 
-    raises a valueError sub_list is not a proper subset of list_arg"""
+    """ Returns a list where all elems in sub_list have been removed, list or int. 
+    Removes all the elements of sub_list from list_arg or 'dies trying', i.e 
+    raises a valueError sub_list is not a proper subset of list_arg.
+    it really does not alter the original list_arg."""
     ans_list = strip_list_wrapper(list_arg)
 
     # cast into a list in the event that it an object or an int
@@ -1394,21 +1397,24 @@ class SortAlgorithms:
         """ Revised leapfrog algorithm """
 
         # sort the chunk_list itms by the chunk_number from largest to smallest
-        c = list(enumerate(chunk_list.items()))
+        c = chunk_list.items()
+        # Dummy list with order preserved
+        order_preserved_dummy = [list(range(1, chunk+1)) for chunk, freq in c for _ in range(freq)]
 
-        chunk_list_itz = sorted(c, key=lambda item:item[1][0], reverse=True)
-        
+        chunk_list_itz = sorted(list(enumerate(order_preserved_dummy)), key=lambda item:len(item[1]), reverse=True)
+        # The below is only to check if the chunklist can squish or collapse or is not compatible
+        chunk_list_for_check = sorted(list(enumerate(c)), key=lambda item:len(item[1]), reverse=True)
         # Elem contains is the tuple of the kev-val pair from chunk_list.items()
         chunk_list_items = [elem for _, elem in chunk_list_itz]
+        chunk_check = [elem for _, elem in chunk_list_for_check]
         # the length of the sequences, 3 if (triples, singles and doubles) or 2 (doubles, and singles) so we can see if we can space them
         chunk_sequence = len(chunk_list)
-        # The variable checks whther we can add one space after each chunk sequejnce, else it "compromises" and contracts without collapsing just yet!
+        # print(f"Chunk list items: {chunk_list_items}")
+        # The variable checks whther we can add one space after each chunk sequence, else it "compromises" and contracts without collapsing just yet!
         compromise = False
-        
-        check = sum([chunk + (freq - 1)*(chunk + 1) for chunk, freq in chunk_list_items]) + chunk_sequence - 1
-
-        # The total sum of the frequencies of all the chunks must also not exceed array, otherwise there is no way to help!
-        chunks_squished = sum([chunk*freq for chunk, freq in chunk_list_items])
+        check = sum([chunk + (freq - 1)*(chunk + 1) for chunk, freq in chunk_check]) + chunk_sequence - 1
+        # The total sum of the frequencies of all the chunks must also not exceed array, otherwise there is no way to chunk!
+        chunks_squished = sum([chunk*freq for chunk, freq in chunk_check])
 
 
         if chunks_squished > array:
@@ -1420,7 +1426,7 @@ class SortAlgorithms:
             check -= (chunk_sequence - 1)
             if check > array:
                 # If after contracting, it still spills beyond array
-                # raise ValueError(f"Can't be helped! {check} is more than {array}")
+            
                 # IMPLEMENT HERE -- COLLAPSE THE WHOLE THING AND REBUILD!
                 SortAlgorithms.collapse(array, chunk_list, shift_value=shift_value)
             else:
@@ -1428,17 +1434,17 @@ class SortAlgorithms:
         
         ans, count = [], 0
 
-        for chunk, freq in chunk_list_items:
+        for chunk in chunk_list_items:
             if count > 0:
                 last_item = strip_list_wrapper(ans)[-1] + 1 if not compromise else strip_list_wrapper(ans)[-1]
             else:
                 last_item = 0
 
-            for x in range(freq):
-                item = list(range(1,chunk + 1))
-                item = PlainTranslate(item, last_item + (x*(chunk + 1)))
+            # for x in range(1, len(chunk)+1):
 
-                ans.append(item)
+            item = list(range(1,len(chunk) + 1))
+            item = PlainTranslate(item, last_item)
+            ans.append(item)
 
             count += 1
         # Translate everthing back by 1.
@@ -1450,7 +1456,7 @@ class SortAlgorithms:
 
         # Reconstitute, the final answer to its initial order
         # Putting the original index of the chunk_list_sort...
-        final_ans = [(index_chunk[0],elem) for index_chunk, elem in zip(chunk_list_sort, final_ans)]
+        final_ans = [(index_chunk[0],elem) for index_chunk, elem in zip(chunk_list_itz, final_ans)]
         final_ans = sorted(final_ans, key=lambda item:item[0])
         final_ans = [elem for _, elem in final_ans]
 
@@ -1459,12 +1465,15 @@ class SortAlgorithms:
 
     @staticmethod
     def xlx_reflection(array, chunk_list={2:1, 1:1}, shift_value=0):
-        """The xlx chunking algorithm (revised)"""
+        """ The xlx chunking algorithm (revised). """
         ans = []
 
         # The 'elem' below is the Key,value tuple in chunk_list.items()
         old_chunklist_elem_only = [elem for elem in chunk_list.items()]
-    
+
+        items_unsorted = list(enumerate(old_chunklist_elem_only))
+
+        items_unsorted_list = [elem for _, elem in items_unsorted]   
 
         items_ind = sorted(list(enumerate(old_chunklist_elem_only)), key=lambda item: item[1][0], reverse=True)
         # Elem contains is the tuple of the kev-val pair from chunk_list.items()
@@ -1480,23 +1489,28 @@ class SortAlgorithms:
 
         # Second check needs to be raised to we can determine the moment of collapse
 
-        items_freqlist = []
+        init_items_freqlist = []
 
-        for chunk,freq in items_list:
+        for chunk,freq in items_unsorted_list:
             # Make a list that represents the chunk
             m = list(range(1, chunk+1))
 
             for _ in range(freq):
                 # append to the items_freqlist freq number of times
-                items_freqlist.append(m)
+                init_items_freqlist.append(m)
 
-        print(f"This is item_freqlist {items_freqlist}")
+        print(f"This is init_item_freqlist {init_items_freqlist}")
+
+        # Get the generic list and its indices and sort it according to the length of its chunk
+        items_freqlist_ind = sorted(list(enumerate(init_items_freqlist)), key=lambda item:len(item[1]), reverse=True)
+        items_freqlist = [elem for _, elem in items_freqlist_ind]
 
 
         focal = items_freqlist[0]
 
-        if len(items_freqlist) == 1:
-            ans = items_freqlist[0]
+        if len(items_unsorted) == 1:
+            ans = init_items_freqlist
+            
 
         else:
             # second_in the items_list, which will be the last in our algorithm
@@ -1527,7 +1541,7 @@ class SortAlgorithms:
 
         # Reconstitute, the final answer to its initial order
         # Putting the original index of the chunk_list_sort...
-        ans = [(index_chunk[0],elem) for index_chunk, elem in zip(items_ind, ans)]
+        ans = [(index_chunk[0],elem) for index_chunk, elem in zip(items_freqlist_ind, ans)]
         ans.sort(key=lambda item:item[0])
         ans = [elem for _, elem in ans]
 
@@ -1634,6 +1648,29 @@ class SortAlgorithms:
 
         return final_ans
 
+        # ----------------------------------------------------------------------------------------------
+    def r_leap_frog(array, chunk_list={1:1, 2:2}, shift_value=0):
+        """ The leap_frog algorithm, but in reverse. """
+
+        leapfrog = SortAlgorithms.leap_frog(array, chunk_list=chunk_list, shift_value=shift_value)
+        # Reverse the whole thing
+        r_leapfrog = SortAlgorithms.Add_list_to_x(leapfrog, array)
+        return r_leapfrog
+
+    def r_xlx_reflection(array, chunk_list={1:1, 2:2}, shift_value=0):
+        """ The xlx_reflection algorithm, but in reverse """
+        xlx = SortAlgorithms.xlx_reflection(array, chunk_list=chunk_list, shift_value=shift_value)
+
+        r_xlx = SortAlgorithms.Add_list_to_x(xlx, array)
+        return r_xlx
+
+    def r_center_cluster(array, chunk_list={1:1, 2:2}, shift_value=0):
+        """ The xlx_reflection algorithm, but in reverse """
+        cen_cl = SortAlgorithms.centercluster(array, chunk_list=chunk_list, shift_value=shift_value)
+
+        cen_cl = SortAlgorithms.Add_list_to_x(cen_cl, array)
+        return cen_cl
+
 
     @staticmethod
     def collapse(array, chunk_list={2:2, 1:2}, shift_value=0):
@@ -1645,9 +1682,7 @@ class SortAlgorithms:
         chunk_list_sorted = sorted(chunk_list.items(), key=lambda item:item[0], reverse=True)
         # the initial chunklist with no translations yet e.g. [[1,2],[1,2],[1], [1]]
 
-
         order_preserved_dummy = [list(range(1, chunk+1)) for chunk, freq in old_chunklist_elem_only for _ in range(freq)]
-
         dummy_chunk_ = sorted(list(enumerate(order_preserved_dummy)), key=lambda item:len(item))
 
         init_chunk_list = [item for _, item in dummy_chunk_]
@@ -1670,10 +1705,8 @@ class SortAlgorithms:
 
         # Number of items in the init chunk list
         len_init  = len(init_chunk_list)
-
         # This is the range (The very end of all our chunklists put side by side) the edge of the chunk
         chunk_range = len(strip_list_wrapper(init_chunk_list))
-
         # calculate the difference between the array, and the egde of the chunk
         diff = array - chunk_range
 
@@ -1727,8 +1760,30 @@ class SortAlgorithms:
         return ans
 
 
+    # --------------------------------------------
+    @staticmethod
+    def Add_list_to_x(elemlist, array):
+        """Adds an element (dependent on the element) to the elem_list.
+        Specifically for the reverse algorithms"""
+        ans = elemlist.copy()
+    
+        for index, elem in enumerate(elemlist):
+            if isinstance(elem, list):
+                for index_,x in enumerate(elem):
+                    upd = array - 1 - x
+                    elem[index_] = upd
+                elem.sort()
+            else:
+                elem = array - 1 - elem
+
+            ans[index] = elem
+
+        return ans
+
+
+
 if __name__ == "__main__":
-    chunk_test = {1:1, 4:2, 3:3}
+    chunk_test = {2:2, 1:2}
     test_liste = [[0,1],[7,8],[8,9]]
     me_test = [4, 5, 6, 7, 8, [0, 1], 3]
     again = [4, [5, 6], 7, 8, 9, [0, 1], [3, 4]]
@@ -1747,8 +1802,16 @@ if __name__ == "__main__":
 
     # print("Hello")
     # print(possible_combs_with_fixed(test_liste,[[0,1]], 10))
+    print(SortAlgorithms.leap_frog(10, chunk_test, shift_value=0))
+    # print()
+    print(SortAlgorithms.r_leap_frog(10, chunk_test, shift_value=0))
+    # print()
+    print(SortAlgorithms.r_xlx_reflection(10, chunk_test, shift_value=0))
+    # print()
+    # print(SortAlgorithms.r_center_cluster(10, chunk_test, shift_value=0))
 
-    print(SortAlgorithms.xlx_reflection(40, chunk_test, shift_value=0))
+
+    # print(Add_list_to_x([[0,1], 2,3,[4,5]], 10))
     # print(SortAlgorithms._semi_strip_list([[1,2,3], [1], [5],[7], [4,6,7,89]]))
 
     # print(collapse(10, chunk_test))

@@ -755,12 +755,15 @@ class TimetableSorter:
                 visited.append(teacher)
 
                 teachers_chunk = [elem.chunk for elem in Teachers_and_chunked_val[teacher]]
+                teachers_chunk = [elem.copy() for elem in teachers_chunk if isinstance(elem, list)]
                 # The teachers stationary chunk. that is the chunk for this ref_arm
-                teachers_fixed = [elem.chunk for elem in Teachers_and_chunked_val[teacher] if elem.arm == ref_arm]
+                teachers_fixed = [elem.chunk for elem in Teachers_and_chunked_val[teacher] if elem.arm is ref_arm]
                 print(f"TEACHERS CHUNK FOR POSS COMBS: {teachers_chunk}, fixed: {teachers_fixed}, array: {array}")
 
                 # move_test = Tt_algo_calc.Moveover([teachers_chunk], array)
-                print(f"Move test: {teachers_chunk}")
+                # print("-"*40)
+                # print(f"Move test: {Teachers_and_chunked_val[teacher]}")
+                # print()
 
                 combinations = Tt_algo_calc.Possible_combs_with_fixed(teachers_chunk, teachers_fixed, array)
                 print(f"Combinations with fixed: {combinations}")

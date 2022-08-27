@@ -254,7 +254,7 @@ iter_list = []
 def really_run():
     for subj in my_tt.list_of_departments:
         b = iterable(subj, random.randint(1,4), random.randint(1,2))
-        b = iterable(subj, 4, 2)
+        # b = iterable(subj, 3, 2)
         iter_list.append(b)
 
     print(iter_list)

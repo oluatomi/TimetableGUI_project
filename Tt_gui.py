@@ -5,7 +5,7 @@
 # **************************************************************************************************************
 
 # ----------  IMPORTANT NOTICE :---
-# -------everywhere DEPARTMENT is used in the app, it really refers to FACULTY in the code.
+# -------everywhere DEPARTMENT is used in the GUI, it really refers to FACULTY in the code.
 # -------every where SUBJECT/COURSE is used in the app, it refers to DEPARTMENT (dept) in the code.
 # -------
 # -------This could be very confusing, I know.
@@ -141,8 +141,9 @@ class UITimetable(QtWidgets.QMainWindow):
         self.board = self.findChild(QtWidgets.QTextEdit, "blackboard_textedit")
         self.fac_courses_treewidget.itemClicked.connect(self.fac_courses_tree_clicked)
 
+
     #------------------------------------------------------------------------------------------------
-    # --------- The class group(category) and class and class arm tree widget
+    # --------------- The class group(category) and class and class arm tree widget
         self.classgroup_class_arm_tree = self.findChild(QtWidgets.QTreeWidget, "cat_class_arm_tree")
         self.create_classgroupbtn = self.findChild(QtWidgets.QPushButton, "class_cat_btn")
         self.create_classgroupbtn.clicked.connect(self.register_class_group)
@@ -159,17 +160,68 @@ class UITimetable(QtWidgets.QMainWindow):
 
         self.gen_arms_btn.clicked.connect(self.generate_arms)
 
-    # ----------------------------Create Days ---------------------------------------------------------------
+
+    # ---------------------------------------------------------------------------------------------------
+    # ----------------------------CREATE DAYS ---------------------------------------------------------------
         self.day_btn = self.findChild(QtWidgets.QPushButton, "create_day_btn")
         self.day_btn.clicked.connect(self.register_day)
         self.day_list = self.findChild(QtWidgets.QListWidget, "day_list")
+
+        # --------- The modify-day radiobutton
+        self.day_radbtn = self.findChild(QtWidgets.QRadioButton, "day_radbtn")
+        self.day_radbtn.toggled.connect(lambda :self.pull_model(self.day_radbtn, "day"))
 
         self.day_checkbox = self.findChild(QtWidgets.QCheckBox, "day_position_chbox")
         self.day_position_spinbox = self.findChild(QtWidgets.QSpinBox, "position_spinbox")
 
         self.day_checkbox.stateChanged.connect(self.day_check_spin_box)
 
-    # ----------------------- The Department(faculty) and Generated Teachers ----------------------
+
+    # -----------------MODIFY CLASS CAT, CLASS AND DAYS ----------------------
+        # Identifier for when class models are being edited or created
+        self.class_createedit_label = self.findChild(QtWidgets.QLabel, "class_create_edit")
+        self.class_cat_radbtn = self.findChild(QtWidgets.QRadioButton, "class_cat_radbtn")
+        self.class_radbtn = self.findChild(QtWidgets.QRadioButton, "class_radbtn")
+
+        self.class_cat_radbtn.toggled.connect(lambda :self.pull_model(self.class_cat_radbtn, "classcat"))
+        self.class_radbtn.toggled.connect(lambda :self.pull_model(self.class_radbtn, "class"))
+
+        self.classday_models_combobox = self.findChild(QtWidgets.QComboBox, "class_day_models_combo")
+        self.classmodel_gbox = self.findChild(QtWidgets.QGroupBox, "classmodel_gbox")
+
+        # This button handles pulling of the model from its list and displaying it in its fields in the GUI
+        self.pull_class_day_model_btn = self.findChild(QtWidgets.QPushButton, "pull_class_day_model_btn")
+        self.pull_class_day_model_btn.clicked.connect(self.pull_render)
+
+        self.del_class_day = self.findChild(QtWidgets.QPushButton, "del_classday_model_btn")
+        self.del_class_day.clicked.connect(self.del_classday_model)
+
+        # -------------------- buttons on the classcat treewidget and day listwidgets --------------------
+        self.mark_class_btn = self.findChild(QtWidgets.QPushButton, "mark_class_btn")
+        self.mark_day_btn = self.findChild(QtWidgets.QPushButton, "mark_days_btn")
+
+        self.class_markall_btn = self.findChild(QtWidgets.QPushButton, "class_markall_btn")
+        self.day_markall_btn = self.findChild(QtWidgets.QPushButton, "day_markall_btn")
+
+        # Button to expand or contract the class-class arm tree widget when clcicked
+        self.class_expand_btn = self.findChild(QtWidgets.QPushButton, "expand_class_tree_btn")
+        self.class_expand_btn.clicked.connect(self.class_expand_contract)
+
+        self.mark_class_btn.clicked.connect(self.mark_class)
+        self.mark_day_btn.clicked.connect(self.mark_day)
+
+        self.class_markall_btn.clicked.connect(self.class_mark_all)
+        self.day_markall_btn.clicked.connect(self.day_mark_all)
+
+        # if None radiobutton is clicked
+        self.class_none_radbtn = self.findChild(QtWidgets.QRadioButton, "class_none_radbtn")
+
+        self.class_none_radbtn.toggled.connect(lambda : self.classday_models_combobox.clear())
+
+
+    # ----------------------------------------------------------------------------------------------
+    # ----------------------- THE DEPARTMENT (FACULTY), SUBJECT AND GENERATED TEACHERS ----------------------
+
         self.dept_and_teachers_tree = self.findChild(QtWidgets.QTreeWidget, "faculty_course_teacher_tree")
         self.gen_teachers_btn = self.findChild(QtWidgets.QPushButton, "gen_teachers_btn")
         self.gen_teachers_combobox = self.findChild(QtWidgets.QComboBox, "gen_teachers_combobox")
@@ -182,8 +234,31 @@ class UITimetable(QtWidgets.QMainWindow):
         self.mark_btn.pressed.connect(self.enable_mark_depts)
         self.try_btn = self.findChild(QtWidgets.QPushButton, "try_btn")
 
+        # --- Radiobuttons for the modify section -------------
+        self.faculty_radbtn = self.findChild(QtWidgets.QRadioButton, "faculty_radbtn")
+        self.subj_radbtn = self.findChild(QtWidgets.QRadioButton, "subj_radbtn")
+        self.nonacad_radbtn = self.findChild(QtWidgets.QRadioButton, "nonacad_radbtn")
+        self.dept_none_radbtn = self.findChild(QtWidgets.QRadioButton, "subj_none_radbtn")
+
+        # Add slots to these radiobuttons
+        self.faculty_radbtn.toggled.connect(lambda :self.deptmodel_pull(self.faculty_radbtn))
+        self.subj_radbtn.toggled.connect(lambda :self.deptmodel_pull(self.subj_radbtn))
+        self.nonacad_radbtn.toggled.connect(lambda :self.deptmodel_pull(self.nonacad_radbtn))
+
     # ---------------------------- Generate all staff table (and details) -------------------------------
         self.all_staff_table = self.findChild(QtWidgets.QTableWidget, "all_staff_tablewidget")
+
+
+        # --------------- MODIFY DEPT MODELS (FACULTY, SUBJECT AND TEACHERS) ---------------------------
+        self.dept_model_gbox = self.findChild(QtWidgets.QGroupBox, "dept_model_gbox")
+        self.dept_model_combobox = self.findChild(QtWidgets.QComboBox, "dept_model_combo")
+        self.pull_dept_btn = self.findChild(QtWidgets.QPushButton, "pull_dept_model_btn")
+        self.del_depts_btn = self.findChild(QtWidgets.QPushButton, "del_dept_model")
+
+        self.dept_create_update_label = self.findChild(QtWidgets.QLabel, "dept_create_edit")
+
+        # To pull the details of a dept model to the screen
+        self.pull_dept_btn.clicked.connect(self.deptmodel_pullrender)
 
     # ------------------ Handles mapping depts to class arms as well as their frequencies and chunk values --------------------
         self.subj_freq_chunk_table = self.findChild(QtWidgets.QTableWidget, "subject_freq_chunk_table")
@@ -223,6 +298,12 @@ class UITimetable(QtWidgets.QMainWindow):
         
     # ------------------ LOADS ALLTHE TREES especially for when app is starting from an existing file ------------------
         # Loads the faculty/department-courses tree widget
+        self.load_all_models()
+
+    # -------------------------------------------------------------------------------------------------------------
+    # -------------------------------- PRIMARILY THE GUI OPERATION FUNCTIONS --------------------------------------
+    def load_all_models(self):
+        """Loads up all the tress and lists and whatnot at once"""
         self.load_fac_courses_tree()
         self.load_group_class_arm_tree()
         self.load_days_list()
@@ -230,8 +311,6 @@ class UITimetable(QtWidgets.QMainWindow):
         self.load_gen_teachers_day_chboxes()
 
 
-    # -------------------------------------------------------------------------------------------------------------
-    # -------------------------------- PRIMARILY THE GUI OPERATION FUNCTIONS --------------------------------------
     def load_manual_into_toolbox(self):
         # Find the toolbox widget
         # Get the scrollarea housing the toolbox to be built
@@ -254,6 +333,9 @@ class UITimetable(QtWidgets.QMainWindow):
         for topic in topics:
             # Make a textedit inserted into a layout inserted into a widget in all the below
             textEdit = QtWidgets.QTextEdit()
+            textEdit.setStyleSheet(""" 
+                padding:10px;
+             """)
             textEdit.setHtml(manual[topic])
             textEdit.setReadOnly(True)
             v_layout = QtWidgets.QVBoxLayout()
@@ -308,21 +390,24 @@ class UITimetable(QtWidgets.QMainWindow):
 
     def colourDialog(self):
         """Colours the font of the highlighted part of the text edit in the finished version"""
-        colour = QtWidgets.QColorDialog.getColor()
+        colour_dialog = QtWidgets.QColorDialog()
+        colour = colour_dialog.getColor()
+
         self.template.setTextColor(colour)
 
 
     def fontDialog(self):
         """handles font design such as font-face, size and bold"""
         font, ok = QtWidgets.QFontDialog().getFont()
-
         if ok:
             self.template.setCurrentFont(font)
+
 
     def underline_text(self):
         """ Handles underline operation for the template textedit """
         state = self.template.fontUnderline()   # Boolean. Checks whether it has already been underlined
         self.template.setFontUnderline(not(state))
+
 
     def italics_text(self):
         """ Handles italics operation for the template textedit """
@@ -337,23 +422,35 @@ class UITimetable(QtWidgets.QMainWindow):
             return
         self.template.setFontWeight(QtGui.QFont.Normal)
 
-            
+
     # --------------------------------------------------------------------------------------------------
     # ------------------------------- BACKEND-INTO-GUI FUNCTIONS ---------------------------------------
+
+    def enable_all_in_widget(self, widget, enable=True):
+        """ Renders all the widgets in mother widget active """
+        for child in widget.children():
+            if isinstance(child, QtWidgets.QWidget):
+                child.setEnabled(enable)
+
+
     def register_deptfac(self):
         """Collects the data for registering a faculty (A DEPARTMENT in the GUI !!!) from the GUI"""
+
+        update = True if "update" in self.dept_create_update_label.text().lower() else False
+        
         fac_name = self.findChild(QtWidgets.QLineEdit, "deptfac_name")
         HOD_name = self.findChild(QtWidgets.QLineEdit, "deptfac_HOD")
         description = self.findChild(QtWidgets.QPlainTextEdit, "deptfac_description")
 
+
         fac_name_text = fac_name.text().strip()
         HOD_name_text = HOD_name.text().strip()
         description_text = description.toPlainText().strip()
-        
+         
         # check if fields are filled else raise an error message box
         if UITimetable.check_fields_or_error(fields_values_list=[fac_name_text, description_text]):
-            self.Timetable.create_faculty(fac_name_text, HOD=HOD_name_text, description=description_text)
 
+            self.Timetable.create_faculty(fac_name_text, HOD=HOD_name_text, description=description_text, update=update)
             # Clear the input fields
             fac_name.clear()
             HOD_name.clear()
@@ -362,13 +459,21 @@ class UITimetable(QtWidgets.QMainWindow):
         else:
            UITimetable.messagebox(title="Fields error",icon="critical",text="Required field(s) left blank, please fill them.")
 
+        # Adjust the label to "Create Department mmodels"
+        self.dept_create_update_label.setText("Create Department Models")
         # Load up up the faculties created!
         self.load_fac_courses_tree()
         self.load_faculty_dept_teachers_tree()
 
+        # ----------------------------
+        # Set the modify section radiobutton to None
+        self.dept_none_radbtn.setChecked(True)
+        # Clear the modify combobox
+        self.dept_model_combobox.clear()
+
 
     def nonacad_fields(self):
-        """This function disables certain fields in the registration page, based on thether or not the course(dept) is academic"""
+        """This function disables certain fields in the registration page, based on whether or not the course(dept) is academic"""
 
         acad_text = self.acad_or_not.currentText()
         head_subject = self.findChild(QtWidgets.QLineEdit, "hos_lineedit")
@@ -386,15 +491,21 @@ class UITimetable(QtWidgets.QMainWindow):
 
 
     def register_course(self):
-        """Registers a course (a dept) in the code"""
+        """Registers a subject/course (a dept) in the code """
+
+        # Enable all the widgets in the reg_subject groupbox
+        update = True if "update" in self.dept_create_update_label.text().lower() else False
+        self.enable_all_in_widget(self.findChild(QtWidgets.QGroupBox, "reg_subject"))
+
+
+
         course_name = self.findChild(QtWidgets.QLineEdit, "course_name_lineedit")
-        
         head_subject = self.findChild(QtWidgets.QLineEdit, "hos_lineedit")
-        # self.faculty_combo_val = self.findChild(QtWidgets.QComboBox, "department_combobox")
 
         # Now get the values from these QObjects
         course_name_text = course_name.text().strip()
         acad_or_not_text = self.acad_or_not.currentText().strip()
+
         head_subject_text = head_subject.text().strip()
         department_text = self.faculty_list_combobox.currentText().strip()
         analytic_slider_val = int(self.analytic_slider.value())
@@ -409,8 +520,8 @@ class UITimetable(QtWidgets.QMainWindow):
                 if UITimetable.check_fields_or_error(fields_values_list=[department_text]):
                     
                     # Create a department under that faculty
-                    self.Timetable.create_department(course_name_text,faculty=department_text,
-                        A=analytic_slider_val, T=theoreticai_slider_val, P=practical_slider_val, G=grammatical_slider_val)
+                    self.Timetable.create_department(course_name_text,faculty=department_text, hos=head_subject_text,
+                        A=analytic_slider_val, T=theoreticai_slider_val, P=practical_slider_val, G=grammatical_slider_val, update=update)
 
                     # Return the sliders to 1,1,1,1
                     self.analytic_slider.setValue(1)
@@ -421,10 +532,11 @@ class UITimetable(QtWidgets.QMainWindow):
 
                 else:
                     # one of the fields have not been filled. display error message
-                    UITimetable.messagebox(title="Fields error",icon="critical",text="The 'Department' field is empty")
+                    UITimetable.messagebox(title="Fields error",icon="critical",text="No Department under which to create subject/course")
             else:
                 # If it is a non-academic department
-                self.Timetable.create_special_department(course_name_text)
+                self.Timetable.create_special_department(course_name_text, update=update)
+
         else:
             UITimetable.messagebox(title="Empty field error",icon="critical",text="You have not entered the name of the course.")
 
@@ -433,6 +545,7 @@ class UITimetable(QtWidgets.QMainWindow):
         head_subject.clear()
         self.faculty_list_combobox.clear()
 
+        self.acad_or_not.setCurrentIndex(0)
         # Load up up the faculties created!
         self.load_fac_courses_tree()
         self.load_nonacad_courses_list()
@@ -441,8 +554,16 @@ class UITimetable(QtWidgets.QMainWindow):
         # Load the tree containing faculty, couses and teachers
         self.load_faculty_dept_teachers_tree()
 
+        # ----------- set text back to "creating models" ----
+        self.dept_create_update_label.setText("Create Department Models")
+        # ----------------------------
+        # Set the modify section radiobutton to None
+        self.dept_none_radbtn.setChecked(True)
+        # Clear the modify combobox
+        self.dept_model_combobox.clear()
 
-    def load_fac_courses_tree(self):
+
+    def load_fac_courses_tree(self, with_checkbox=False):
         """This method handles putting registered faculties and depts/courses on the TreeWidget on the screen and also loading
         them"""
         
@@ -451,17 +572,25 @@ class UITimetable(QtWidgets.QMainWindow):
         self.faculty_list_combobox.clear()
 
         for faculty in self.Timetable.Timetable_obj.list_of_faculties:
-            # Adds the list of all the registered to the combobox for 
+            # Adds the list of all the registered to the combobox for
             self.faculty_list_combobox.addItem(faculty.full_name)
 
             # Load the faculty name into the tree widget
-            item = QtWidgets.QTreeWidgetItem([f"{faculty.full_name}"])
-            self.fac_courses_treewidget.addTopLevelItem(item)
+            faculty_item = QtWidgets.QTreeWidgetItem()
+            faculty_widg = WidgetTree(icon_path="../Icons-mine/department.png",icon_width=14, 
+                icon_height=16, label_text=faculty.full_name, with_checkbox=with_checkbox)
+
+            self.fac_courses_treewidget.addTopLevelItem(faculty_item)
+            self.fac_courses_treewidget.setItemWidget(faculty_item, 0, faculty_widg)
 
             for dept in faculty.course_list:
-                # Create a nested node in each faculty for the department
-                dept_tree_item = QtWidgets.QTreeWidgetItem([dept.full_name])
-                item.addChild(dept_tree_item)
+                # Create a nested node in each faculty for the department(subject/course)
+                subject_item = QtWidgets.QTreeWidgetItem()
+                subject_widg = WidgetTree(icon_path="../Icons-mine/subject.png",icon_width=14, icon_height=16,
+                    label_text=dept.full_name, with_checkbox=with_checkbox)
+
+                faculty_item.addChild(subject_item)
+                self.fac_courses_treewidget.setItemWidget(subject_item, 0, subject_widg)
 
 
     def load_nonacad_courses_list(self):
@@ -475,7 +604,9 @@ class UITimetable(QtWidgets.QMainWindow):
         """ This function fires when any element in the Department-subject tree widget is clicked
         and loads their details onto the blackboard icon """
         current_item = self.fac_courses_treewidget.currentItem()
-        c_text = current_item.text(0)
+        c_text = self.fac_courses_treewidget.itemWidget(current_item, 0)
+
+        c_text = c_text.full_name_label.text()
 
         obj = "list_of_departments" if current_item.parent() else "list_of_faculties"
         cast_ = lambda obj:getattr(self.Timetable.Timetable_obj, obj)
@@ -486,10 +617,98 @@ class UITimetable(QtWidgets.QMainWindow):
         # self.board.clear()
         self.board.setHtml(obj_in_question.detailed_info)
 
+    # ------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------
+# ---------- This section reserved for modifying dept models (faculty, depts(subjects) and teachers)----
+    
+    def which_dept_model_radbtn(self):
+        """ This function returns the radiobutto  that is checked for in the groupbox containing dept models """
+        for child in self.dept_model_gbox.children():
+            if isinstance(child, QtWidgets.QRadioButton) and child.isChecked():
+                return child
+
+
+
+    def deptmodel_pull(self, model):
+        """ Pulls up the appropriate list of models to the combobox in the modify section of the dept models. """
+
+        self.dept_model_combobox.clear()
+
+        # Get the radiobutton clicked
+        radbtn_clicked_text = model.text()
+        # Pull the model up
+        models_list = self.Timetable.pull_dept_model_list(radbtn_clicked_text)
+        # Now display the models on the screen
+        self.dept_model_combobox.addItems(models_list)
+
+
+    # Pulls dept model (Department(faculty) or course onto the GUI screen for edit)
+    def deptmodel_pullrender(self):
+        """ Fetches the selected dept model item to edit and displays its details out on GUI fields screen """
+
+        radbtn = self.which_dept_model_radbtn()
+        radbtn = radbtn.text()
+
+        # if combobox is empty, there is nothing to update, so display error messagebox
+        if not self.dept_model_combobox.currentText():
+            UITimetable.messagebox(icon="critical", title="No model items", text="Modification cannot be done", extratext="You cannot modify items you have yet to create.")
+            return
+        
+        #--- sends radbtn and the currenttext of combobox in as a tuple 
+        item_details = self.Timetable.pull_deptmodel_item((radbtn,self.dept_model_combobox.currentText()))
+
+        if radbtn == "Department":
+            # put it in the values into the fields
+            fac_name = self.findChild(QtWidgets.QLineEdit, "deptfac_name")
+            HOD_name = self.findChild(QtWidgets.QLineEdit, "deptfac_HOD")
+            description = self.findChild(QtWidgets.QPlainTextEdit, "deptfac_description")
+
+            fac_name.setText(item_details["name"])
+            HOD_name.setText(item_details["HOD"])
+            description.insertPlainText(item_details["description"])
+
+        elif radbtn == "Subject/Course":
+
+            course_name = self.findChild(QtWidgets.QLineEdit, "course_name_lineedit")
+            head_subject = self.findChild(QtWidgets.QLineEdit, "hos_lineedit")
+
+            course_name.setText(item_details["name"])
+            head_subject.setText(item_details["hos"])
+
+            # Display "Academic" on the combobox
+            self.faculty_list_combobox.itemText(0)
+            # Render it invalid
+            self.faculty_list_combobox.setEnabled(False)
+
+            self.analytic_slider.setValue(item_details["A"])
+            self.practical_slider.setValue(item_details["P"])
+            self.theoretical_slider.setValue(item_details["T"])
+            self.grammatical_slider.setValue(item_details["G"])
+
+        else:
+            course_name = self.findChild(QtWidgets.QLineEdit, "course_name_lineedit")
+            atpg_wrapper_box = self.findChild(QtWidgets.QGroupBox, "atpg_wrapper")
+
+            course_name.setText(item_details["name"])
+            self.acad_or_not.setCurrentIndex(1)
+            self.acad_or_not.setEnabled(False)
+            # Render the below invalid
+            self.faculty_list_combobox.setEnabled(False)
+            atpg_wrapper_box.setEnabled(False)
+            head_subject = self.findChild(QtWidgets.QLineEdit, "hos_lineedit")
+            head_subject.setEnabled(False)
+
+
+        # Chenge the label uptop to "Updating..."
+        self.dept_create_update_label.setText("Update Department Models")
+
 
 # -------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------------------
     def register_class_group(self):
-        """This function handles the registration of a school_class_group"""
+        """This function handles the registration of a school_class_group i.e. aSchool class category"""
+
+        update = False if "Creation" in self.class_createedit_label.text().strip().split() else True
 
         class_group_name = self.findChild(QtWidgets.QLineEdit, "class_cat_lineedit")
         class_group_abbrev = self.findChild(QtWidgets.QLineEdit, "class_cat_abbrev_lineedit")
@@ -501,12 +720,20 @@ class UITimetable(QtWidgets.QMainWindow):
 
         if UITimetable.check_fields_or_error(fields_values_list=[name, desc]):
             # Create the class group
-            self.Timetable.create_school_class_group(name,description=desc, abbrev=abbrev)
+            self.Timetable.create_school_class_group(name,description=desc, abbrev=abbrev, update=update)
 
             # Clear the fields
             class_group_name.clear()
             class_group_abbrev.clear()
             class_group_desc.clear()
+
+            # Uncheck te edit radiobuttons
+            self.day_radbtn.setChecked(False)
+            self.class_radbtn.setChecked(False)
+            self.class_cat_radbtn.setChecked(False)
+            self.class_none_radbtn.setChecked(True)
+
+            self.class_createedit_label.setText("Creation of class and day models")
         else:
             # spit out error message
             UITimetable.messagebox(title="Empty field error",icon="critical",text="Required field(s) have not been filled!")
@@ -518,17 +745,20 @@ class UITimetable(QtWidgets.QMainWindow):
 
 
     def register_school_class(self):
-        """Handles the registration of a school class under a school class category"""
-        
+        """ Handles the registration of a school class under a school class category. Whether it is an update or fresh """
+
+        update = False if "Creation" in self.class_createedit_label.text().strip().split() else True
+                
         sch_class_name_lineedit = self.findChild(QtWidgets.QLineEdit, "class_name_lineedit")
         class_group,class_name = self.combo_with_classgroup.currentText().strip(), sch_class_name_lineedit.text().strip()
 
         # Verify fields and create class
         if UITimetable.check_fields_or_error(fields_values_list=[class_group, class_name]):
-            # Create class
-            
-            self.Timetable.create_school_class(class_name, class_group)
+            # Enable the school class cat combobox if we disabled it b4 for updating
+            self.combo_with_classgroup.setEnabled(True)
 
+            # Create school class
+            self.Timetable.create_school_class(class_name, class_group, update=update)
             # clear the fields
             sch_class_name_lineedit.clear()
 
@@ -540,6 +770,8 @@ class UITimetable(QtWidgets.QMainWindow):
         # Generate tree of arms for chunk and freq
         self.gen_arms_freq_chunk_tree()
 
+        self.class_createedit_label.setText("Creation of class and day models")
+
 
     def generate_arms(self):
         """Generates class arms for a chosen out of the classes in a school class group"""
@@ -547,8 +779,17 @@ class UITimetable(QtWidgets.QMainWindow):
         # the input from the spin_box as to the number of arms to generate
         spin_id = self.findChild(QtWidgets.QSpinBox, "arm_num_spinbox")
         alphabetized = self.findChild(QtWidgets.QComboBox, "alphabetized_combo")
-        
 
+        override_gbox = self.findChild(QtWidgets.QGroupBox, "arms_append_override_gbox")
+
+        append_var = None
+        for child in override_gbox.children():
+            if isinstance(child, QtWidgets.QRadioButton):
+                if child.isChecked():
+                    append_var = child.text()
+
+
+        override = False if append_var.strip() == "Append" else True
         alpha_or_not = alphabetized.currentText()
         school_class_text = self.combo_class.currentText()     #The full name of the school class
 
@@ -556,7 +797,7 @@ class UITimetable(QtWidgets.QMainWindow):
         # Whether alphabetically or with numbers
             is_alpha = True if alpha_or_not == "Alphabetized" else False
             
-            self.Timetable.generate_school_class_arms(school_class_text, frequency=spin_id.value(), as_alpha=is_alpha)
+            self.Timetable.generate_school_class_arms(school_class_text, frequency=spin_id.value(), as_alpha=is_alpha, override=override)
         else:
             # Spit out error message
             UITimetable.messagebox(title="Empty field error",icon="critical",text="No school class to generate arms for.")
@@ -584,8 +825,334 @@ class UITimetable(QtWidgets.QMainWindow):
             class_checkbox.stateChanged.connect(lambda checked: self.bulk_mark_class_arms(checked=checked, tree_item=class_item))
 
 
+    # ------------------- This section reserved for methods that modify class models ---------------------------
+    # -----------------------------------------------------------------------------------------------------------
 
-    def load_group_class_arm_tree(self):
+    def class_expand_contract(self):
+        """Mthod to expand or contract the class-class-arm tree widget upon click"""
+
+        if "expand" in self.class_expand_btn.text().lower():
+            # Expand the tree
+            self.load_group_class_arm_tree(expanded=True)
+            self.class_expand_btn.setText("Contract")
+        else:
+            self.load_group_class_arm_tree()
+            self.class_expand_btn.setText("Expand")
+
+
+    def pull_model(self,source, param):
+        """ This method pulls out the list of the requested models and displays it in a combobox for editing """
+        
+        self.classday_models_combobox.clear()
+        if param == "day":
+            models = self.Timetable.Timetable_obj.list_of_days
+        elif param == "class":
+            models = self.Timetable.Timetable_obj.list_of_school_classes
+        elif param == "classcat":
+            models = self.Timetable.Timetable_obj.list_of_school_class_groups
+
+        model_list = [model.full_name for model in models]
+        # Populate the combobox with models
+        self.classday_models_combobox.addItems(model_list)
+
+
+    # Pulls class models details up on GUI screen for edit
+    def pull_render(self):
+        """ This method pulls out the model to be edited and places its attributes in its fields on the GUI screen """
+
+        self.class_createedit_label.setText("Update of class and day models")
+        # See which radiobtn has been checked from the groupbox holding them
+        mod_name = None
+        for child in self.classmodel_gbox.children():
+            if isinstance(child, QtWidgets.QRadioButton) and child.isChecked():
+                mod = child.text()
+
+            # -----------------------------------------------------------------
+                if mod != "None":
+                    if mod == "Class Category":
+                        root = self.classgroup_class_arm_tree.invisibleRootItem()
+                        child_count = root.childCount()
+
+                        for i in range(child_count):
+                            cat_item = root.child(i)
+                            # The below returns the WidgetTree class i defined myself
+                            cat_widget = self.classgroup_class_arm_tree.itemWidget(cat_item, 0)
+                            curr_model = cat_widget.full_name_label.text()
+
+
+                    elif mod == "Class":
+                        root = self.classgroup_class_arm_tree.invisibleRootItem()
+                        child_count = root.childCount()
+
+                        for i in range(child_count):
+                            item = root.child(i)
+                            # The below returns the WidgetTree I defined
+
+                            for j in range(item.childCount()):
+                                class_item = item.child(j)
+                                class_widget = self.classgroup_class_arm_tree.itemWidget(class_item, 0)
+                                curr_model = class_widget.full_name_label.text()
+
+
+                    elif mod == "Day":
+                        for index in range(self.gen_teachers_days_listwidget.count()):
+                            # child = self.gen_teachers_days_listwidget.item(index)
+                            item = self.gen_teachers_days_listwidget.item(index)
+                            day_widget = self.gen_teachers_days_listwidget.itemWidget(item)
+                            curr_model = day_widget.text()
+
+
+                    # Get the current model that has been pulled up
+                    curr_model_item = self.classday_models_combobox.currentText()
+                    # Does the real work of looking for the model object and handing it to the manager
+
+                    # -------------------------------------------------------------
+                    # check if curr_model is not empty, raise an error message if
+                    if UITimetable.check_fields_or_error(fields_values_list=[curr_model_item]):
+                        renderable = self.Timetable.pull_classmodel(mod, curr_model_item)
+                    else:
+                        UITimetable.messagebox(icon="warning", title="Model item empty",text=f"No {mod} items to pull. You can only pull {mod} items that exist.")
+                        return
+
+                    # if Pull from the manager is successful,
+                    if mod == "Day":
+                        day_name = self.findChild(QtWidgets.QLineEdit, "day_name")
+                        day_name.setText(renderable["name"])
+
+                    elif mod == "Class":
+                        class_name = self.findChild(QtWidgets.QLineEdit, "class_name_lineedit")
+                        # Disable the combobox for classgroup (Not needed)
+                        self.combo_with_classgroup.setCurrentText(renderable["classcat"])
+                        self.combo_with_classgroup.setEnabled(False)
+                        class_name.setText(renderable["name"])
+
+                    elif mod == "Class Category":
+                        cat_name = self.findChild(QtWidgets.QLineEdit, "class_cat_lineedit")
+                        cat_abbrev = self.findChild(QtWidgets.QLineEdit, "class_cat_abbrev_lineedit")
+                        cat_description = self.findChild(QtWidgets.QTextEdit, "class_cat_desc_textedit")
+
+                        # Insert values into fields
+                        cat_name.setText(renderable["name"])
+                        cat_abbrev.setText(renderable["abbrev"])
+                        cat_description.setText(renderable["description"])
+
+                else:
+                    # If mod is none, that is the None radiobutton is clicked
+                    # Pull the error messagebox
+                    UITimetable.messagebox(icon="critical", title="Selection Error", text="No models selected to pull")
+                break
+
+
+    def mark_day(self):
+        """ Enables marking of all the day items in the list widget containing the registered days """
+
+        mark = True if "Mark" in self.mark_day_btn.text().strip().split() else False
+        # load the tree widget with the class group (category), class and class arm
+        self.load_days_list(with_checkbox=mark)
+        mark_btn_text = "Unmark" if mark else "Mark to delete"
+        self.mark_day_btn.setText(mark_btn_text)
+
+        # If the mark button (i.e. if mark is false) has been clicked enable the mark all button, else disable it
+        self.day_markall_btn.setEnabled(mark)
+
+
+    def day_mark_all(self):
+        """ Fires when the markall button is clicked. It marks all the items of the model clicked """
+
+        for k in range(self.day_list.count()):
+            item = self.day_list.item(k)
+            #The WidgetTree object I defined
+            item = self.day_list.itemWidget(item)
+            item.get_checkbox().setCheckState(QtCore.Qt.Checked)
+
+
+    def class_mark_all(self):
+        """ Enable mark all items of either a class group(category) or school class """
+
+        # check to see which of the classmodel_groupbox in the GUI's radiobuttons have been clicked
+        for child in self.classmodel_gbox.children():
+            # Get the radiobutton that has been clicked if it is not None or Day
+            if isinstance(child, QtWidgets.QRadioButton) and child.isChecked() and child.text() != "None" and child.text() != "Day":
+                mod_id = child.text()
+
+                # ------------------------------------------------------------------------------------
+                # ---------------- Uncheck all the boxes in the tree widget first --------------------
+
+                # Check all the class cat and class models' boxes in the treewidget
+                root = self.classgroup_class_arm_tree.invisibleRootItem()
+                child_count = root.childCount()
+
+                for k in range(child_count):
+                    classgroup_item = root.child(k)
+                    classgroup_widget = self.classgroup_class_arm_tree.itemWidget(classgroup_item, 0)
+                    classgroup_widget.get_checkbox().setCheckState(False)
+
+                    for n in range(classgroup_item.childCount()):
+                        class_item = classgroup_item.child(n)
+                        class_widg = self.classgroup_class_arm_tree.itemWidget(class_item, 0)
+                        class_widg.get_checkbox().setCheckState(False)
+
+                # ----------------------------------------------------------------------------
+                # ----------------------------------------------------------------------------
+
+                if mod_id == "Class Category":                    
+                    # Sniff through the tree to mark all class groups!
+                    for x in range(child_count):
+                        classgroup_item = root.child(x)
+                        # my custom widgetTree object
+                        classgroup_widg = self.classgroup_class_arm_tree.itemWidget(classgroup_item, 0)
+
+                        # Check this widget
+                        classgroup_widg.get_checkbox().setCheckState(QtCore.Qt.Checked)
+
+                else:
+                    # Sniff through the tree and check school class models
+                    for x in range(child_count):
+                        classgroup_item = root.child(x)
+
+                        for y in range(classgroup_item.childCount()):
+                            class_item = classgroup_item.child(y)
+                            class_widg = self.classgroup_class_arm_tree.itemWidget(class_item, 0)
+                            # check all of these class_items'check boxes
+                            class_widg.get_checkbox().setCheckState(QtCore.Qt.Checked)
+                break
+
+        # load the self.classgroup_class_arm_tree expanded and checked!
+        # self.load_group_class_arm_tree(with_checkbox=True, expanded=True)
+
+
+    def mark_class(self):
+        """ Enables marking of all the class model items in the list widget containing the registered days and also changes
+        the mark button's contents """
+
+        mark = True if "Mark" in self.mark_class_btn.text().strip() else False
+        # load the tree widget with the class group (category), class and class arm
+        self.load_group_class_arm_tree(with_checkbox=mark, expanded=mark)
+        mark_btn_text = "Unmark" if mark else "Mark to delete"
+        self.mark_class_btn.setText(mark_btn_text)
+
+        # If the mark button (i.e. if mark is false) has been clicked enable the mark all button, else disable it
+        self.class_markall_btn.setEnabled(mark)
+
+
+    def del_classday_model(self):
+        """ Deletes either class models (class group, class) or day items """
+        for child in self.classmodel_gbox.children():
+            # check the radiobutton which has been clicked (except the one with caption None)
+            if isinstance(child, QtWidgets.QRadioButton) and child.isChecked() and child.text():
+                model_name = child.text()
+                break
+
+        # As long as the caption on the radiobutton does not read "None"...
+        if model_name != "None":
+
+            # select items to delete either from marking or from the combobox
+            selected_items = []
+
+            if model_name == "Day":
+                # Check if mark has been enabled
+                if self.mark_day_btn.text() == "Unmark":
+                    # Scour through the days list widget and pick the selected items
+
+                    for k in range(self.day_list.count()):
+                        day_item = self.day_list.item(k)
+                        day_widg = self.day_list.itemWidget(day_item)
+
+                        # Check if it is checked
+                        if day_widg.get_checkbox().isChecked():
+                            selected_items.append(day_widg.full_name_label.text())
+
+                else:
+                    # If model item is to be chosen from the combobox
+                    selected_items.append(self.classday_models_combobox.currentText())
+
+
+            elif model_name == "Class":
+
+                #  if the mark button has been clicked
+                if self.mark_class_btn.text() == "Unmark":
+                    # Scour through the tree and pick out the class items selected
+                    root = self.classgroup_class_arm_tree.invisibleRootItem()
+                    child_count = root.childCount()
+
+                    for k in range(child_count):
+                        classcat = root.child(k)
+
+                        for n in range(classcat.childCount()):
+                            classitem = classcat.child(n)
+                            classitem_widg = self.classgroup_class_arm_tree.itemWidget(classitem, 0)
+
+                            # Ckeck if the classitem_widg has been checked
+                            if classitem_widg.get_checkbox().isChecked():
+                                selected_items.append(classitem_widg.full_name_label.text())
+
+                else:
+                    # If model item is to be chosen from the combobox
+                    selected_items.append(self.classday_models_combobox.currentText())
+                
+
+            elif model_name == "Class Category":
+                # If the mark buttin has been clicked
+                if self.mark_class_btn.text() == "Unmark":
+                    root = self.classgroup_class_arm_tree.invisibleRootItem()
+                    child_count = root.childCount()
+
+                    for k in range(child_count):
+                        classcat = root.child(k)
+                        classcat_widg = self.classgroup_class_arm_tree.itemWidget(classcat, 0)
+
+                        # check if the widget has been checked
+                        if classcat_widg.get_checkbox().isChecked():
+                            selected_items.append(classcat_widg.full_name_label.text())
+
+                else:
+                    # If model item is to be chosen from the combobox
+                    selected_items.append(self.classday_models_combobox.currentText())
+
+
+        # ------------------------------------------------------------------------------
+            # ----------- AFTER THE ABOVE IF-STATEMANTS HAVE RUN
+
+            # check if selected items is empty, raise an error messagebox if
+            if UITimetable.check_fields_or_error(fields_values_list=selected_items):
+            # Carry out the delete from the GUI manager. The model_name is also passed in with the selected items in a dictionary
+            # --------------------------------------------------------------
+            #-------- REAL DELETION OPERATION TAKES PLACE HERE! ------------
+                # But just before, display messagebox warning of the consequences
+
+                def go_or_no(btn_clicked):
+                    """defining the callback function whether or not user clicks okay to delete"""
+                    self.go_ahead = True if btn_clicked.text() == "OK" else False
+                # ----------------------------------------------------------
+
+                self.go_ahead = False
+
+
+                UITimetable.messagebox(title="FYI", icon="warning", text=f"When a {model_name} is deleted, all its child items get deleted.",
+                    extratext="Would you still like to proceed?", callback=go_or_no)
+
+                if self.go_ahead:
+                    self.Timetable.delete_models({model_name:selected_items})
+
+                    # ------------------------------------------------------------
+                    # LOAD UP THE TABLES AFTER DELETION
+                    if "Class" in model_name:
+                        self.load_group_class_arm_tree()
+                    else:
+                        self.load_days_list()
+
+            else:
+                UITimetable.messagebox(title="No selections",icon="critical",text=f"No {model_name.lower()} items selected.")
+
+
+        # If radiobutton has caption "None"
+        else:
+            # Raise Error Messagebox. RadioButton reads "None"
+            UITimetable.messagebox(title="No Models",icon="critical",text="No class or day models pulled up for modification.")
+            pass
+
+
+    def load_group_class_arm_tree(self, with_checkbox=False, expanded=False):
         """This function loads the classgroup-class arm-arm tree"""
 
         self.classgroup_class_arm_tree.clear()
@@ -595,25 +1162,32 @@ class UITimetable(QtWidgets.QMainWindow):
 
         for class_group in self.Timetable.Timetable_obj.list_of_school_class_groups:
             # Load the  class group(category) name into the tree widget
-            item = QtWidgets.QTreeWidgetItem([f"{class_group.full_name}"])
+            item = QtWidgets.QTreeWidgetItem()
+            class_group_widg = WidgetTree(icon_path="../Icons-mine/classgroup.png", icon_width=20, icon_height=15, label_text=class_group.full_name, with_checkbox=with_checkbox)
 
             # Add the class group to the combobox for school class registration
             self.combo_with_classgroup.addItem(class_group.full_name)
-            
             self.classgroup_class_arm_tree.addTopLevelItem(item)
+            self.classgroup_class_arm_tree.setItemWidget(item, 0, class_group_widg)
+            item.setExpanded(expanded)
 
             for clss in class_group.school_class_list:
                 # add this sch_class into the combo_class combobox (The combobox to aid thegeneration of class arms)
                 self.combo_class.addItem(clss.full_name)
-
                 # Create a nested node in each faculty for the department
-                class_tree_item = QtWidgets.QTreeWidgetItem([clss.full_name])
+                class_widg = WidgetTree(icon_path="../Icons-mine/class.png",icon_width=18, icon_height=10, label_text=clss.full_name, with_checkbox=with_checkbox)
+                class_tree_item = QtWidgets.QTreeWidgetItem()
                 item.addChild(class_tree_item)
+                self.classgroup_class_arm_tree.setItemWidget(class_tree_item, 0, class_widg)
+                class_tree_item.setExpanded(expanded)
 
                 for arm in clss.school_class_arm_list:
                     # Create a nested node in each faculty for the department
-                    arm_tree_item = QtWidgets.QTreeWidgetItem([arm.full_name])
+                    arm_tree_item = QtWidgets.QTreeWidgetItem()
+                    arm_widg = WidgetTree(icon_path="../Icons-mine/arm.png",label_text=arm.full_name)
                     class_tree_item.addChild(arm_tree_item)
+
+                    self.classgroup_class_arm_tree.setItemWidget(arm_tree_item, 0, arm_widg)
 
 
     # ------------------------------------------------------------------------------
@@ -631,6 +1205,7 @@ class UITimetable(QtWidgets.QMainWindow):
     def register_day(self):
         """handles the resgistration of days"""
 
+        update = False if "Creation" in self.class_createedit_label.text().strip().split() else True
         day_name = self.findChild(QtWidgets.QLineEdit, "day_name")
         rating = self.day_check_spin_box()
 
@@ -638,7 +1213,8 @@ class UITimetable(QtWidgets.QMainWindow):
         day_name_text = day_name.text()
         if UITimetable.check_fields_or_error(fields_values_list=[day_name_text]):
             # Create day_object
-            self.Timetable.create_day(day_name_text, rating=rating)
+            self.Timetable.create_day(day_name_text, rating=rating, update=update)
+            self.class_createedit_label.setText("Creation of class and day models")
 
         else:
             # Spit out error message
@@ -655,14 +1231,17 @@ class UITimetable(QtWidgets.QMainWindow):
         self.load_gen_teachers_day_chboxes()
 
 
-    def load_days_list(self):
+    def load_days_list(self, with_checkbox=False):
         """Loads the trww widget with created days on"""
 
         # treewidget.setColumnCount(1)
         self.day_list.clear()
-
-        days_full_list = [f"{day_obj.full_name}" for day_obj in self.Timetable.Timetable_obj.list_of_days]
-        self.day_list.addItems(days_full_list)
+        
+        for day_obj in self.Timetable.Timetable_obj.list_of_days:
+            day_listwidget_item = QtWidgets.QListWidgetItem()
+            day_widg = WidgetTree(label_text=day_obj.full_name, icon_path='../Icons-mine/Day_icon.png', with_checkbox=with_checkbox)
+            self.day_list.addItem(day_listwidget_item)
+            self.day_list.setItemWidget(day_listwidget_item,day_widg)
 
 # ------------------------------------------------------------------------------------------
     # ----------------- Generate Teachers for department
@@ -907,6 +1486,7 @@ class UITimetable(QtWidgets.QMainWindow):
                     selected_arms.append(arm_widget.full_name_label)
 
 
+
 # ------------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------------------
     @staticmethod
@@ -916,7 +1496,6 @@ class UITimetable(QtWidgets.QMainWindow):
 
         return all(fields_values_list) and isinstance(fields_values_list, list)
             
-
 
     @staticmethod
     def messagebox(title="Popup message", icon="Question", text="Something's the matter?", extratext="", buttons=None, callback=None):
@@ -928,6 +1507,7 @@ class UITimetable(QtWidgets.QMainWindow):
 
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle(title)
+        msg.setWindowIcon(QtGui.QIcon("../Icons-mine/App_logo.png"))
         msg.setText(text)
 
         cast_ = lambda arg:getattr(QtWidgets.QMessageBox, arg.capitalize())

@@ -20,11 +20,11 @@ def gen_chunks():
     return ans
 
 
-for _ in range(1000):
+for _ in range(100):
     b = gen_chunks()
     print("-"*40)
     # print(b)
-    # b = [[0,1],[0,1]]
+    b = [[[1, 2], 3, [1, 2]]]
     try:
         print(Tt_algo_calc.Moveover(b, 10))
     except ValueError as e:
