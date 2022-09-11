@@ -942,7 +942,8 @@ def check_match_get_container(list_arg, x):
 def f_check_for_overlap(list_arg, const=None, _list=None, const_index=0):
     """ This inner function checks through a the fin_list to see if all the numbers are sorted
     such that there is no overlap, i.e when completely stripped, no number repeats, that is, when stripped, it
-    is equal in length to its set"""
+    is equal in length to its set. with an item fixed """
+    
     const_list = [const] if const else [_list[const_index]]
     if isinstance(const, list):
         # Morphe it into a set if it is a list
@@ -964,14 +965,8 @@ def Moveover(listarg, array):
         # keep sliding over till there are no overlaps or at least till the cycle is exhausted
 
         bowl = []
-        # print(f"List before switching: {in_list}")
 
         listarg = in_list.copy() if forward else list(reversed(in_list))
-
-        # print()
-        # print(f"The working list_arg in function: {listarg}")
-        # print()
-
         trans = 1 if forward else -1
         
         for elem in listarg:
@@ -980,18 +975,16 @@ def Moveover(listarg, array):
                 # print(f"Elem: {elem} features in bowl: {bowl} so we translate ")
                 el = PlainTranslate(elem, trans)
                 bowl.append(el)
-            
             # If it hasnt featured before, add it anyway
             else:
                 # print(f"{elem} freely added")
                 bowl.append(elem)
-
         bowl = bowl if forward else list(reversed(bowl))
         # print(f"This is the bowl: {bowl}")
 
         return bowl
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # return listarg
     if len(strip_list_wrapper(listarg)) > array:
         return ValueError(f"Length of list_arg is greater than {array}")
@@ -1038,10 +1031,8 @@ def Moveover(listarg, array):
             if max(strip_list_wrapper(fin)) >= array:
                 # print("Going left")
                 forward = False
-                # fin = _keep     ?????
 
             elif min(strip_list_wrapper(fin)) < 0:
-                # print("Going right again")
                 forward = True
 
 
@@ -1058,57 +1049,57 @@ def Moveover(listarg, array):
 
     return fin
 
+def Moveover_with_fixed(list_arg, array,fixed_item=None, fixed_index=0):
+    """ Gives the moveover version of list_arg, with fixed item fixed. It does so by running all the combinations of the moved
+    over function and giving the first value with fixed item in it. """
+
+    fixed = fixed_item if fixed_item else list_arg[fixed_index]
+
+    poss_with_fixed = Possible_combs_with_fixed(list_arg,fixed,array)
+    return poss_with_fixed[0]
+
 
 def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
     """This function does the work of the moveover function except for the fact that it holds an item (if given), or it's 
     index (if given) fixed.
-    It is done this way, we pop out the fixed item and moveover whats left. Then we concatenate what's left"""
+    It is done this way, we pop out the fixed item and moveover whats left. Then we concatenate what's left.
+    
+    Fixed_item is a list containing all the chunks (which could have lists within)
+    """
+
 
     # --------------------------------------------------------------------------
     # def slide_right_left(list_arg,array, trans=1):
-    def slide_right_left(sorted_list_arg, trans=1):
+    def slide_right_left(in_list, rightward=True):
     # Stores the elements of list_arg ind its index in a tuple, so we can refer back to it
         # global pos, sorted_list_arg, fin_dict, test_li st
 
         test_list = []
-    
-        for item in sorted_list_arg:
-            if isinstance(item, list):
-                # check if any item in this list has already featured in test_list
-                for x in item:
-                    if x in strip_list_wrapper(test_list + const_list):
-                        print()
-                        new = Translatebyshift(item, trans, array)
-                        
-                        test_list.append(new)
-                        break 
 
-                else:
-                    print()
-                    # print("List appended")
-                    test_list.append(item)
-                    
-    
-            # If it is an integer
+        sorted_list_ = in_list.copy() if rightward else list(reversed(in_list))
+
+        trans = 1 if rightward else -1
+        
+        for item in sorted_list_:
+            # if item is already in testlist or greater than array, or lower than 0, then translate by trans
+            if abs_match_list_int(test_list + strip_list_wrapper([const_list]), item) or abs_match_list_int(list(range(array, array*3)), item)\
+             or abs_match_list_int(list(range(-1, -3*array, -1)), item):
+                el = PlainTranslate(item, trans)
+                test_list.append(el)
             else:
-                if item in strip_list_wrapper(test_list + const_list):
-                    val = (item + trans) % array
-                    test_list.append(val)
-                    
-                else:
-                    test_list.append(item)
+                test_list.append(item)
 
+        test_list = test_list if rightward else list(reversed(test_list))
         return test_list
-
     # ----------------------------------------------------------------------------
-# -----------------------------------------------------------------------
-
-    # global fin_dict, pos, sorted_list_arg
-    # Get the fixed (const) item either from the item itself of from its index in the list_arg
+    # -----------------------------------------------------------------------
 
     # In the event that list_arg is just one item and part_chunk is [] return list_arg back
     if len(list_arg) <= 1:
         return list_arg
+
+    if len(list_arg) > array:
+        return ValueError(f"Input {list_arg} longer than array")
 
 
     if fixed_item and abs_match_list_int(list_arg, fixed_item, strict=True):
@@ -1122,17 +1113,24 @@ def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
     else:
         const_item = list_arg[fixed_index]
 
-    # Now remove the const_item from the list_arg, so it can be moveover'ed without it
-    list_arg = remove_all_sub_from_list(list_arg, const_item)
-
-    # The length of the newly popped upon list_arg
-    list_len = len(list_arg)
+    limst = list_arg.copy()
 
     # Put the const item in the finished_list for now
-    const_item = const_item if isinstance(const_item, list) else [const_item]
-    const_list = const_item
-    # print(f"This is const item {const_item}")
 
+    # const_item = const_item if isinstance(const_item, list) else [const_item]
+    const_list = const_item.copy()
+    print(f"This is const item {const_item}")
+
+    indices = [list_arg.index(k) for k in const_list]
+
+    # Remove the indices of this const_list items from the listarg before moveover
+    for kitem in const_list:
+        list_arg.remove(kitem)
+
+    print(f"listarg here {list_arg}")
+
+
+    # --------------------------------------------
     # Now start moving over
     # An empty dictionary to hold the indices and the new value to aid reconstitution
     fin_dict = {}
@@ -1140,67 +1138,63 @@ def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
 
     # -------------
     pos = [(index, item) for index, item in enumerate(list_arg)]
-    sorted_list_arg_index = sorted(pos, key=lambda ind_item:max(strip_list_wrapper(ind_item[1])) if isinstance(ind_item[1], list) else ind_item[1])
+    # sorted_list_arg_index = sorted(pos, key=lambda ind_item:max(strip_list_wrapper(ind_item[1])) if isinstance(ind_item[1], list) else ind_item[1])
     # map a list of just the items to the sorted_list_arg_index
-    sorted_list_arg = [item for _,item in sorted_list_arg_index]
-    # ---------------
+    # sorted_list_arg = [item for _,item in sorted_list_arg_index]
 
+    sorted_list_arg = list_arg
+    # --------------------------------
 
     final_val = sorted_list_arg
 
     count = 0
     loop = True
-    right = True
+    forward = True
     
     # --------------------------------------------------------
     while loop:
-        if f_check_for_overlap(final_val, const_item):
-            
-            final_val = slide_right_left(final_val)
-            # print(f"This is f_val forwards: {final_val}")
+        count +=1
 
-            if count >= array*2:
-                loop=False
-                # print(f"Stranded! loop ran out")
+        final_val = slide_right_left(final_val, rightward=forward)
 
-            count += 1
-        else:
-            loop = False
-        # -------------------------------------------------
+        print(f"Final_val: just checking: {final_val}")
 
-
-    count, loop = 0, True
-    # Now check if final_val spills past the edge of the array
-
-    while loop:
-        if 0 in strip_list_wrapper(final_val)[1:]:
-            final_val = slide_right_left(final_val, trans=-1)
-            print(f"This is final val in the second loop: {final_val}")
-
-            if count >= array*5:
-                print("Ran out in the second loop!")
+        if max(strip_list_wrapper(final_val)) < array and min(strip_list_wrapper(final_val)) >= 0:
+            if not check_for_overlap(final_val) and not abs_match_list_int(final_val, const_list):
+                print("Out with ye")
                 loop = False
-            count += 1
+
         else:
-            loop = False
-            
+            if max(strip_list_wrapper(final_val)) >= array:
+                # print("Going left")
+                forward = False
+
+            elif min(strip_list_wrapper(final_val)) < 0:
+                forward = True
+
+        if count >= array*4:
+            raise StopIteration(f"OVERLOADED!! moveover_fixed with listarg {limst} with const {const_list} did not work")
+           
+
 
     # Note that test_list (final_val) is one-one-mapped to sorted_list_arg
     # Therefore to reconstitute the list...
 
     # Map final_val to its index
-    final_val = [(ind_item[0], f_val) for f_val, ind_item in zip(final_val, sorted_list_arg_index)]
-    
-    # Now sort this final_val based on its index
-    final_val = sorted(final_val, key=lambda ind_val:ind_val[0])
-    # Now wring out the list of just the items from final_val
-    final_val = [item for _,item in final_val]
+                # final_val = [(ind_item[0], f_val) for f_val, ind_item in zip(final_val, sorted_list_arg_index)]
+                
+                # # Now sort this final_val based on its index
+                # final_val = sorted(final_val, key=lambda ind_val:ind_val[0])
+                # # Now wring out the list of just the items from final_val
+                # final_val = [item for _,item in final_val]
     # Now return it
 
     # Now add back the const_item into the final list
 
     # final_val.insert(fixed_index, const_item)
-    final_val = final_val[:fixed_index] + const_item + final_val[fixed_index + 1:]
+    for ind, item in zip(indices,const_list):
+        final_val.insert(ind, item)
+
     return final_val
 
 
@@ -1300,12 +1294,9 @@ def Possible_combs_with_fixed(list_arg,const,array):
 
     if not bool(const):
         return all_
-
     # if len(const) == 1 or isinstance(const, int):
     #     return [lists for lists in all_ if const in lists]
-
     ans = []
-    
     for item in all_:
         # For each item in all_, cycle through the const list
         for x in const:
@@ -1315,7 +1306,6 @@ def Possible_combs_with_fixed(list_arg,const,array):
         else:
             # only add if all const are in the item list
             ans.append(item)
-
     return ans
 
 
@@ -1361,7 +1351,7 @@ def remove_all_sub_from_list(list_arg, sub_list):
 def casual_removeall(list_arg, elem):
     """Removes all the occurences of elem in list_arg"""
 
-    for item in list_arg:
+    for item in list_arg.copy():
         if item == elem:
             list_arg.remove(elem)
 
@@ -1649,6 +1639,7 @@ class SortAlgorithms:
         return final_ans
 
         # ----------------------------------------------------------------------------------------------
+
     def r_leap_frog(array, chunk_list={1:1, 2:2}, shift_value=0):
         """ The leap_frog algorithm, but in reverse. """
 
@@ -1775,9 +1766,7 @@ class SortAlgorithms:
                 elem.sort()
             else:
                 elem = array - 1 - elem
-
             ans[index] = elem
-
         return ans
 
 
@@ -1791,27 +1780,10 @@ if __name__ == "__main__":
 
     tt = [[0,1],[8,9],[8,9], [1,2]]
     
-    # my = Moveover([0, [0, 1], 1, 1, 6, [6, 7], 8, 9], 10)
-    op = Moveover([[7,8], [7,8]], 10)
-    # print()
-    # print(op)
-    # print(moveover_fixed(me_test, 10, fixed_item=[[0,1]]))
-    # print()
+    # ----------------------------
+    print(f"|| {Moveover_fixed([[0,1], [0,1]], 10, fixed_item=[[0,1]])}")
+    cast = [1,2,2,3,4,4,4,6,7,8,4,4,4,4,4,8,9,0]
 
-    # print(Possible_combs([[5, 6], 7, [5, 6]],10))
-
-    # print("Hello")
-    # print(possible_combs_with_fixed(test_liste,[[0,1]], 10))
-    print(SortAlgorithms.leap_frog(10, chunk_test, shift_value=0))
-    # print()
-    print(SortAlgorithms.r_leap_frog(10, chunk_test, shift_value=0))
-    # print()
-    print(SortAlgorithms.r_xlx_reflection(10, chunk_test, shift_value=0))
-    # print()
-    # print(SortAlgorithms.r_center_cluster(10, chunk_test, shift_value=0))
-
-
-    # print(Add_list_to_x([[0,1], 2,3,[4,5]], 10))
-    # print(SortAlgorithms._semi_strip_list([[1,2,3], [1], [5],[7], [4,6,7,89]]))
-
-    # print(collapse(10, chunk_test))
+    casual_removeall(cast, 4)
+    print(cast)
+    

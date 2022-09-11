@@ -79,7 +79,8 @@ class UITimetable(QtWidgets.QMainWindow):
         # The working timetable instance
         self.Timetable = Tt_manager.TimeTableManager()
     
-    # -----------------------------------------------------------------------------------------------
+
+    # --------------- PREVIOUS AND NEXT BUTTONS -------------------------------------------------------------------------
         # The previous and next arrow btns for flipping through the main stacked widget box
         self.next_btn = self.findChild(QtWidgets.QPushButton, "next_stacked_page")
         self.prev_btn = self.findChild(QtWidgets.QPushButton, "prev_stacked_page")
@@ -87,7 +88,18 @@ class UITimetable(QtWidgets.QMainWindow):
         self.next_btn.clicked.connect(lambda :self.switch_mainstacked(1))
         self.prev_btn.clicked.connect(lambda :self.switch_mainstacked(-1))
 
-    # ----------------------------------------------------------------------------------------------
+
+    # --------------- GENERAL INFORMATION PAGE ------------------------
+        self.institution = self.findChild(QtWidgets.QLineEdit, "institution_lineedit")
+        self.director = self.findChild(QtWidgets.QLineEdit, "director_lineedit")
+        self.session_or_year = self.findChild(QtWidgets.QLineEdit, "session_lineedit")
+        self.acronym = self.findChild(QtWidgets.QLineEdit, "acronym_lineedit")
+        self.extra_info = self.findChild(QtWidgets.QPlainTextEdit, "extra_info_plaintextedit")
+        self.logo_path = "../Icons-mine/App_logo.png"
+
+
+
+    # ------------------- REGISTER FACULTY ----------------------------------
         self.reg_dept = self.findChild(QtWidgets.QPushButton, "reg_deptfac_btn")
         self.reg_dept.clicked.connect(self.register_deptfac)
 
@@ -110,7 +122,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.page_label.setText(f"Page 1 of {self.mainStackedWidget.count()}")
 
     # ---------------------------------------------------------------------
-    # -------- The register subject/course (department in the code)
+    # -------- The REGISTER SUBJECT/COURSE (department in the code)
         self.register_course_btn = self.findChild(QtWidgets.QPushButton, "register_subj_btn")
         self.register_course_btn.clicked.connect(self.register_course)
 
@@ -143,7 +155,7 @@ class UITimetable(QtWidgets.QMainWindow):
 
 
     #------------------------------------------------------------------------------------------------
-    # --------------- The class group(category) and class and class arm tree widget
+    # --------------- THE CLASS GROUP(category) and class and class arm tree widget
         self.classgroup_class_arm_tree = self.findChild(QtWidgets.QTreeWidget, "cat_class_arm_tree")
         self.create_classgroupbtn = self.findChild(QtWidgets.QPushButton, "class_cat_btn")
         self.create_classgroupbtn.clicked.connect(self.register_class_group)
@@ -196,7 +208,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.del_class_day = self.findChild(QtWidgets.QPushButton, "del_classday_model_btn")
         self.del_class_day.clicked.connect(self.del_classday_model)
 
-        # -------------------- buttons on the classcat treewidget and day listwidgets --------------------
+        # -------------------- buttons on top of the classcat treewidget and day listwidgets --------------------
         self.mark_class_btn = self.findChild(QtWidgets.QPushButton, "mark_class_btn")
         self.mark_day_btn = self.findChild(QtWidgets.QPushButton, "mark_days_btn")
 
@@ -224,14 +236,21 @@ class UITimetable(QtWidgets.QMainWindow):
 
         self.dept_and_teachers_tree = self.findChild(QtWidgets.QTreeWidget, "faculty_course_teacher_tree")
         self.gen_teachers_btn = self.findChild(QtWidgets.QPushButton, "gen_teachers_btn")
-        self.gen_teachers_combobox = self.findChild(QtWidgets.QComboBox, "gen_teachers_combobox")
+
+        # List widget holding all the coujrses registered so teacher can be generated
+        self.gen_teachers_courselist = self.findChild(QtWidgets.QListWidget, "gen_teachers_courselist")
+
         self.gen_teachers_btn.clicked.connect(self.generate_teachers)
         # Also get the groupbox which has all the working days by teacher
-        self.gen_teachers_days_listwidget = self.findChild(QtWidgets.QListWidget, "gen_teacher_days_listwidget")
+        self.gen_teachers_days_listwidget = self.findChild(QtWidgets.QListWidget, "gen_teachers_days_listwidget")
+
+        # Button to expand or contract the treewidget showing faculties(departments), subjects/courses and teachers
+        self.expand_fac_course_teachers_tree_btn = self.findChild(QtWidgets.QPushButton, "expand_fac_courses_teachers_tree_btn")
+        self.expand_fac_course_teachers_tree_btn.clicked.connect(self.expand_fac_courses_teachers_tree)
 
         # The button to mark courses in bulk
         self.mark_btn = self.findChild(QtWidgets.QPushButton, "mark_courses_btn")
-        self.mark_btn.pressed.connect(self.enable_mark_depts)
+        # self.mark_btn.pressed.connect(self.enable_mark_depts_teachers)
         self.try_btn = self.findChild(QtWidgets.QPushButton, "try_btn")
 
         # --- Radiobuttons for the modify section -------------
@@ -249,7 +268,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.all_staff_table = self.findChild(QtWidgets.QTableWidget, "all_staff_tablewidget")
 
 
-        # --------------- MODIFY DEPT MODELS (FACULTY, SUBJECT AND TEACHERS) ---------------------------
+        # --------------- MODIFY DEPT MODELS (FACULTY, SUBJECT (NOT TEACHERS)) ---------------------------
         self.dept_model_gbox = self.findChild(QtWidgets.QGroupBox, "dept_model_gbox")
         self.dept_model_combobox = self.findChild(QtWidgets.QComboBox, "dept_model_combo")
         self.pull_dept_btn = self.findChild(QtWidgets.QPushButton, "pull_dept_model_btn")
@@ -260,6 +279,53 @@ class UITimetable(QtWidgets.QMainWindow):
         # To pull the details of a dept model to the screen
         self.pull_dept_btn.clicked.connect(self.deptmodel_pullrender)
 
+        # Delete dept models
+        self.del_depts_btn.clicked.connect(self.del_deptmodels)
+
+        #------------------ the Mark buttons on the dept models tree and list widgets (NO TEACHERS INVOLVED) --------------------
+        self.mark_subj_btn = self.findChild(QtWidgets.QPushButton, "mark_subj")
+        self.mark_nonacad_btn = self.findChild(QtWidgets.QPushButton, "mark_nonacad")
+        self.markall_subj_btn = self.findChild(QtWidgets.QPushButton, "markall_subj")
+        self.markall_nonacad_btn = self.findChild(QtWidgets.QPushButton, "markall_nonacad")
+
+        self.mark_subj_btn.clicked.connect(self.enable_mark_fac_subj)
+        self.mark_nonacad_btn.clicked.connect(self.enable_mark_nonacad)
+
+        self.markall_subj_btn.clicked.connect(self.markall_subjs)
+        self.markall_nonacad_btn.clicked.connect(self.markall_nonacads)
+
+
+    # --------------------- MODIFY TEACHERS ----------------------------
+        # the checkbox to enable fetching teacher from the checkbox
+        self.teacher_from_combo_checkbox = self.findChild(QtWidgets.QCheckBox, "teacher_from_combo_checkbox")
+        self.teacher_from_spinbox = self.findChild(QtWidgets.QSpinBox, "get_teacher_from_spinbox")
+        self.search_teacher_btn = self.findChild(QtWidgets.QPushButton, "search_teacher_btn")
+        self.combo_with_teachers = self.findChild(QtWidgets.QComboBox, "combo_with_teacher")
+        self.pull_teacher_btn = self.findChild(QtWidgets.QPushButton, "pull_teacher_btn")
+        self.teacher_found_label = self.findChild(QtWidgets.QLabel, "teacher_name_label")
+        self.search_teacher_gbox = self.findChild(QtWidgets.QGroupBox, "search_teacher_gbox")
+        self.del_teacher_btn = self.findChild(QtWidgets.QPushButton, "del_teacher_btn")
+        self.mark_teachers_btn = self.findChild(QtWidgets.QPushButton, "mark_teachers_btn")
+        self.markall_teachers_btn = self.findChild(QtWidgets.QPushButton, "markall_teachers_btn")
+        self.gen_edit_teacher_label = self.findChild(QtWidgets.QLabel, "gen_update_teacher_label")
+        self.teacher_freq_gbox = self.findChild(QtWidgets.QGroupBox, "gen_teacher_freq_gbox")
+
+        # start coupling the buttons to methods ----------------------------------
+        self.teacher_from_combo_checkbox.stateChanged.connect(self.load_teachers_into_combobox)
+        self.search_teacher_btn.clicked.connect(self.search_teacher_by_ID)
+
+        # Render teachers full_name in a label on screen from combobox (Not with his full details yet)
+        self.combo_with_teachers.activated.connect(self.render_teacher_from_combobox)
+
+        self.pull_teacher_btn.clicked.connect(self.pull_teacher)
+        self.mark_teachers_btn.clicked.connect(self.mark_teachers_in_staff_table)
+        self.markall_teachers_btn.clicked.connect(self.mark_all_teachers_in_staff_table)
+        self.del_teacher_btn.clicked.connect(self.del_teacher)
+
+
+
+
+    # ---------------------------------------------------------------------------------------------------------
     # ------------------ Handles mapping depts to class arms as well as their frequencies and chunk values --------------------
         self.subj_freq_chunk_table = self.findChild(QtWidgets.QTableWidget, "subject_freq_chunk_table")
         self.arms_for_chunk_tree = self.findChild(QtWidgets.QTreeWidget, "arms_for_chunk_tree")
@@ -307,7 +373,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.load_fac_courses_tree()
         self.load_group_class_arm_tree()
         self.load_days_list()
-        self.load_faculty_dept_teachers_tree()
+        self.load_faculty_courses_teachers_tree()
         self.load_gen_teachers_day_chboxes()
 
 
@@ -425,12 +491,32 @@ class UITimetable(QtWidgets.QMainWindow):
 
     # --------------------------------------------------------------------------------------------------
     # ------------------------------- BACKEND-INTO-GUI FUNCTIONS ---------------------------------------
-
     def enable_all_in_widget(self, widget, enable=True):
-        """ Renders all the widgets in mother widget active """
+        """ Renders all the widgets in mother widget active or inactive"""
         for child in widget.children():
             if isinstance(child, QtWidgets.QWidget):
                 child.setEnabled(enable)
+
+
+    def commit_general_info(self):
+        """ Registration OR UPDATE of all the general info fields"""
+        institution = self.institution.text().strip()
+        director = self.director.text().strip()
+        session = self.session.text().strip()
+        acronym = self.acronym.text().strip()
+        extra_info = self.extra_info.toPlainText().strip()
+
+        # Something interesting happens with self.logo_path; a dialog box is opened.
+
+        # Send these values to the manager
+        self.Timetable.stash_general_info({
+            "institution":institution,
+            "director":director,
+            "session_or_year":session,
+            "acronym":acronym,
+            "extra_info":extra_info,
+            "logo_path":self.logo_path
+            })
 
 
     def register_deptfac(self):
@@ -463,7 +549,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.dept_create_update_label.setText("Create Department Models")
         # Load up up the faculties created!
         self.load_fac_courses_tree()
-        self.load_faculty_dept_teachers_tree()
+        self.load_faculty_courses_teachers_tree()
 
         # ----------------------------
         # Set the modify section radiobutton to None
@@ -552,7 +638,9 @@ class UITimetable(QtWidgets.QMainWindow):
         # table for imputtimg subjects frequency and chunk values
         self.gen_subjects_freq_chunk_table()
         # Load the tree containing faculty, couses and teachers
-        self.load_faculty_dept_teachers_tree()
+        self.load_faculty_courses_teachers_tree()
+
+        self.load_gen_teachers_courselist()
 
         # ----------- set text back to "creating models" ----
         self.dept_create_update_label.setText("Create Department Models")
@@ -563,9 +651,9 @@ class UITimetable(QtWidgets.QMainWindow):
         self.dept_model_combobox.clear()
 
 
-    def load_fac_courses_tree(self, with_checkbox=False):
+    def load_fac_courses_tree(self, with_checkbox=False, expanded=False):
         """This method handles putting registered faculties and depts/courses on the TreeWidget on the screen and also loading
-        them"""
+        them. No teachers involved. Lives on the fac creation modification page."""
         
         # treewidget.setColumnCount(1)
         self.fac_courses_treewidget.clear()
@@ -577,10 +665,11 @@ class UITimetable(QtWidgets.QMainWindow):
 
             # Load the faculty name into the tree widget
             faculty_item = QtWidgets.QTreeWidgetItem()
-            faculty_widg = WidgetTree(icon_path="../Icons-mine/department.png",icon_width=14, 
-                icon_height=16, label_text=faculty.full_name, with_checkbox=with_checkbox)
+            faculty_widg = WidgetTree(icon_path="../Icons-mine/department.png",icon_width=18,
+                label_text=faculty.full_name, with_checkbox=with_checkbox)
 
             self.fac_courses_treewidget.addTopLevelItem(faculty_item)
+            faculty_item.setExpanded(expanded)
             self.fac_courses_treewidget.setItemWidget(faculty_item, 0, faculty_widg)
 
             for dept in faculty.course_list:
@@ -593,11 +682,17 @@ class UITimetable(QtWidgets.QMainWindow):
                 self.fac_courses_treewidget.setItemWidget(subject_item, 0, subject_widg)
 
 
-    def load_nonacad_courses_list(self):
+    def load_nonacad_courses_list(self, with_checkbox=False):
         """Loads the Listwidget displaying all the created non-academic courses, e.g. break"""
         self.non_acad_depts_listwidget.clear()
-        all_nonacad = [nonacad.full_name for nonacad in self.Timetable.Timetable_obj.list_of_nonacad_depts]
-        self.non_acad_depts_listwidget.addItems(all_nonacad)
+
+        for nonacad in self.Timetable.Timetable_obj.list_of_nonacad_depts:
+            list_item = QtWidgets.QListWidgetItem()
+            nonacad_widg = WidgetTree(icon_path="../Icons-mine/nonacad.png", icon_width=16, icon_height=14, 
+                label_text=nonacad.full_name, with_checkbox=with_checkbox)
+
+            self.non_acad_depts_listwidget.addItem(list_item)
+            self.non_acad_depts_listwidget.setItemWidget(list_item, nonacad_widg)
 
 
     def fac_courses_tree_clicked(self):
@@ -617,16 +712,15 @@ class UITimetable(QtWidgets.QMainWindow):
         # self.board.clear()
         self.board.setHtml(obj_in_question.detailed_info)
 
-    # ------------------------------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------------
 # ---------- This section reserved for modifying dept models (faculty, depts(subjects) and teachers)----
-    
     def which_dept_model_radbtn(self):
         """ This function returns the radiobutto  that is checked for in the groupbox containing dept models """
         for child in self.dept_model_gbox.children():
             if isinstance(child, QtWidgets.QRadioButton) and child.isChecked():
                 return child
-
 
 
     def deptmodel_pull(self, model):
@@ -703,6 +797,159 @@ class UITimetable(QtWidgets.QMainWindow):
         self.dept_create_update_label.setText("Update Department Models")
 
 
+    def enable_mark_fac_subj(self):
+        """ Enables mark department (faculty) and subjects (the tree without the teachers) """
+
+        # If "mark" button has been clicked
+        if "Mark" in self.mark_subj_btn.text():
+            self.load_fac_courses_tree(with_checkbox=True,expanded=True)
+            self.mark_subj_btn.setText("Unmark")
+            self.markall_subj_btn.setEnabled(True)
+        else:
+            self.load_fac_courses_tree(expanded=True)
+            self.mark_subj_btn.setText("Mark for delete")
+            self.markall_subj_btn.setEnabled(False)
+
+
+    def enable_mark_nonacad(self):
+        """ Enables mark operation for nonacad depts in the listwidget """
+
+        # If "mark" button has been clicked
+        if "Mark" in self.mark_nonacad_btn.text():
+            self.load_nonacad_courses_list(with_checkbox=True)
+            self.mark_nonacad_btn.setText("Unmark")
+            self.markall_nonacad_btn.setEnabled(True)
+        else:
+            self.load_nonacad_courses_list()
+            self.mark_nonacad_btn.setText("Mark for delete")
+            self.markall_nonacad_btn.setEnabled(False)
+        
+
+    def markall_subjs(self):
+        """ mark all department(faculty) or subject model items in the fac_courses tree. No teachers involved """
+
+        # Get the treewidget for fac_csubjects, (no teachers involved)
+        root = self.fac_courses_treewidget.invisibleRootItem()
+        child_count = root.childCount()
+
+        for k in range(child_count):
+            fac_item = root.child(k)
+            fac_widg = self.fac_courses_treewidget.itemWidget(fac_item, 0)     #Custom WidgetTree instance
+            # Check the checkbox in the fac_widget
+            fac_widg.get_checkbox().setCheckState(QtCore.Qt.Checked)
+
+            for i in range(fac_item.childCount()):
+                subj_item = fac_item.child(i)
+                subj_widg = self.fac_courses_treewidget.itemWidget(subj_item, 0)
+                subj_widg.get_checkbox().setCheckState(QtCore.Qt.Checked)
+
+
+    def markall_nonacads(self):
+        """ marks all the nonacad subjects in the list """
+
+        for k in range(self.non_acad_depts_listwidget.count()):
+            nonacad_item = self.non_acad_depts_listwidget.item(k)
+            nonacad_widg = self.non_acad_depts_listwidget.itemWidget(nonacad_item)
+
+            nonacad_widg.get_checkbox().setCheckState(QtCore.Qt.Checked)
+
+
+    def del_deptmodels(self):
+        """ The big-boy method to handle deletion of faculty or subject items """
+
+        # Get which radiobutton has been clicked
+        rad_clicked = self.which_dept_model_radbtn()
+        mod_name = rad_clicked.text()
+
+
+        if mod_name == "None":
+            # Raise error messagebox. No model type specified
+            return
+
+        selected_items = []
+
+        # If the mark button is clicked
+        if self.mark_subj_btn.text() == "Unmark":
+            if mod_name== "Department":
+                root = self.fac_courses_treewidget.invisibleRootItem()
+                child_count = root.childCount()
+
+                for k in range(child_count):
+                    fac_item = root.child(k)
+                    fac_widg = self.fac_courses_treewidget.itemWidget(fac_item, 0)     #Custom WidgetTree instance
+                    # Check if the checkbox in the fac_widget is checked
+
+                    if fac_widg.get_checkbox().isChecked():
+                        selected_items.append(fac_widg.full_name_label.text())
+
+
+            elif mod_name == "Subject/Course":
+
+                root = self.fac_courses_treewidget.invisibleRootItem()
+                child_count = root.childCount()
+
+                for k in range(child_count):
+                    fac_item = root.child(k)
+                    fac_widg = self.fac_courses_treewidget.itemWidget(fac_item, 0)     #Custom WidgetTree instance
+                    # Check if the checkbox in the fac_widget is checked
+
+                    for m in range(fac_item.childCount()):
+                        subj_item = fac_item.child(m)
+                        subj_widg = self.fac_courses_treewidget.itemWidget(subj_item, 0)  
+                    
+                        if subj_widg.get_checkbox().isChecked():
+                            selected_items.append(subj_widg.full_name_label.text())
+
+            else:
+                for k in range(self.non_acad_depts_listwidget.count()):
+                    nonacad_item = self.non_acad_depts_listwidget.item(k)
+                    nonacad_widg = self.non_acad_depts_listwidget.itemWidget(nonacad_item)
+
+                    if nonacad_widg.get_checkbox().isChecked():
+                        selected_items.append(nonacad_widg.full_name_label.text())
+
+        else:
+            # If the mark button was not clicked, pick from the combobox
+            selected_items.append(self.dept_model_combobox.currentText())
+
+    
+
+        # -------------------------------------------------------------------------------
+        # -------------- AFTER THE IF-STATEMENTS MUST HAVE RUN -------------
+        # check if selected items is empty, raise an error messagebox if
+        if UITimetable.check_fields_or_error(fields_values_list=selected_items):
+        # Carry out the delete from the GUI manager. The model_name is also passed in with the selected items in a dictionary
+        
+        # --------------------------------------------------------------
+        #-------- REAL DELETION OPERATION TAKES PLACE HERE! ------------
+            # But just before, display messagebox warning of the consequences
+            def go_or_no(btn_clicked):
+                """defining the callback function whether or not user clicks okay to delete"""
+                self.go_ahead = True if btn_clicked.text() == "OK" else False
+            # ----------------------------------------------------------
+
+            self.go_ahead = False
+
+            UITimetable.messagebox(title="FYI", icon="warning", text=f"When a {mod_name} is deleted, all its child items get deleted.",
+                extratext="Would you still like to proceed?", callback=go_or_no)
+
+            if self.go_ahead:
+                self.Timetable.delete_models({mod_name:selected_items})
+
+                # ------------------------------------------------------------
+                # LOAD UP THE TABLES AFTER DELETION
+                if mod_name == "Department" or mod_name == "Subject/Course":
+                    self.load_fac_courses_tree()
+                else:
+                    self.load_nonacad_courses_list()
+
+                # Set the dept model radiobutton to None
+                self.dept_none_radbtn.setChecked(True)
+
+        else:
+            UITimetable.messagebox(title="No selections",icon="critical",text=f"No {mod_name.lower()} items selected.")
+
+                
 # -------------------------------------------------------------------------------------------------------------
 # --------------------------------------------------------------------------------------------------------------
     def register_class_group(self):
@@ -899,7 +1146,7 @@ class UITimetable(QtWidgets.QMainWindow):
                             # child = self.gen_teachers_days_listwidget.item(index)
                             item = self.gen_teachers_days_listwidget.item(index)
                             day_widget = self.gen_teachers_days_listwidget.itemWidget(item)
-                            curr_model = day_widget.text()
+                            curr_model = day_widget.full_name_label.text()
 
 
                     # Get the current model that has been pulled up
@@ -1111,7 +1358,7 @@ class UITimetable(QtWidgets.QMainWindow):
 
 
         # ------------------------------------------------------------------------------
-            # ----------- AFTER THE ABOVE IF-STATEMANTS HAVE RUN
+            # ----------- AFTER THE ABOVE IF-STATEMENTS HAVE RUN
 
             # check if selected items is empty, raise an error messagebox if
             if UITimetable.check_fields_or_error(fields_values_list=selected_items):
@@ -1244,13 +1491,40 @@ class UITimetable(QtWidgets.QMainWindow):
             self.day_list.setItemWidget(day_listwidget_item,day_widg)
 
 # ------------------------------------------------------------------------------------------
-    # ----------------- Generate Teachers for department
-    def load_faculty_dept_teachers_tree(self, markable=False, expanded=False):
+    # ----------------- GENERATE TEACHERS FOR ONE OR MULTIPLE DEPARTMENTS ---------------------
+    def load_gen_teachers_courselist(self):
+        """ Loads the listwidget bearing all the courses registered so Teacher can be generated """
+
+        self.gen_teachers_courselist.clear()
+
+        for course in self.Timetable.Timetable_obj.list_of_departments:
+            # The course widgettree
+            course_widg = WidgetTree(icon_path="../Icons-mine/subject.png",icon_width=16, label_text=course.full_name, with_checkbox=True)
+            course_item = QtWidgets.QListWidgetItem()
+
+            self.gen_teachers_courselist.addItem(course_item)
+            self.gen_teachers_courselist.setItemWidget(course_item, course_widg)
+
+
+    def load_gen_teachers_day_chboxes(self):
+        """This loads the days Listwidget with checkboxes, in the big box where teachers are to be registered"""
+
+        self.gen_teachers_days_listwidget.clear()
+
+        for day_obj in self.Timetable.Timetable_obj.list_of_days:
+            # Create a checkbox
+            checkbox = WidgetTree(icon_path="../Icons-mine/Day.png", label_text=day_obj.full_name, with_checkbox=True, icon_width=16)
+            
+            day_item = QtWidgets.QListWidgetItem()
+            self.gen_teachers_days_listwidget.addItem(day_item)
+            self.gen_teachers_days_listwidget.setItemWidget(day_item, checkbox)
+
+
+    def load_faculty_courses_teachers_tree(self, markable=False, expanded=False):
         """ This function loads the tree showing each faculty, the depts
         under it, and the generated teachers under each dept"""
 
         self.dept_and_teachers_tree.clear()
-        self.gen_teachers_combobox.clear()
 
         # the class reg combox will also be cleared too below!
         for faculty in self.Timetable.Timetable_obj.list_of_faculties:
@@ -1263,7 +1537,6 @@ class UITimetable(QtWidgets.QMainWindow):
 
             # Go for each of the courses in the faculty's course list
             for dept_obj in faculty.course_list:
-                self.gen_teachers_combobox.addItem(dept_obj.full_name)
 
                 # Create a nested node in each faculty for the department (subject)
                 dept_tree_item = QtWidgets.QTreeWidgetItem()
@@ -1271,6 +1544,7 @@ class UITimetable(QtWidgets.QMainWindow):
                 dept_widg = WidgetTree(label_text=dept_obj.full_name, icon_path="../Icons-mine/subject.png",with_checkbox=markable)
                 item.addChild(dept_tree_item)
                 self.dept_and_teachers_tree.setItemWidget(dept_tree_item, 0, dept_widg)
+                dept_tree_item.setExpanded(expanded)
 
                 for teacher in dept_obj.teachers_list:
                     # create custom widget for the teacher
@@ -1286,112 +1560,70 @@ class UITimetable(QtWidgets.QMainWindow):
                     self.dept_and_teachers_tree.setItemWidget(teacher_tree_item, 0, teacher_widg)
 
 
+    def expand_fac_courses_teachers_tree(self):
+        """ Reloads the faculty-course-teachers tree in expand or contract mode """
+        expand = True if "expand" in self.expand_fac_course_teachers_tree_btn.text().lower() else False
+        updated_btntext = "Reload-contract" if expand else "Reload-expand"
+
+        # Load the tree with the above boolean parameters
+        self.load_faculty_courses_teachers_tree(expanded=expand)
+        # change the text on the button appropriately
+        self.expand_fac_course_teachers_tree_btn.setText(updated_btntext)
+
+
     def generate_teachers(self):
         """Generates teachers for a chosen course or selected courses. Teachers are chosen for a course not a faculty."""
         
-        teachers_freq = self.findChild(QtWidgets.QSpinBox, "gen_teachers_spinbox")
-        selected_days = []
+        # If we are generating teachers afresh
+        selected_subjects = self.checked_widgtree_in_listwidget(self.gen_teachers_courselist)
+        selected_days = self.checked_widgtree_in_listwidget(self.gen_teachers_days_listwidget)
 
-        for index in range(self.gen_teachers_days_listwidget.count()):
-            # child = self.gen_teachers_days_listwidget.item(index)
-            item = self.gen_teachers_days_listwidget.item(index)
-            widget = self.gen_teachers_days_listwidget.itemWidget(item)
-            
-            if widget.isChecked():
-                selected_days.append(widget.text())
+        if "generate" in self.gen_edit_teacher_label.text().lower():
 
+            # Change caption of the label above ---------------
+            # self.gen_edit_teacher_label.setText(f"Editing teacher: {self.teacher_found_label.text()}")
+            self.gen_edit_teacher_label.setStyleSheet("color:#1c1cff")
+            # ------------------------------------
 
-        # ------------------------------------------------------------------------------------------
-        if self.mark_btn.text().strip() == "Mark":
-            # -------------------------------------------------------------------------------------------------
-            # If mark button is not selected, generate teachers only for the one dept(course) in the combobox
+            teachers_freq = self.findChild(QtWidgets.QSpinBox, "gen_teachers_spinbox")
+            freq_val = teachers_freq.value()
 
-            dept_fullname = self.gen_teachers_combobox.currentText().strip()    #--- The course the teacher is teaching
-            # Frequency of teachers
+            # Generate the teachers if the selected days and subjects are not empty
+            if UITimetable.check_fields_or_error(fields_values_list=[selected_subjects, selected_days]):
+                self.Timetable.generate_teachers(frequency=freq_val, teaching_days=selected_days, course_list=selected_subjects)
 
-            # Verify if all fields are ok, spit out error if not
-            if UITimetable.check_fields_or_error(fields_values_list=[dept_fullname, selected_days]):
-                self.Timetable.generate_teachers(dept_fullname, frequency=teachers_freq.value(), teaching_days=selected_days)
+                # Clear all the checkmarks from the listwidgets (courses and days)
+                self.checkall_widgtree_in_listwidget(self.gen_teachers_courselist, checkall=False)
+                self.checkall_widgtree_in_listwidget(self.gen_teachers_days_listwidget, checkall=False)
 
-                # Load the tree with faculty, dept and teachers
-                self.load_faculty_dept_teachers_tree()
 
             else:
-                # Spit out error message
-                UITimetable.messagebox(title="Empty field error",icon="critical",text="No course for which to generate teachers")
+                UITimetable.messagebox(icon="critical", title="Empty fields", text="Either subjects/courses or teaching days have not been chosen.")
 
+            teachers_freq.setValue(0)
+
+        # ---------------------------------
+        # If we are updating teacher
         else:
-            # ----------------------------------------------------------------------------------------------------------
-            # If the mark button is clicked
-            # """ Generates teachers for multiple courses selected from the day checkboxes with the mark button """
-            selected_courses = []
-
-            # ADDS ALL THE SELECTED DEPTS (COURSES) TO A LIST
-            root = self.dept_and_teachers_tree.invisibleRootItem()
-            child_count = root.childCount()
-
-            for i in range(child_count):
-                item = root.child(i)
-                # The below returns the WidgetTree class i defined myself
-
-                # Iterate through all the items under this the toplevel element
-
-                for j in range(item.childCount()):
-                    subj_item = item.child(j)
-
-                    widget = self.dept_and_teachers_tree.itemWidget(subj_item, 0)
-               
-                    if widget.get_checkbox().isChecked():
-                        selected_courses.append(widget.full_name_label.text())
+            # We update the teacher selected
+            self.Timetable.generate_teachers(teaching_days=selected_days, course_list=selected_subjects, update=True)
+            # Change the caption on the label
+            self.gen_edit_teacher_label.setText("Generate Teachers")
+            self.gen_edit_teacher_label.setStyleSheet("color:#000051")
+            # Change caption on button
+            self.gen_teachers_btn.setText("Generate")
 
 
-            if UITimetable.check_fields_or_error(fields_values_list=[selected_courses, selected_days]):
-                self.Timetable.generate_multidept_teachers(depts_list=selected_courses, frequency=teachers_freq.value(),
-                 teaching_days=selected_days)
 
-                #Load the tree widget again 
-                self.load_faculty_dept_teachers_tree()
-                self.generate_all_staff_table()
-
-                # Reset the mark button to read mark
-                self.mark_btn.setText("Mark")
-
-            else:
-                UITimetable.messagebox(title="Empty field error",icon="critical",text="Either courses or days have not been specified")
-        # Clear fields
-        
-        teachers_freq.setValue(0)
+        # Load the all_staff_table
+        self.load_fac_courses_tree(with_checkbox=False, expanded=False)
+        self.load_all_staff_table()
+        self.enable_all_in_widget(self.findChild(QtWidgets.QFrame, "gen_teacher_frame"))
+        self.teacher_found_label.setText("None")
+        self.teacher_found_label.setStyleSheet("color:#000;")
         
 
-    def load_gen_teachers_day_chboxes(self):
-        """This loads the days Listwidget with checkboxes, in the big box where teachers are to be registered"""
-
-        self.gen_teachers_days_listwidget.clear()
-
-        for day_obj in self.Timetable.Timetable_obj.list_of_days:
-            # Create a checkbox
-            checkbox = QtWidgets.QCheckBox(f"{day_obj.full_name}")
-            checkbox.setCheckState(QtCore.Qt.Checked)
-            
-            day_item = QtWidgets.QListWidgetItem()
-            self.gen_teachers_days_listwidget.addItem(day_item)
-            self.gen_teachers_days_listwidget.setItemWidget(day_item, checkbox)
-
-
-    def enable_mark_depts(self):
-        """This method fires when when the mark button is clicked (to mark departments)"""
-        if self.mark_btn.text().strip() == "Mark":
-            self.load_faculty_dept_teachers_tree(markable=True, expanded=True)
-            self.mark_btn.setText("Unmark")
-            self.gen_teachers_combobox.clear()
-            self.gen_teachers_combobox.setEnabled(False)
-        else:
-            self.load_faculty_dept_teachers_tree()
-            self.mark_btn.setText("Mark")
-            self.gen_teachers_combobox.setEnabled(True)
-
-
-    def generate_all_staff_table(self):
+    def load_all_staff_table(self, with_checkbox=False, check_all=False):
         """This method generates the table for all the members of staff and their details"""
 
         # Clear the contents of the table first
@@ -1402,12 +1634,155 @@ class UITimetable(QtWidgets.QMainWindow):
 
         for index,teacher in enumerate(self.Timetable.Timetable_obj.list_of_all_teachers):
             row = index
-            self.all_staff_table.setItem(row, 0, QtWidgets.QTableWidgetItem(teacher.full_name))
+            # Sets the checked variable fir the checkbox in the teacher widget
+            checked = QtCore.Qt.Checked if check_all else check_all
+
+            teacher_widg = WidgetTree(icon_path="../Icons-mine/teacher.png", label_text=teacher.full_name, icon_width=17, with_checkbox=with_checkbox)
+            teacher_widg.get_checkbox().setCheckState(checked)
+            self.all_staff_table.setCellWidget(row, 0, teacher_widg)
             self.all_staff_table.setItem(row, 1, QtWidgets.QTableWidgetItem(teacher.str_teacher_depts))
             self.all_staff_table.setItem(row, 2, QtWidgets.QTableWidgetItem(teacher.str_teaching_days(self.Timetable.Timetable_obj)))
             self.all_staff_table.setItem(row, 3, QtWidgets.QTableWidgetItem(teacher.regular_or_no(self.Timetable.Timetable_obj)))
 
 
+    # ------------------------------------ MODIFY TEACHER OBJECT -------------------------------------------
+    def load_teachers_into_combobox(self):
+        """ If teacher to be modified is selected froma combobx (i.e.) the checkbox is clicked, add all the teacher objects available
+        into the combobox """
+        self.combo_with_teacher.clear()
+
+        if self.teacher_from_combo_checkbox.isChecked():
+            # Disable the search teacher box underneath. It is either this one or that.
+            self.search_teacher_gbox.setEnabled(False)
+            # load the combobox
+            self.combo_with_teacher.addItems([teacher.full_name for teacher in self.Timetable.Timetable_obj.list_of_all_teachers])
+
+        else:
+            self.search_teacher_gbox.setEnabled(True)
+
+
+    def render_teacher_from_combobox(self):
+        """ .THIS IS NOT THE PULL OPERATION!!.This method fires when the state of the teachers combobox is changed. It puts the teachers full_name in the label on the screen
+        (Not with his full details i.e. course taught or teaching days yet) """
+
+        teacher_text = self.combo_with_teachers.currentText()
+
+        self.teacher_found_label.setText(teacher_text)
+        self.teacher_found_label.setStyleSheet("""color: #00008c""")
+
+
+    def search_teacher_by_ID(self):
+        """ When the search teacher button is clicked. it sniffs out the teacher object """
+
+        teacher_id = self.teacher_from_spinbox.value()
+        # pulls up the teacher with said ID
+        teacher_obj = self.Timetable.search_out_teacher(teacher_id)
+        teacher_text = teacher_obj.full_name if teacher_obj else "Not found. Doesn't exist."
+        # Turn text color red if no teacher is found else dark blue. "found" in teacher text means the teacher's details were not displayed.
+        teacher_text_colour = "red" if "found" in teacher_text else "#00008c"
+
+        self.teacher_found_label.setText(teacher_text)
+        self.teacher_found_label.setStyleSheet(f"""color:{teacher_text_colour};""")
+
+    
+    def pull_teacher(self):
+        """ This method pulls out teachers details, the courses he offers  and his teaching days and puts it on the screen
+        with his courses and teaching days checked already """
+
+        # No teacher displayed, raise error messagebox
+        if "found" in self.teacher_found_label.text() or "none" in self.teacher_found_label.text().lower():
+            UITimetable.messagebox(icon="critical", title="Empty field", text=" Cannot pull. No teacher selected.")
+            return
+
+        
+        # Change label caption to editing teacher so so
+        self.gen_edit_teacher_label.setText(f"Editing teacher: {self.teacher_found_label.text()}")
+        self.gen_edit_teacher_label.setStyleSheet(f"""color:#0000ca""")
+
+        # else pull the teacher's details from the timetable manager i.e. his courses and his teaching days
+        teachers_courses, teaching_days = self.Timetable.pull_teacher(self.teacher_found_label.text())
+        # ----------------------------------
+        # Load them up on the screen, the courselist first
+        self.gen_teachers_courselist.clear()
+        self.gen_teachers_days_listwidget.clear()
+
+        # the course_fullname and whether or not it is checked
+        for dept_fullname, yea in teachers_courses.items():
+            checked = QtCore.Qt.Checked if yea else False     #Checked if it is True else false
+
+            dept_item = QtWidgets.QListWidgetItem()
+            dept_widg = WidgetTree(icon_path="../Icons-mine/subject.png", icon_width=18,label_text=dept_fullname,with_checkbox=True)
+            dept_widg.get_checkbox().setCheckState(checked)
+            self.gen_teachers_courselist.addItem(dept_item)
+            self.gen_teachers_courselist.setItemWidget(dept_item, dept_widg)
+
+
+        for day_fullname, yea in teaching_days.items():
+            checked = QtCore.Qt.Checked if yea else False     #Checked if it is True else false
+
+            day_item = QtWidgets.QListWidgetItem()
+            day_widg = WidgetTree(icon_path="../Icons-mine/Day.png", icon_width=18,label_text=day_fullname,with_checkbox=True)
+            day_widg.get_checkbox().setCheckState(checked)
+            self.gen_teachers_days_listwidget.addItem(day_item)
+            self.gen_teachers_days_listwidget.setItemWidget(day_item, day_widg)
+
+        # Change caption on the generate teacher button
+        self.teacher_freq_gbox.setEnabled(False)
+        self.gen_teachers_btn.setText("Commit")
+
+
+    def mark_teachers_in_staff_table(self):
+        """ Enables mark operation to be performed on all the teacher items in the table """
+
+        self.all_staff_table.clear()
+        if "unmark" in self.mark_teachers_btn.text().lower():
+            self.load_all_staff_table()
+            self.mark_teachers_btn.setText("Mark for delete")
+            self.markall_teachers_btn.setEnabled(False)
+        else:
+            self.load_all_staff_table(with_checkbox=True)
+            self.mark_teachers_btn.setText("Unmark")
+            self.markall_teachers_btn.setEnabled(True)
+
+
+    def mark_all_teachers_in_staff_table(self):
+        """ checks the checkboxes in the widget tree object of all the teachers in the staff table """
+        self.load_all_staff_table(with_checkbox=True, check_all=True)
+
+
+    def del_teacher(self):
+        """ Deletes the teacher object from the timetable. Teacher is either 
+        picked as one or marked from the all staff list table """
+
+        # If no teacher has been selected yet.
+        if "none" in self.teacher_found_label.text().lower() and "Mark" in self.mark_teachers_btn.text():
+            UITimetable.messagebox(icon="critical", title="Empty fields", text="No teacher selected to delete")
+            return
+
+        # If the mark button has been clicked
+        selected_teachers = []
+        if "unmark" in self.mark_teachers_btn.text().lower():
+            # Go through and pick all the marked teachers in column 0 of the all staff table
+            for k in range(self.all_staff_table.rowCount()):
+                # item = self.all_staff_table.item(k, 0)
+                # Get the item widget
+                item_widg = self.all_staff_table.cellWidget(k,0)
+
+                if item_widg.get_checkbox().isChecked():
+                    selected_teachers.append(item_widg.full_name_label.text())
+
+        # If the teacher has been selected from the pull operation, i.e. just one teacher
+        else:
+            teacher = self.teacher_found_label.text()
+            selected_teachers.append(teacher)
+            
+            # Delete the teacher(s)
+        self.Timetable.delete_teacher(selected_teachers)
+        self.load_all_staff_table()
+        self.mark_teachers_btn.setText("Mark for delete")
+
+
+    # ------------------------------------------------------------------------------------------------------
     def gen_arms_freq_chunk_tree(self):
         """ Generate class arms (and classes) into the tree  upon which selection for chunking would be carried out """
 
@@ -1438,7 +1813,7 @@ class UITimetable(QtWidgets.QMainWindow):
         # Clear contents of the table 
         self.subj_freq_chunk_table.clearContents()
         # Make first column have a width of 140
-        self.subj_freq_chunk_table.setColumnWidth(0,200)
+        self.subj_freq_chunk_table.setColumnWidth(0,250)
 
         all_depts = self.Timetable.Timetable_obj.list_of_departments
         self.subj_freq_chunk_table.setRowCount(len(all_depts))
@@ -1489,6 +1864,33 @@ class UITimetable(QtWidgets.QMainWindow):
 
 # ------------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------------------
+# ----------------------------------  HELPER FUNCTIONS ---------------------------------
+    def checked_widgtree_in_listwidget(self, listwidget):
+        """ Goes through all the WidgetTree instances and picks which one has been checked into a list """
+        selected = []
+
+        for k in range(listwidget.count()):
+            item = listwidget.item(k)
+            item_widg = listwidget.itemWidget(item)
+
+            if item_widg.get_checkbox().isChecked():
+                selected.append(item_widg.full_name_label.text())
+
+        return selected
+
+
+    def checkall_widgtree_in_listwidget(self, listwidget, checkall=True):
+        """ Goes through all the widgettree (my custom widget) instances in the 
+        listwidget and checks or unchecks all their  checkboxes """
+
+        check_all = QtCore.Qt.Checked if checkall else False
+
+        for k in range(listwidget.count()):
+            item = listwidget.item(k)
+            item_widg = listwidget.itemWidget(item)
+            item_widg.get_checkbox().setCheckState(check_all)
+
+
     @staticmethod
     def check_fields_or_error(fields_values_list=None):
         """BOOLEAN. This method handles checking the given fields in a particular case. If any of the fields_VALUES (not the classes alone) are empty

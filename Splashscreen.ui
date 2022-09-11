@@ -83,18 +83,24 @@
          <height>350</height>
         </size>
        </property>
+       <property name="styleSheet">
+        <string notr="true">background:transparent;</string>
+       </property>
        <property name="text">
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>../Icons-mine/Splashscreen.jpg</pixmap>
+        <pixmap>../Icons-mine/Splashscreen.png</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
        </property>
       </widget>
       <widget class="QProgressBar" name="progressBar">
        <property name="geometry">
         <rect>
-         <x>35</x>
-         <y>300</y>
+         <x>175</x>
+         <y>295</y>
          <width>150</width>
          <height>5</height>
         </rect>
@@ -120,9 +126,10 @@
 
 
 QProgressBar::chunk{
-	background-color: qlineargradient(spread:pad, x1:0.926, y1:0.528682, x2:0.0626818, y2:0.54, stop:0.0795455 rgba(66, 66, 66, 255), stop:0.943182 rgba(129, 129, 129, 255));
+	background-color: #dfdfff;
 	border-top-right-radius:2px;
 	border-bottom-right-radius:2px;
+	border-radius:2px;
 }
 </string>
        </property>

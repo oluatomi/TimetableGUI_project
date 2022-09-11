@@ -76,7 +76,7 @@ print()
 # Teachers are being created here
 for dept in my_tt.list_of_departments:
     for _ in range(14):
-        my_tt.create_teacher(dept_obj=dept, teaching_days=my_tt.list_of_days)
+        my_tt.create_teacher(dept_objs_list=[dept], teaching_days=my_tt.list_of_days)
 
 # Assign select teaching days for select teachers
 
@@ -289,8 +289,7 @@ def really_run():
     print("-"*90)
     print("The algo sort")
     print()
-
-    # Different day objectsb
+    # Different day objects
     ll, aa, bb, gg = my_tt.list_of_days[0], my_tt.list_of_days[1], my_tt.list_of_days[3], my_tt.list_of_days[4]
 
     # for arm in my_tt.list_of_school_class_arms:

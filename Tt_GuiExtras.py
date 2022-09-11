@@ -12,7 +12,7 @@ class WidgetTree(QtWidgets.QWidget):
         self.resize(31, 191)
         self.setObjectName("widget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setContentsMargins(4, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.checkBox = QtWidgets.QCheckBox(self)
         self.checkBox.setMaximumSize(QtCore.QSize(15, 19))
