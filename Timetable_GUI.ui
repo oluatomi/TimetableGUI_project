@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1338</width>
-    <height>724</height>
+    <width>1288</width>
+    <height>761</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -88,13 +88,13 @@ QLabel{
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>135</height>
+        <height>130</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>70</height>
+        <height>130</height>
        </size>
       </property>
       <property name="styleSheet">
@@ -170,8 +170,8 @@ QScrollBar::handle::horizontal{
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1332</width>
-            <height>129</height>
+            <width>1282</width>
+            <height>124</height>
            </rect>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -346,7 +346,7 @@ Guide</string>
                   <x>75</x>
                   <y>6</y>
                   <width>101</width>
-                  <height>91</height>
+                  <height>81</height>
                  </rect>
                 </property>
                 <property name="title">
@@ -424,7 +424,7 @@ Guide</string>
                   <x>185</x>
                   <y>6</y>
                   <width>121</width>
-                  <height>96</height>
+                  <height>81</height>
                  </rect>
                 </property>
                 <property name="title">
@@ -486,7 +486,7 @@ Guide</string>
                   <x>315</x>
                   <y>0</y>
                   <width>231</width>
-                  <height>106</height>
+                  <height>86</height>
                  </rect>
                 </property>
                 <property name="title">
@@ -2909,7 +2909,7 @@ Subjects</string>
          </property>
          <property name="minimumSize">
           <size>
-           <width>0</width>
+           <width>500</width>
            <height>450</height>
           </size>
          </property>
@@ -2929,7 +2929,7 @@ Subjects</string>
           <enum>QFrame::Raised</enum>
          </property>
          <property name="currentIndex">
-          <number>3</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="manual_stacked_page">
           <layout class="QVBoxLayout" name="verticalLayout_77">
@@ -2953,7 +2953,7 @@ Subjects</string>
                 <x>0</x>
                 <y>0</y>
                 <width>544</width>
-                <height>471</height>
+                <height>475</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -3058,7 +3058,7 @@ Subjects</string>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLineEdit" name="insitution_lineedit"/>
+                      <widget class="QLineEdit" name="institution_lineedit"/>
                      </item>
                      <item>
                       <widget class="QLabel" name="label_94">
@@ -3137,7 +3137,7 @@ Subjects</string>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QToolButton" name="browse_for_logo_btn">
+                      <widget class="QPushButton" name="browse_for_logo_btn">
                        <property name="maximumSize">
                         <size>
                          <width>70</width>
@@ -3150,16 +3150,16 @@ Subjects</string>
                       </widget>
                      </item>
                      <item alignment="Qt::AlignHCenter">
-                      <widget class="QLabel" name="label_100">
+                      <widget class="QLabel" name="pre_logo_pic_label">
                        <property name="minimumSize">
                         <size>
-                         <width>44</width>
+                         <width>50</width>
                          <height>50</height>
                         </size>
                        </property>
                        <property name="maximumSize">
                         <size>
-                         <width>44</width>
+                         <width>50</width>
                          <height>50</height>
                         </size>
                        </property>
@@ -3216,6 +3216,9 @@ Subjects</string>
                         </item>
                         <item>
                          <widget class="QPushButton" name="gen_info_edit">
+                          <property name="enabled">
+                           <bool>false</bool>
+                          </property>
                           <property name="text">
                            <string>Edit</string>
                           </property>
@@ -3235,7 +3238,13 @@ Subjects</string>
                  <property name="minimumSize">
                   <size>
                    <width>205</width>
-                   <height>0</height>
+                   <height>120</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>205</width>
+                   <height>16777215</height>
                   </size>
                  </property>
                  <property name="frameShape">
@@ -3266,91 +3275,190 @@ Subjects</string>
                      <enum>QFrame::Raised</enum>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_86">
-                     <item>
-                      <widget class="QLabel" name="label_126">
-                       <property name="text">
-                        <string>Logo picture</string>
+                     <property name="leftMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>5</number>
+                     </property>
+                     <item alignment="Qt::AlignHCenter">
+                      <widget class="QLabel" name="logo_pic_label">
+                       <property name="minimumSize">
+                        <size>
+                         <width>50</width>
+                         <height>50</height>
+                        </size>
                        </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="label_26">
-                       <property name="text">
-                        <string>School/Instituiton</string>
+                       <property name="maximumSize">
+                        <size>
+                         <width>50</width>
+                         <height>50</height>
+                        </size>
                        </property>
-                       <property name="wordWrap">
+                       <property name="text">
+                        <string/>
+                       </property>
+                       <property name="pixmap">
+                        <pixmap>../Icons-mine/App_logo.png</pixmap>
+                       </property>
+                       <property name="scaledContents">
                         <bool>true</bool>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="institution_label">
-                       <property name="text">
-                        <string>None given</string>
+                      <widget class="QScrollArea" name="scrollArea_11">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>345</height>
+                        </size>
                        </property>
-                       <property name="wordWrap">
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>345</height>
+                        </size>
+                       </property>
+                       <property name="widgetResizable">
                         <bool>true</bool>
                        </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="label_62">
-                       <property name="text">
-                        <string>Session/Year/ Time frame</string>
-                       </property>
-                       <property name="wordWrap">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="session_label">
-                       <property name="text">
-                        <string>None given</string>
-                       </property>
-                       <property name="wordWrap">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="label_68">
-                       <property name="text">
-                        <string>Acronym</string>
-                       </property>
-                       <property name="wordWrap">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="acronym_label">
-                       <property name="text">
-                        <string>None given</string>
-                       </property>
-                       <property name="wordWrap">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="label_112">
-                       <property name="text">
-                        <string>Extra Information</string>
-                       </property>
-                       <property name="wordWrap">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="extra_info_label">
-                       <property name="text">
-                        <string>None given</string>
-                       </property>
-                       <property name="wordWrap">
-                        <bool>true</bool>
-                       </property>
+                       <widget class="QWidget" name="scrollAreaWidgetContents_10">
+                        <property name="geometry">
+                         <rect>
+                          <x>0</x>
+                          <y>0</y>
+                          <width>107</width>
+                          <height>241</height>
+                         </rect>
+                        </property>
+                        <layout class="QVBoxLayout" name="verticalLayout_58">
+                         <item>
+                          <widget class="QLabel" name="label_26">
+                           <property name="font">
+                            <font>
+                             <weight>75</weight>
+                             <bold>true</bold>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>School/Instituiton</string>
+                           </property>
+                           <property name="wordWrap">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="institution_label">
+                           <property name="text">
+                            <string>None provided yet</string>
+                           </property>
+                           <property name="wordWrap">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_63">
+                           <property name="font">
+                            <font>
+                             <weight>75</weight>
+                             <bold>true</bold>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>Director</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="director_label">
+                           <property name="text">
+                            <string>None provided yet</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_62">
+                           <property name="font">
+                            <font>
+                             <weight>75</weight>
+                             <bold>true</bold>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>Session/Year/ Time frame</string>
+                           </property>
+                           <property name="wordWrap">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="session_label">
+                           <property name="text">
+                            <string>None provided yet</string>
+                           </property>
+                           <property name="wordWrap">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_68">
+                           <property name="font">
+                            <font>
+                             <weight>75</weight>
+                             <bold>true</bold>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>Acronym</string>
+                           </property>
+                           <property name="wordWrap">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="acronym_label">
+                           <property name="text">
+                            <string>None provided yet</string>
+                           </property>
+                           <property name="wordWrap">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_112">
+                           <property name="font">
+                            <font>
+                             <weight>75</weight>
+                             <bold>true</bold>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>Extra Information</string>
+                           </property>
+                           <property name="wordWrap">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="extra_info_label">
+                           <property name="text">
+                            <string>None provided yet</string>
+                           </property>
+                           <property name="wordWrap">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
                       </widget>
                      </item>
                     </layout>
@@ -3501,7 +3609,7 @@ Subjects</string>
                        <x>0</x>
                        <y>0</y>
                        <width>343</width>
-                       <height>415</height>
+                       <height>455</height>
                       </rect>
                      </property>
                      <layout class="QVBoxLayout" name="verticalLayout_33">
@@ -3525,7 +3633,7 @@ Subjects</string>
                         <property name="maximumSize">
                          <size>
                           <width>16777215</width>
-                          <height>200</height>
+                          <height>240</height>
                          </size>
                         </property>
                         <property name="title">
@@ -3554,8 +3662,8 @@ Subjects</string>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>200</width>
-                             <height>210</height>
+                             <width>190</width>
+                             <height>16777215</height>
                             </size>
                            </property>
                            <property name="font">
@@ -3607,7 +3715,7 @@ Subjects</string>
                                 <widget class="QLabel" name="label_108">
                                  <property name="maximumSize">
                                   <size>
-                                   <width>35</width>
+                                   <width>40</width>
                                    <height>25</height>
                                   </size>
                                  </property>
@@ -3626,6 +3734,9 @@ Subjects</string>
                                 <widget class="QLabel" name="label_73">
                                  <property name="text">
                                   <string>&lt;span style=&quot;font-weight:bold&quot;&gt;School class category&lt;/span&gt;</string>
+                                 </property>
+                                 <property name="wordWrap">
+                                  <bool>true</bool>
                                  </property>
                                 </widget>
                                </item>
@@ -3770,6 +3881,9 @@ p, li { white-space: pre-wrap; }
                                 <widget class="QLabel" name="label_64">
                                  <property name="text">
                                   <string>&lt;span style=&quot;font-weight:bold&quot;&gt;School class&lt;/span&gt; </string>
+                                 </property>
+                                 <property name="wordWrap">
+                                  <bool>true</bool>
                                  </property>
                                 </widget>
                                </item>
@@ -4217,7 +4331,7 @@ p, li { white-space: pre-wrap; }
                                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Optional. If checked, number you input &lt;/p&gt;&lt;p&gt;should signify the position of the day with respect to the others.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                     </property>
                                     <property name="text">
-                                     <string>Add position</string>
+                                     <string>Specify position in week</string>
                                     </property>
                                    </widget>
                                   </item>
@@ -4949,8 +5063,8 @@ font-weight:bold;</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>468</width>
-                <height>547</height>
+                <width>1118</width>
+                <height>521</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_79">
@@ -5324,8 +5438,8 @@ QLineEdit, QTextEdit, QComboBox{
                          <rect>
                           <x>0</x>
                           <y>0</y>
-                          <width>186</width>
-                          <height>241</height>
+                          <width>203</width>
+                          <height>481</height>
                          </rect>
                         </property>
                         <property name="styleSheet">
@@ -5349,13 +5463,13 @@ QLineEdit, QTextEdit, QComboBox{
                            <property name="minimumSize">
                             <size>
                              <width>0</width>
-                             <height>50</height>
+                             <height>250</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
                              <width>16777215</width>
-                             <height>320</height>
+                             <height>335</height>
                             </size>
                            </property>
                            <property name="styleSheet">
@@ -5390,6 +5504,8 @@ QLineEdit, QTextEdit, QComboBox{
                               <property name="font">
                                <font>
                                 <pointsize>8</pointsize>
+                                <weight>75</weight>
+                                <bold>true</bold>
                                </font>
                               </property>
                               <property name="autoFillBackground">
@@ -5450,6 +5566,22 @@ QLineEdit, QTextEdit, QComboBox{
                                </font>
                               </property>
                              </widget>
+                            </item>
+                            <item>
+                             <spacer name="verticalSpacer_12">
+                              <property name="orientation">
+                               <enum>Qt::Vertical</enum>
+                              </property>
+                              <property name="sizeType">
+                               <enum>QSizePolicy::Fixed</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>20</width>
+                                <height>10</height>
+                               </size>
+                              </property>
+                             </spacer>
                             </item>
                             <item>
                              <widget class="QPushButton" name="reg_deptfac_btn">
@@ -5529,6 +5661,8 @@ QLineEdit, QTextEdit, QComboBox{
                           <property name="font">
                            <font>
                             <pointsize>8</pointsize>
+                            <weight>75</weight>
+                            <bold>true</bold>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -6143,7 +6277,7 @@ QLabel{
                           <x>0</x>
                           <y>0</y>
                           <width>661</width>
-                          <height>387</height>
+                          <height>466</height>
                          </rect>
                         </property>
                         <layout class="QHBoxLayout" name="horizontalLayout_18">
@@ -6193,7 +6327,7 @@ QLabel{
                              <widget class="QLabel" name="label_32">
                               <property name="font">
                                <font>
-                                <pointsize>9</pointsize>
+                                <pointsize>8</pointsize>
                                 <weight>75</weight>
                                 <bold>true</bold>
                                </font>
@@ -6355,6 +6489,11 @@ QLabel{
                              <height>16777215</height>
                             </size>
                            </property>
+                           <property name="font">
+                            <font>
+                             <pointsize>5</pointsize>
+                            </font>
+                           </property>
                            <property name="frameShape">
                             <enum>QFrame::StyledPanel</enum>
                            </property>
@@ -6366,7 +6505,7 @@ QLabel{
                              <number>5</number>
                             </property>
                             <property name="topMargin">
-                             <number>5</number>
+                             <number>2</number>
                             </property>
                             <property name="rightMargin">
                              <number>5</number>
@@ -6378,7 +6517,7 @@ QLabel{
                              <widget class="QFrame" name="frame_28">
                               <property name="maximumSize">
                                <size>
-                                <width>240</width>
+                                <width>250</width>
                                 <height>240</height>
                                </size>
                               </property>
@@ -6529,7 +6668,7 @@ QLabel{
                                  <x>5</x>
                                  <y>5</y>
                                  <width>241</width>
-                                 <height>206</height>
+                                 <height>201</height>
                                 </rect>
                                </property>
                                <property name="minimumSize">
@@ -6846,6 +6985,1758 @@ QScrollBar::handle{
            </item>
           </layout>
          </widget>
+         <widget class="QWidget" name="subjs_and_periods">
+          <property name="minimumSize">
+           <size>
+            <width>255</width>
+            <height>600</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_24">
+           <property name="leftMargin">
+            <number>1</number>
+           </property>
+           <property name="topMargin">
+            <number>1</number>
+           </property>
+           <property name="rightMargin">
+            <number>1</number>
+           </property>
+           <property name="bottomMargin">
+            <number>1</number>
+           </property>
+           <item alignment="Qt::AlignTop">
+            <widget class="QScrollArea" name="scrollArea_3">
+             <property name="minimumSize">
+              <size>
+               <width>600</width>
+               <height>540</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>540</height>
+              </size>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents_12">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>1124</width>
+                <height>1158</height>
+               </rect>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>700</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_48">
+               <property name="leftMargin">
+                <number>3</number>
+               </property>
+               <property name="topMargin">
+                <number>3</number>
+               </property>
+               <property name="rightMargin">
+                <number>3</number>
+               </property>
+               <property name="bottomMargin">
+                <number>9</number>
+               </property>
+               <item>
+                <widget class="QFrame" name="frame_34">
+                 <property name="minimumSize">
+                  <size>
+                   <width>1030</width>
+                   <height>1146</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>1146</height>
+                  </size>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_51">
+                  <item>
+                   <widget class="QLabel" name="label_89">
+                    <property name="font">
+                     <font>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Periods generation and assignment of subjects to class arms.</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item alignment="Qt::AlignTop">
+                   <widget class="QFrame" name="frame_43">
+                    <property name="minimumSize">
+                     <size>
+                      <width>1040</width>
+                      <height>540</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>16777215</width>
+                      <height>475</height>
+                     </size>
+                    </property>
+                    <layout class="QHBoxLayout" name="horizontalLayout_25">
+                     <property name="spacing">
+                      <number>5</number>
+                     </property>
+                     <property name="leftMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>5</number>
+                     </property>
+                     <item>
+                      <widget class="QFrame" name="frame_47">
+                       <property name="minimumSize">
+                        <size>
+                         <width>265</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>265</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                       <property name="font">
+                        <font>
+                         <weight>75</weight>
+                         <bold>true</bold>
+                        </font>
+                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_40">
+                        <property name="spacing">
+                         <number>2</number>
+                        </property>
+                        <property name="leftMargin">
+                         <number>4</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>2</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>4</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>2</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_51">
+                          <property name="font">
+                           <font>
+                            <weight>75</weight>
+                            <bold>true</bold>
+                           </font>
+                          </property>
+                          <property name="text">
+                           <string>Class arms tree</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QTreeWidget" name="arms_for_chunk_tree">
+                          <property name="indentation">
+                           <number>15</number>
+                          </property>
+                          <property name="headerHidden">
+                           <bool>true</bool>
+                          </property>
+                          <column>
+                           <property name="text">
+                            <string notr="true">1</string>
+                           </property>
+                          </column>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="frame_53">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>520</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QLineEdit, QSpinBox{
+	border-radius:2px;
+	padding-left:3px;
+	border: 0.5px solid #7a7a7a;
+}
+
+QLabel[text=&quot;Invalid format&quot;]{
+	color:red;
+}</string>
+                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_44">
+                        <property name="spacing">
+                         <number>2</number>
+                        </property>
+                        <property name="leftMargin">
+                         <number>6</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>1</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>6</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>1</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_111">
+                          <property name="font">
+                           <font>
+                            <pointsize>8</pointsize>
+                            <weight>75</weight>
+                            <bold>true</bold>
+                           </font>
+                          </property>
+                          <property name="text">
+                           <string>Generate periods for Selected classes or arms</string>
+                          </property>
+                          <property name="alignment">
+                           <set>Qt::AlignCenter</set>
+                          </property>
+                          <property name="wordWrap">
+                           <bool>true</bool>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="verticalSpacer_7">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeType">
+                           <enum>QSizePolicy::Fixed</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>5</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                        <item>
+                         <widget class="QLabel" name="label_21">
+                          <property name="font">
+                           <font>
+                            <weight>50</weight>
+                            <bold>false</bold>
+                           </font>
+                          </property>
+                          <property name="text">
+                           <string>All times should be of the form hh:mm:ss (24-hr format)</string>
+                          </property>
+                          <property name="alignment">
+                           <set>Qt::AlignCenter</set>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="verticalSpacer_8">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeType">
+                           <enum>QSizePolicy::Fixed</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>3</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                        <item>
+                         <widget class="QRadioButton" name="duration_radbtn">
+                          <property name="font">
+                           <font>
+                            <weight>75</weight>
+                            <bold>true</bold>
+                           </font>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true"/>
+                          </property>
+                          <property name="text">
+                           <string>Generate periods given duration</string>
+                          </property>
+                          <property name="checked">
+                           <bool>true</bool>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QGroupBox" name="duration_gbox">
+                          <property name="title">
+                           <string/>
+                          </property>
+                          <layout class="QHBoxLayout" name="horizontalLayout_8">
+                           <property name="spacing">
+                            <number>4</number>
+                           </property>
+                           <property name="leftMargin">
+                            <number>1</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>1</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>1</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>1</number>
+                           </property>
+                           <item>
+                            <widget class="QGroupBox" name="groupBox_55">
+                             <property name="minimumSize">
+                              <size>
+                               <width>150</width>
+                               <height>0</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>150</width>
+                               <height>16777215</height>
+                              </size>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true"/>
+                             </property>
+                             <property name="title">
+                              <string>Normal (Academic) Periods</string>
+                             </property>
+                             <property name="alignment">
+                              <set>Qt::AlignCenter</set>
+                             </property>
+                             <layout class="QFormLayout" name="formLayout_8">
+                              <property name="horizontalSpacing">
+                               <number>2</number>
+                              </property>
+                              <property name="verticalSpacing">
+                               <number>3</number>
+                              </property>
+                              <property name="leftMargin">
+                               <number>7</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>7</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>7</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>7</number>
+                              </property>
+                              <item row="0" column="0">
+                               <widget class="QLabel" name="label_90">
+                                <property name="toolTip">
+                                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The start time of the first period.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                </property>
+                                <property name="text">
+                                 <string>Start time</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="0" column="1">
+                               <widget class="QLineEdit" name="start1">
+                                <property name="placeholderText">
+                                 <string>08:00:00</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="2" column="0">
+                               <widget class="QLabel" name="label_91">
+                                <property name="text">
+                                 <string>Duration</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="2" column="1">
+                               <widget class="QLineEdit" name="duration1">
+                                <property name="placeholderText">
+                                 <string>00:40:00</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="4" column="0">
+                               <widget class="QLabel" name="label_92">
+                                <property name="toolTip">
+                                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of periods&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                </property>
+                                <property name="text">
+                                 <string>Frequency</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="4" column="1">
+                               <widget class="QSpinBox" name="freq1"/>
+                              </item>
+                              <item row="5" column="0">
+                               <widget class="QLabel" name="label_88">
+                                <property name="toolTip">
+                                 <string>Inter-period interval. A bit of breathing space between a period and the next (in minutes).</string>
+                                </property>
+                                <property name="text">
+                                 <string>Interval</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="5" column="1">
+                               <widget class="QLineEdit" name="int1">
+                                <property name="placeholderText">
+                                 <string>00:00:00</string>
+                                </property>
+                               </widget>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QGroupBox" name="groupBox_56">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>125</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>300</width>
+                               <height>16777215</height>
+                              </size>
+                             </property>
+                             <property name="toolTip">
+                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Handles the generation of special periods (like Recess or &amp;quot;Break&amp;quot;) and their insertion into the list of periods for the day.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                             </property>
+                             <property name="title">
+                              <string>Non-Academic Periods</string>
+                             </property>
+                             <property name="alignment">
+                              <set>Qt::AlignCenter</set>
+                             </property>
+                             <layout class="QVBoxLayout" name="verticalLayout_54">
+                              <property name="spacing">
+                               <number>1</number>
+                              </property>
+                              <property name="leftMargin">
+                               <number>2</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>2</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>2</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>3</number>
+                              </property>
+                              <item>
+                               <widget class="QTableWidget" name="nonacad_table1">
+                                <column>
+                                 <property name="text">
+                                  <string>Non-academic courses</string>
+                                 </property>
+                                 <property name="toolTip">
+                                  <string>Non-academic subjects</string>
+                                 </property>
+                                </column>
+                                <column>
+                                 <property name="text">
+                                  <string>Duration</string>
+                                 </property>
+                                 <property name="toolTip">
+                                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Duration in Minutes.&lt;/p&gt;&lt;p&gt;Format is hh:mm:ss.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                 </property>
+                                </column>
+                                <column>
+                                 <property name="text">
+                                  <string>Position</string>
+                                 </property>
+                                 <property name="toolTip">
+                                  <string>Comma-seperated numbers (for more than one position) for where this period should lie.
+E.g. 2 implies this period should occupy the 2nd period.
+2,3 implies 2nd and 3rd periods.</string>
+                                 </property>
+                                </column>
+                               </widget>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QRadioButton" name="day_startend_radbtn">
+                          <property name="font">
+                           <font>
+                            <weight>75</weight>
+                            <bold>true</bold>
+                           </font>
+                          </property>
+                          <property name="text">
+                           <string>Given Day-start, Day-end boundaries</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QGroupBox" name="day_startend_gbox">
+                          <property name="enabled">
+                           <bool>false</bool>
+                          </property>
+                          <property name="toolTip">
+                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generates periods of equal duration of a certain number between the start and end times.&lt;/p&gt;&lt;p&gt;The addition of special periods makes the list spill beyond the end period.&lt;/p&gt;&lt;p&gt;This is useful when a certain total duration of normal periods is required, with the special periods just occupying space in the list of periods for that day.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">QWidget{
+color:#bfbfbf;
+ border-color:#bfbfbf;
+}</string>
+                          </property>
+                          <property name="title">
+                           <string/>
+                          </property>
+                          <property name="alignment">
+                           <set>Qt::AlignCenter</set>
+                          </property>
+                          <layout class="QHBoxLayout" name="horizontalLayout_21">
+                           <property name="spacing">
+                            <number>5</number>
+                           </property>
+                           <property name="leftMargin">
+                            <number>2</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>2</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>2</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>2</number>
+                           </property>
+                           <item>
+                            <widget class="QGroupBox" name="groupBox_58">
+                             <property name="minimumSize">
+                              <size>
+                               <width>150</width>
+                               <height>0</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>150</width>
+                               <height>16777215</height>
+                              </size>
+                             </property>
+                             <property name="title">
+                              <string>Normal Periods</string>
+                             </property>
+                             <layout class="QFormLayout" name="formLayout_9">
+                              <property name="horizontalSpacing">
+                               <number>5</number>
+                              </property>
+                              <property name="verticalSpacing">
+                               <number>3</number>
+                              </property>
+                              <property name="leftMargin">
+                               <number>7</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>7</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>7</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>7</number>
+                              </property>
+                              <item row="0" column="0">
+                               <widget class="QLabel" name="label_96">
+                                <property name="text">
+                                 <string>Start</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="0" column="1">
+                               <widget class="QLineEdit" name="start2">
+                                <property name="placeholderText">
+                                 <string>08:00:00</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="1" column="0">
+                               <widget class="QLabel" name="label_97">
+                                <property name="text">
+                                 <string>Limit</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="1" column="1">
+                               <widget class="QLineEdit" name="end2">
+                                <property name="placeholderText">
+                                 <string>16:00:00</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="2" column="0">
+                               <widget class="QLabel" name="label_98">
+                                <property name="toolTip">
+                                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of periods&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                </property>
+                                <property name="text">
+                                 <string>Frequency</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="2" column="1">
+                               <widget class="QSpinBox" name="freq2"/>
+                              </item>
+                              <item row="3" column="0">
+                               <widget class="QLabel" name="label_118">
+                                <property name="toolTip">
+                                 <string>Inter-period interval. A bit of breathing space between a period and the next (in minutes).</string>
+                                </property>
+                                <property name="text">
+                                 <string>Interval</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="3" column="1">
+                               <widget class="QLineEdit" name="int2">
+                                <property name="placeholderText">
+                                 <string>00:00:00</string>
+                                </property>
+                               </widget>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QGroupBox" name="groupBox_59">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>125</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>300</width>
+                               <height>125</height>
+                              </size>
+                             </property>
+                             <property name="toolTip">
+                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Handles the generation of special periods (like Recess or &amp;quot;Break&amp;quot;) and their insertion into the list of periods for the day.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                             </property>
+                             <property name="title">
+                              <string>Non-Academic Periods</string>
+                             </property>
+                             <property name="alignment">
+                              <set>Qt::AlignCenter</set>
+                             </property>
+                             <layout class="QVBoxLayout" name="verticalLayout_56">
+                              <property name="spacing">
+                               <number>1</number>
+                              </property>
+                              <property name="leftMargin">
+                               <number>3</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>3</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>3</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>3</number>
+                              </property>
+                              <item>
+                               <widget class="QTableWidget" name="nonacad_table2">
+                                <property name="maximumSize">
+                                 <size>
+                                  <width>16777215</width>
+                                  <height>16777215</height>
+                                 </size>
+                                </property>
+                                <column>
+                                 <property name="text">
+                                  <string>Non-academic courses</string>
+                                 </property>
+                                 <property name="toolTip">
+                                  <string>Non-academic subjects</string>
+                                 </property>
+                                </column>
+                                <column>
+                                 <property name="text">
+                                  <string>Duration</string>
+                                 </property>
+                                 <property name="toolTip">
+                                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Duration in Minutes.&lt;/p&gt;&lt;p&gt;Format is hh:mm:ss.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                 </property>
+                                </column>
+                                <column>
+                                 <property name="text">
+                                  <string>Position</string>
+                                 </property>
+                                 <property name="toolTip">
+                                  <string>Comma-seperated numbers (for more than one position) for where this period should lie.
+E.g. 2 implies this period should occupy the 2nd period.
+2,3 implies 2nd and 3rd periods.</string>
+                                 </property>
+                                </column>
+                               </widget>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QRadioButton" name="abs_day_startend_radbtn">
+                          <property name="font">
+                           <font>
+                            <weight>75</weight>
+                            <bold>true</bold>
+                           </font>
+                          </property>
+                          <property name="text">
+                           <string>Given Day start, end boundaries as absolute constraints</string>
+                          </property>
+                          <property name="checkable">
+                           <bool>true</bool>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QGroupBox" name="abs_startend_gbox">
+                          <property name="enabled">
+                           <bool>false</bool>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">QWidget{
+color:#bfbfbf;
+ border-color:#bfbfbf;
+}</string>
+                          </property>
+                          <property name="title">
+                           <string/>
+                          </property>
+                          <property name="alignment">
+                           <set>Qt::AlignCenter</set>
+                          </property>
+                          <layout class="QHBoxLayout" name="horizontalLayout_20">
+                           <property name="spacing">
+                            <number>5</number>
+                           </property>
+                           <property name="leftMargin">
+                            <number>3</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>3</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>3</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>3</number>
+                           </property>
+                           <item>
+                            <widget class="QGroupBox" name="groupBox_61">
+                             <property name="minimumSize">
+                              <size>
+                               <width>150</width>
+                               <height>0</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>150</width>
+                               <height>16777215</height>
+                              </size>
+                             </property>
+                             <property name="title">
+                              <string>Normal Periods</string>
+                             </property>
+                             <layout class="QFormLayout" name="formLayout_10">
+                              <property name="horizontalSpacing">
+                               <number>5</number>
+                              </property>
+                              <property name="verticalSpacing">
+                               <number>3</number>
+                              </property>
+                              <property name="leftMargin">
+                               <number>7</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>7</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>7</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>7</number>
+                              </property>
+                              <item row="0" column="0">
+                               <widget class="QLabel" name="label_104">
+                                <property name="text">
+                                 <string>Abs. start</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="0" column="1">
+                               <widget class="QLineEdit" name="start3">
+                                <property name="placeholderText">
+                                 <string>08:00:00</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="1" column="0">
+                               <widget class="QLabel" name="label_105">
+                                <property name="text">
+                                 <string>Abs. end</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="1" column="1">
+                               <widget class="QLineEdit" name="end3">
+                                <property name="placeholderText">
+                                 <string>16:00:00</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="2" column="0">
+                               <widget class="QLabel" name="label_106">
+                                <property name="toolTip">
+                                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of periods&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                </property>
+                                <property name="text">
+                                 <string>Frequency</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="2" column="1">
+                               <widget class="QSpinBox" name="freq3"/>
+                              </item>
+                              <item row="3" column="0">
+                               <widget class="QLabel" name="label_119">
+                                <property name="toolTip">
+                                 <string>Inter-period interval. A bit of breathing space between a period and the next (in minutes).</string>
+                                </property>
+                                <property name="text">
+                                 <string>Interval</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="3" column="1">
+                               <widget class="QLineEdit" name="int3">
+                                <property name="placeholderText">
+                                 <string>00:00:00</string>
+                                </property>
+                               </widget>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QGroupBox" name="groupBox_62">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>125</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>300</width>
+                               <height>125</height>
+                              </size>
+                             </property>
+                             <property name="toolTip">
+                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Handles the generation of special periods (like Recess or &amp;quot;Break&amp;quot;) and their insertion into the list of periods for the day.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                             </property>
+                             <property name="title">
+                              <string>Non-Academic Periods</string>
+                             </property>
+                             <property name="alignment">
+                              <set>Qt::AlignCenter</set>
+                             </property>
+                             <layout class="QVBoxLayout" name="verticalLayout_57">
+                              <property name="spacing">
+                               <number>1</number>
+                              </property>
+                              <property name="leftMargin">
+                               <number>3</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>3</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>3</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>3</number>
+                              </property>
+                              <item>
+                               <widget class="QTableWidget" name="nonacad_table3">
+                                <column>
+                                 <property name="text">
+                                  <string>Non-academic courses</string>
+                                 </property>
+                                 <property name="toolTip">
+                                  <string>Non-academic subjects</string>
+                                 </property>
+                                </column>
+                                <column>
+                                 <property name="text">
+                                  <string>Duration</string>
+                                 </property>
+                                 <property name="toolTip">
+                                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Duration in Minutes.&lt;/p&gt;&lt;p&gt;Format is hh:mm:ss.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                 </property>
+                                </column>
+                                <column>
+                                 <property name="text">
+                                  <string>Position</string>
+                                 </property>
+                                 <property name="toolTip">
+                                  <string>Comma-seperated numbers (for more than one position) for where this period should lie.
+E.g. 2 implies this period should occupy the 2nd period.
+2,3 implies 2nd and 3rd periods.</string>
+                                 </property>
+                                </column>
+                               </widget>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="gen_periods_btn">
+                          <property name="text">
+                           <string>Generate periods</string>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="frame_44">
+                       <property name="minimumSize">
+                        <size>
+                         <width>370</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>370</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_85">
+                        <property name="spacing">
+                         <number>2</number>
+                        </property>
+                        <property name="leftMargin">
+                         <number>6</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>4</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>6</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>4</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_114">
+                          <property name="font">
+                           <font>
+                            <weight>75</weight>
+                            <bold>true</bold>
+                           </font>
+                          </property>
+                          <property name="text">
+                           <string>Enter each subject's weekly frequencies and chunk values for each of the class arms you have ticked.</string>
+                          </property>
+                          <property name="wordWrap">
+                           <bool>true</bool>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QFrame" name="frame_45">
+                          <property name="frameShape">
+                           <enum>QFrame::StyledPanel</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Raised</enum>
+                          </property>
+                          <layout class="QHBoxLayout" name="horizontalLayout_29">
+                           <property name="leftMargin">
+                            <number>1</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>1</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>1</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>1</number>
+                           </property>
+                           <item>
+                            <widget class="QTableWidget" name="subject_freq_chunk_table">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>300</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>370</width>
+                               <height>430</height>
+                              </size>
+                             </property>
+                             <property name="editTriggers">
+                              <set>QAbstractItemView::NoEditTriggers</set>
+                             </property>
+                             <column>
+                              <property name="text">
+                               <string>Subject/Course</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                              <property name="icon">
+                               <iconset>
+                                <normaloff>../Icons-mine/subject.png</normaloff>../Icons-mine/subject.png</iconset>
+                              </property>
+                             </column>
+                             <column>
+                              <property name="text">
+                               <string>Weekly</string>
+                              </property>
+                              <property name="toolTip">
+                               <string>Subject's weekly frequency, i.e. how many periods per week.</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                             </column>
+                             <column>
+                              <property name="text">
+                               <string>Chunk</string>
+                              </property>
+                              <property name="toolTip">
+                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter 1 for single period, 2 for double and so on.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                             </column>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QFrame" name="frame_46">
+                          <property name="minimumSize">
+                           <size>
+                            <width>430</width>
+                            <height>0</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>440</width>
+                            <height>55</height>
+                           </size>
+                          </property>
+                          <property name="frameShape">
+                           <enum>QFrame::StyledPanel</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Raised</enum>
+                          </property>
+                          <layout class="QHBoxLayout" name="horizontalLayout_24">
+                           <property name="spacing">
+                            <number>4</number>
+                           </property>
+                           <property name="leftMargin">
+                            <number>4</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>3</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>4</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>3</number>
+                           </property>
+                           <item>
+                            <widget class="QPushButton" name="pushButton_2">
+                             <property name="minimumSize">
+                              <size>
+                               <width>110</width>
+                               <height>0</height>
+                              </size>
+                             </property>
+                             <property name="text">
+                              <string>Commit</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="Line" name="line_8">
+                             <property name="orientation">
+                              <enum>Qt::Vertical</enum>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QFrame" name="frame_48">
+                             <property name="frameShape">
+                              <enum>QFrame::StyledPanel</enum>
+                             </property>
+                             <property name="frameShadow">
+                              <enum>QFrame::Raised</enum>
+                             </property>
+                             <layout class="QHBoxLayout" name="horizontalLayout_30">
+                              <property name="leftMargin">
+                               <number>5</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>3</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>5</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>3</number>
+                              </property>
+                              <item>
+                               <widget class="QLabel" name="label_27">
+                                <property name="maximumSize">
+                                 <size>
+                                  <width>20</width>
+                                  <height>18</height>
+                                 </size>
+                                </property>
+                                <property name="text">
+                                 <string/>
+                                </property>
+                                <property name="pixmap">
+                                 <pixmap>../Icons-mine/down_arrows.png</pixmap>
+                                </property>
+                                <property name="scaledContents">
+                                 <bool>true</bool>
+                                </property>
+                               </widget>
+                              </item>
+                              <item>
+                               <widget class="QLabel" name="label_22">
+                                <property name="font">
+                                 <font>
+                                  <family>cambria</family>
+                                  <pointsize>10</pointsize>
+                                  <weight>75</weight>
+                                  <bold>true</bold>
+                                 </font>
+                                </property>
+                                <property name="styleSheet">
+                                 <string notr="true">font-size:10pt;
+color:#000093;
+font-weight:bold;
+font-family:cambria;
+</string>
+                                </property>
+                                <property name="text">
+                                 <string>Scroll below to continue. Select days and check your ouput in the table.</string>
+                                </property>
+                                <property name="wordWrap">
+                                 <bool>true</bool>
+                                </property>
+                               </widget>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Fixed</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>10</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QFrame" name="frame_54">
+                    <property name="minimumSize">
+                     <size>
+                      <width>500</width>
+                      <height>300</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>16777215</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <layout class="QHBoxLayout" name="horizontalLayout_23">
+                     <property name="spacing">
+                      <number>5</number>
+                     </property>
+                     <property name="leftMargin">
+                      <number>4</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>4</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>4</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>4</number>
+                     </property>
+                     <item alignment="Qt::AlignTop">
+                      <widget class="QFrame" name="frame_38">
+                       <property name="maximumSize">
+                        <size>
+                         <width>205</width>
+                         <height>415</height>
+                        </size>
+                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_43">
+                        <property name="leftMargin">
+                         <number>3</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>3</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>3</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>5</number>
+                        </property>
+                        <item>
+                         <widget class="QFrame" name="frame_40">
+                          <property name="maximumSize">
+                           <size>
+                            <width>16777215</width>
+                            <height>55</height>
+                           </size>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">background:#000;</string>
+                          </property>
+                          <property name="frameShape">
+                           <enum>QFrame::StyledPanel</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Raised</enum>
+                          </property>
+                          <layout class="QHBoxLayout" name="horizontalLayout_22">
+                           <property name="spacing">
+                            <number>10</number>
+                           </property>
+                           <property name="leftMargin">
+                            <number>3</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>3</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>3</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>3</number>
+                           </property>
+                           <item>
+                            <widget class="QLabel" name="label_56">
+                             <property name="minimumSize">
+                              <size>
+                               <width>40</width>
+                               <height>35</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>40</width>
+                               <height>35</height>
+                              </size>
+                             </property>
+                             <property name="text">
+                              <string/>
+                             </property>
+                             <property name="pixmap">
+                              <pixmap>../Icons-mine/Day.png</pixmap>
+                             </property>
+                             <property name="scaledContents">
+                              <bool>true</bool>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QLabel" name="label_110">
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>16777215</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <weight>75</weight>
+                               <bold>true</bold>
+                              </font>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">color:#e6e6e6;</string>
+                             </property>
+                             <property name="text">
+                              <string>Select the days in which the above operations apply</string>
+                             </property>
+                             <property name="wordWrap">
+                              <bool>true</bool>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QListWidget" name="days_for_arms_listwidget">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>350</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>16777215</width>
+                            <height>16777215</height>
+                           </size>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="frame_52">
+                       <layout class="QVBoxLayout" name="verticalLayout_50">
+                        <property name="leftMargin">
+                         <number>7</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>2</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>7</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>7</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_20">
+                          <property name="font">
+                           <font>
+                            <weight>75</weight>
+                            <bold>true</bold>
+                           </font>
+                          </property>
+                          <property name="text">
+                           <string>Class Arms' periods' table</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QFrame" name="frame_49">
+                          <property name="frameShape">
+                           <enum>QFrame::StyledPanel</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Raised</enum>
+                          </property>
+                          <layout class="QHBoxLayout" name="horizontalLayout_50">
+                           <property name="spacing">
+                            <number>10</number>
+                           </property>
+                           <property name="leftMargin">
+                            <number>1</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>1</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>9</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>1</number>
+                           </property>
+                           <item alignment="Qt::AlignLeft">
+                            <widget class="QPushButton" name="feasibility_btn">
+                             <property name="minimumSize">
+                              <size>
+                               <width>200</width>
+                               <height>0</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>200</width>
+                               <height>16777215</height>
+                              </size>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">QPushButton{
+	padding:6px;
+}</string>
+                             </property>
+                             <property name="text">
+                              <string>Feasibility Check
+(Results shown in table below)</string>
+                             </property>
+                             <property name="icon">
+                              <iconset>
+                               <normaloff>../Icons-mine/Inspect_glasses.png</normaloff>../Icons-mine/Inspect_glasses.png</iconset>
+                             </property>
+                             <property name="iconSize">
+                              <size>
+                               <width>25</width>
+                               <height>23</height>
+                              </size>
+                             </property>
+                            </widget>
+                           </item>
+                           <item alignment="Qt::AlignLeft">
+                            <widget class="QFrame" name="frame_50">
+                             <property name="minimumSize">
+                              <size>
+                               <width>380</width>
+                               <height>0</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>380</width>
+                               <height>16777215</height>
+                              </size>
+                             </property>
+                             <property name="frameShape">
+                              <enum>QFrame::StyledPanel</enum>
+                             </property>
+                             <property name="frameShadow">
+                              <enum>QFrame::Raised</enum>
+                             </property>
+                             <layout class="QHBoxLayout" name="horizontalLayout_51">
+                              <property name="spacing">
+                               <number>5</number>
+                              </property>
+                              <property name="leftMargin">
+                               <number>4</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>1</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>4</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>1</number>
+                              </property>
+                              <item>
+                               <widget class="QLabel" name="label_80">
+                                <property name="maximumSize">
+                                 <size>
+                                  <width>35</width>
+                                  <height>30</height>
+                                 </size>
+                                </property>
+                                <property name="text">
+                                 <string/>
+                                </property>
+                                <property name="pixmap">
+                                 <pixmap>../Icons-mine/Day.png</pixmap>
+                                </property>
+                                <property name="scaledContents">
+                                 <bool>true</bool>
+                                </property>
+                               </widget>
+                              </item>
+                              <item>
+                               <widget class="QLabel" name="label_100">
+                                <property name="text">
+                                 <string>View class arms' periods today</string>
+                                </property>
+                                <property name="alignment">
+                                 <set>Qt::AlignCenter</set>
+                                </property>
+                                <property name="wordWrap">
+                                 <bool>true</bool>
+                                </property>
+                               </widget>
+                              </item>
+                              <item>
+                               <widget class="QComboBox" name="days_combobox_for_chunk"/>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QLabel" name="label_103">
+                          <property name="text">
+                           <string>A class arm's chunk value is rendered &quot;infeasible&quot; if the sum of all its subjects' chunk values exceeds that of the academic periods alotted to it per week. If so, adjustments should be made to the chunk.</string>
+                          </property>
+                          <property name="wordWrap">
+                           <bool>true</bool>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QFrame" name="frame_55">
+                          <property name="frameShape">
+                           <enum>QFrame::StyledPanel</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Raised</enum>
+                          </property>
+                          <layout class="QHBoxLayout" name="horizontalLayout_52">
+                           <property name="leftMargin">
+                            <number>1</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>1</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>1</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>1</number>
+                           </property>
+                           <item>
+                            <widget class="QTableWidget" name="arms_feasible_table">
+                             <property name="minimumSize">
+                              <size>
+                               <width>360</width>
+                               <height>0</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>360</width>
+                               <height>16777215</height>
+                              </size>
+                             </property>
+                             <column>
+                              <property name="text">
+                               <string>Class Arms</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <pointsize>8</pointsize>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                              <property name="icon">
+                               <iconset>
+                                <normaloff>../Icons-mine/arm.png</normaloff>../Icons-mine/arm.png</iconset>
+                              </property>
+                             </column>
+                             <column>
+                              <property name="text">
+                               <string>Periods</string>
+                              </property>
+                              <property name="toolTip">
+                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sum of all the periods generated for class arm for the week.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <pointsize>8</pointsize>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                             </column>
+                             <column>
+                              <property name="text">
+                               <string>Chunk</string>
+                              </property>
+                              <property name="toolTip">
+                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sum of all the chunk values for the week.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <pointsize>8</pointsize>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                             </column>
+                             <column>
+                              <property name="text">
+                               <string>Feasibilty</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <pointsize>8</pointsize>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                             </column>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QTableWidget" name="arms_periods_table">
+                             <column>
+                              <property name="text">
+                               <string>Periods today</string>
+                              </property>
+                              <property name="toolTip">
+                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The number of periods today.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <pointsize>8</pointsize>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                             </column>
+                             <column>
+                              <property name="text">
+                               <string>Periods' info</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <pointsize>8</pointsize>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                             </column>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
          <widget class="QWidget" name="teachers_page">
           <layout class="QVBoxLayout" name="verticalLayout_14">
            <property name="leftMargin">
@@ -6882,8 +8773,8 @@ QScrollBar::handle{
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1187</width>
-                <height>491</height>
+                <width>915</width>
+                <height>450</height>
                </rect>
               </property>
               <property name="minimumSize">
@@ -7062,8 +8953,8 @@ QScrollBar::handle{
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>415</width>
-                             <height>487</height>
+                             <width>349</width>
+                             <height>513</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_23">
@@ -8010,1549 +9901,6 @@ padding:2px;</string>
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="subjs_and_periods">
-          <property name="minimumSize">
-           <size>
-            <width>255</width>
-            <height>600</height>
-           </size>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_24">
-           <property name="leftMargin">
-            <number>1</number>
-           </property>
-           <property name="topMargin">
-            <number>1</number>
-           </property>
-           <property name="rightMargin">
-            <number>1</number>
-           </property>
-           <property name="bottomMargin">
-            <number>1</number>
-           </property>
-           <item>
-            <widget class="QScrollArea" name="scrollArea_3">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="widgetResizable">
-              <bool>true</bool>
-             </property>
-             <widget class="QWidget" name="scrollAreaWidgetContents_12">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>1174</width>
-                <height>1337</height>
-               </rect>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_48">
-               <property name="leftMargin">
-                <number>3</number>
-               </property>
-               <property name="topMargin">
-                <number>3</number>
-               </property>
-               <property name="rightMargin">
-                <number>3</number>
-               </property>
-               <property name="bottomMargin">
-                <number>3</number>
-               </property>
-               <item alignment="Qt::AlignHCenter">
-                <widget class="QLabel" name="label_89">
-                 <property name="font">
-                  <font>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Periods generation and assignment of subjects to class arms.</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QFrame" name="frame_11">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>435</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>16777215</height>
-                  </size>
-                 </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout_25">
-                  <property name="spacing">
-                   <number>5</number>
-                  </property>
-                  <property name="leftMargin">
-                   <number>5</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>5</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>5</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>5</number>
-                  </property>
-                  <item>
-                   <widget class="QFrame" name="frame_47">
-                    <property name="minimumSize">
-                     <size>
-                      <width>255</width>
-                      <height>0</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>255</width>
-                      <height>16777215</height>
-                     </size>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <weight>75</weight>
-                      <bold>true</bold>
-                     </font>
-                    </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_40">
-                     <property name="spacing">
-                      <number>2</number>
-                     </property>
-                     <property name="leftMargin">
-                      <number>2</number>
-                     </property>
-                     <property name="topMargin">
-                      <number>2</number>
-                     </property>
-                     <property name="rightMargin">
-                      <number>2</number>
-                     </property>
-                     <property name="bottomMargin">
-                      <number>2</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_51">
-                       <property name="font">
-                        <font>
-                         <weight>75</weight>
-                         <bold>true</bold>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>Class arms tree</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QTreeWidget" name="arms_for_chunk_tree">
-                       <property name="indentation">
-                        <number>15</number>
-                       </property>
-                       <property name="headerHidden">
-                        <bool>true</bool>
-                       </property>
-                       <column>
-                        <property name="text">
-                         <string notr="true">1</string>
-                        </property>
-                       </column>
-                      </widget>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QFrame" name="frame_35">
-                    <layout class="QVBoxLayout" name="verticalLayout_85">
-                     <property name="leftMargin">
-                      <number>2</number>
-                     </property>
-                     <property name="topMargin">
-                      <number>2</number>
-                     </property>
-                     <property name="rightMargin">
-                      <number>2</number>
-                     </property>
-                     <property name="bottomMargin">
-                      <number>2</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_27">
-                       <property name="font">
-                        <font>
-                         <weight>75</weight>
-                         <bold>true</bold>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>All registered subjects/courses</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QListWidget" name="reg_subjs_for_arms_listwidget"/>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QFrame" name="frame_53">
-                    <property name="minimumSize">
-                     <size>
-                      <width>300</width>
-                      <height>405</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>400</width>
-                      <height>16777215</height>
-                     </size>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true">QLineEdit, QSpinBox, QTimeEdit{
-	border-radius:2px;
-	border: 0.5px solid #7a7a7a;
-}</string>
-                    </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_44">
-                     <property name="spacing">
-                      <number>2</number>
-                     </property>
-                     <property name="leftMargin">
-                      <number>5</number>
-                     </property>
-                     <property name="topMargin">
-                      <number>1</number>
-                     </property>
-                     <property name="rightMargin">
-                      <number>5</number>
-                     </property>
-                     <property name="bottomMargin">
-                      <number>1</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_111">
-                       <property name="font">
-                        <font>
-                         <pointsize>8</pointsize>
-                         <weight>75</weight>
-                         <bold>true</bold>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>Generate periods for Selected classes or arms</string>
-                       </property>
-                       <property name="alignment">
-                        <set>Qt::AlignCenter</set>
-                       </property>
-                       <property name="wordWrap">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QRadioButton" name="duration_radbtn">
-                       <property name="font">
-                        <font>
-                         <weight>75</weight>
-                         <bold>true</bold>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>Generate periods given duration</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QGroupBox" name="duration_gbox">
-                       <property name="title">
-                        <string/>
-                       </property>
-                       <layout class="QHBoxLayout" name="horizontalLayout_8">
-                        <property name="spacing">
-                         <number>4</number>
-                        </property>
-                        <property name="leftMargin">
-                         <number>1</number>
-                        </property>
-                        <property name="topMargin">
-                         <number>1</number>
-                        </property>
-                        <property name="rightMargin">
-                         <number>1</number>
-                        </property>
-                        <property name="bottomMargin">
-                         <number>1</number>
-                        </property>
-                        <item>
-                         <widget class="QGroupBox" name="groupBox_55">
-                          <property name="minimumSize">
-                           <size>
-                            <width>135</width>
-                            <height>0</height>
-                           </size>
-                          </property>
-                          <property name="title">
-                           <string>Normal (Academic) Periods</string>
-                          </property>
-                          <property name="alignment">
-                           <set>Qt::AlignCenter</set>
-                          </property>
-                          <layout class="QFormLayout" name="formLayout_8">
-                           <property name="horizontalSpacing">
-                            <number>2</number>
-                           </property>
-                           <property name="verticalSpacing">
-                            <number>3</number>
-                           </property>
-                           <property name="leftMargin">
-                            <number>7</number>
-                           </property>
-                           <property name="topMargin">
-                            <number>7</number>
-                           </property>
-                           <property name="rightMargin">
-                            <number>7</number>
-                           </property>
-                           <property name="bottomMargin">
-                            <number>7</number>
-                           </property>
-                           <item row="0" column="0">
-                            <widget class="QLabel" name="label_90">
-                             <property name="toolTip">
-                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The start time of the first period.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                             </property>
-                             <property name="text">
-                              <string>Start time</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="2" column="0">
-                            <widget class="QLabel" name="label_91">
-                             <property name="text">
-                              <string>Duration</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="4" column="0">
-                            <widget class="QLabel" name="label_92">
-                             <property name="toolTip">
-                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of periods&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                             </property>
-                             <property name="text">
-                              <string>Frequency</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="2" column="1">
-                            <widget class="QSpinBox" name="duration_spinbox_2">
-                             <property name="prefix">
-                              <string>Mins: </string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="4" column="1">
-                            <widget class="QSpinBox" name="byduration_freq_2"/>
-                           </item>
-                           <item row="0" column="1">
-                            <widget class="QTimeEdit" name="byduration_timeEdit_2">
-                             <property name="readOnly">
-                              <bool>false</bool>
-                             </property>
-                             <property name="buttonSymbols">
-                              <enum>QAbstractSpinBox::UpDownArrows</enum>
-                             </property>
-                             <property name="accelerated">
-                              <bool>false</bool>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="5" column="0">
-                            <widget class="QLabel" name="label_88">
-                             <property name="toolTip">
-                              <string>Inter-period interval. A bit of breathing space between a period and the next (in minutes).</string>
-                             </property>
-                             <property name="text">
-                              <string>Interval</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="5" column="1">
-                            <widget class="QSpinBox" name="spinBox">
-                             <property name="prefix">
-                              <string>Mins: </string>
-                             </property>
-                            </widget>
-                           </item>
-                          </layout>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QGroupBox" name="groupBox_56">
-                          <property name="maximumSize">
-                           <size>
-                            <width>230</width>
-                            <height>120</height>
-                           </size>
-                          </property>
-                          <property name="toolTip">
-                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Handles the generation of special periods (like Recess or &amp;quot;Break&amp;quot;) and their insertion into the list of periods for the day.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                          </property>
-                          <property name="title">
-                           <string>Non-Academic Periods</string>
-                          </property>
-                          <property name="alignment">
-                           <set>Qt::AlignCenter</set>
-                          </property>
-                          <layout class="QVBoxLayout" name="verticalLayout_54">
-                           <property name="spacing">
-                            <number>1</number>
-                           </property>
-                           <property name="leftMargin">
-                            <number>3</number>
-                           </property>
-                           <property name="topMargin">
-                            <number>3</number>
-                           </property>
-                           <property name="rightMargin">
-                            <number>3</number>
-                           </property>
-                           <property name="bottomMargin">
-                            <number>3</number>
-                           </property>
-                           <item>
-                            <widget class="QTableWidget" name="tableWidget">
-                             <column>
-                              <property name="text">
-                               <string>N-A Subjects</string>
-                              </property>
-                              <property name="toolTip">
-                               <string>Non-academic subjects</string>
-                              </property>
-                             </column>
-                             <column>
-                              <property name="text">
-                               <string>Duration</string>
-                              </property>
-                              <property name="toolTip">
-                               <string>Duration in Minutes</string>
-                              </property>
-                             </column>
-                             <column>
-                              <property name="text">
-                               <string>Position</string>
-                              </property>
-                              <property name="toolTip">
-                               <string>Comma-seperated numbers (for more than one position) for where this period should lie.
-E.g. 2 implies this period should occupy the 2nd period.
-2,3 implies 2nd and 3rd periods.</string>
-                              </property>
-                             </column>
-                            </widget>
-                           </item>
-                          </layout>
-                         </widget>
-                        </item>
-                       </layout>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QRadioButton" name="day_startend_radbtn">
-                       <property name="font">
-                        <font>
-                         <weight>75</weight>
-                         <bold>true</bold>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>Given Day-start, Day-end boundaries</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QGroupBox" name="day_startend_gbox">
-                       <property name="toolTip">
-                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generates periods of equal duration of a certain number between the start and end times.&lt;/p&gt;&lt;p&gt;The addition of special periods makes the list spill beyond the end period.&lt;/p&gt;&lt;p&gt;This is useful when a certain total duration of normal periods is required, with the special periods just occupying space in the list of periods for that day.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                       </property>
-                       <property name="title">
-                        <string/>
-                       </property>
-                       <property name="alignment">
-                        <set>Qt::AlignCenter</set>
-                       </property>
-                       <layout class="QHBoxLayout" name="horizontalLayout_21">
-                        <property name="spacing">
-                         <number>5</number>
-                        </property>
-                        <property name="leftMargin">
-                         <number>2</number>
-                        </property>
-                        <property name="topMargin">
-                         <number>2</number>
-                        </property>
-                        <property name="rightMargin">
-                         <number>2</number>
-                        </property>
-                        <property name="bottomMargin">
-                         <number>2</number>
-                        </property>
-                        <item>
-                         <widget class="QGroupBox" name="groupBox_58">
-                          <property name="minimumSize">
-                           <size>
-                            <width>125</width>
-                            <height>0</height>
-                           </size>
-                          </property>
-                          <property name="title">
-                           <string>Normal Periods</string>
-                          </property>
-                          <layout class="QFormLayout" name="formLayout_9">
-                           <property name="horizontalSpacing">
-                            <number>5</number>
-                           </property>
-                           <property name="verticalSpacing">
-                            <number>3</number>
-                           </property>
-                           <property name="leftMargin">
-                            <number>7</number>
-                           </property>
-                           <property name="topMargin">
-                            <number>7</number>
-                           </property>
-                           <property name="rightMargin">
-                            <number>7</number>
-                           </property>
-                           <property name="bottomMargin">
-                            <number>7</number>
-                           </property>
-                           <item row="0" column="0">
-                            <widget class="QLabel" name="label_96">
-                             <property name="text">
-                              <string>Start</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="0" column="1">
-                            <widget class="QTimeEdit" name="timeEdit_5"/>
-                           </item>
-                           <item row="1" column="0">
-                            <widget class="QLabel" name="label_97">
-                             <property name="text">
-                              <string>End</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="1" column="1">
-                            <widget class="QTimeEdit" name="timeEdit_6"/>
-                           </item>
-                           <item row="2" column="0">
-                            <widget class="QLabel" name="label_98">
-                             <property name="toolTip">
-                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of periods&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                             </property>
-                             <property name="text">
-                              <string>Freq</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="2" column="1">
-                            <widget class="QSpinBox" name="spinBox_11"/>
-                           </item>
-                           <item row="3" column="0">
-                            <widget class="QLabel" name="label_118">
-                             <property name="toolTip">
-                              <string>Inter-period interval. A bit of breathing space between a period and the next (in minutes).</string>
-                             </property>
-                             <property name="text">
-                              <string>Interval</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="3" column="1">
-                            <widget class="QSpinBox" name="spinBox_2">
-                             <property name="prefix">
-                              <string>Mins: </string>
-                             </property>
-                            </widget>
-                           </item>
-                          </layout>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QGroupBox" name="groupBox_59">
-                          <property name="maximumSize">
-                           <size>
-                            <width>230</width>
-                            <height>120</height>
-                           </size>
-                          </property>
-                          <property name="toolTip">
-                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Handles the generation of special periods (like Recess or &amp;quot;Break&amp;quot;) and their insertion into the list of periods for the day.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                          </property>
-                          <property name="title">
-                           <string>Special Periods</string>
-                          </property>
-                          <property name="alignment">
-                           <set>Qt::AlignCenter</set>
-                          </property>
-                          <layout class="QVBoxLayout" name="verticalLayout_56">
-                           <property name="spacing">
-                            <number>1</number>
-                           </property>
-                           <property name="leftMargin">
-                            <number>3</number>
-                           </property>
-                           <property name="topMargin">
-                            <number>3</number>
-                           </property>
-                           <property name="rightMargin">
-                            <number>3</number>
-                           </property>
-                           <property name="bottomMargin">
-                            <number>3</number>
-                           </property>
-                           <item>
-                            <widget class="QTableWidget" name="tableWidget_2">
-                             <property name="maximumSize">
-                              <size>
-                               <width>16777215</width>
-                               <height>16777215</height>
-                              </size>
-                             </property>
-                             <column>
-                              <property name="text">
-                               <string>N-A Subjects</string>
-                              </property>
-                              <property name="toolTip">
-                               <string>Non-academic subjects</string>
-                              </property>
-                             </column>
-                             <column>
-                              <property name="text">
-                               <string>Duration</string>
-                              </property>
-                              <property name="toolTip">
-                               <string>Duration in Minutes</string>
-                              </property>
-                             </column>
-                             <column>
-                              <property name="text">
-                               <string>Position</string>
-                              </property>
-                              <property name="toolTip">
-                               <string>Comma-seperated numbers (for more than one position) for where this period should lie.
-E.g. 2 implies this period should occupy the 2nd period.
-2,3 implies 2nd and 3rd periods.</string>
-                              </property>
-                             </column>
-                            </widget>
-                           </item>
-                          </layout>
-                         </widget>
-                        </item>
-                       </layout>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QRadioButton" name="abs_day_startend_radbtn">
-                       <property name="font">
-                        <font>
-                         <weight>75</weight>
-                         <bold>true</bold>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>Given Day start, end boundaries as absolute constraints</string>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QGroupBox" name="abs_startend_gbox">
-                       <property name="title">
-                        <string/>
-                       </property>
-                       <property name="alignment">
-                        <set>Qt::AlignCenter</set>
-                       </property>
-                       <layout class="QHBoxLayout" name="horizontalLayout_20">
-                        <property name="spacing">
-                         <number>5</number>
-                        </property>
-                        <property name="leftMargin">
-                         <number>3</number>
-                        </property>
-                        <property name="topMargin">
-                         <number>3</number>
-                        </property>
-                        <property name="rightMargin">
-                         <number>3</number>
-                        </property>
-                        <property name="bottomMargin">
-                         <number>3</number>
-                        </property>
-                        <item>
-                         <widget class="QGroupBox" name="groupBox_61">
-                          <property name="title">
-                           <string>Normal Periods</string>
-                          </property>
-                          <layout class="QFormLayout" name="formLayout_10">
-                           <property name="horizontalSpacing">
-                            <number>5</number>
-                           </property>
-                           <property name="verticalSpacing">
-                            <number>3</number>
-                           </property>
-                           <property name="leftMargin">
-                            <number>7</number>
-                           </property>
-                           <property name="topMargin">
-                            <number>7</number>
-                           </property>
-                           <property name="rightMargin">
-                            <number>7</number>
-                           </property>
-                           <property name="bottomMargin">
-                            <number>7</number>
-                           </property>
-                           <item row="0" column="0">
-                            <widget class="QLabel" name="label_104">
-                             <property name="text">
-                              <string>Abs. start</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="0" column="1">
-                            <widget class="QTimeEdit" name="timeEdit_7"/>
-                           </item>
-                           <item row="1" column="0">
-                            <widget class="QLabel" name="label_105">
-                             <property name="text">
-                              <string>Abs. end</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="1" column="1">
-                            <widget class="QTimeEdit" name="timeEdit_8"/>
-                           </item>
-                           <item row="2" column="0">
-                            <widget class="QLabel" name="label_106">
-                             <property name="toolTip">
-                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of periods&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                             </property>
-                             <property name="text">
-                              <string>Frequency</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="2" column="1">
-                            <widget class="QSpinBox" name="spinBox_12"/>
-                           </item>
-                           <item row="3" column="0">
-                            <widget class="QLabel" name="label_119">
-                             <property name="toolTip">
-                              <string>Inter-period interval. A bit of breathing space between a period and the next (in minutes).</string>
-                             </property>
-                             <property name="text">
-                              <string>Interval</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="3" column="1">
-                            <widget class="QSpinBox" name="spinBox_14">
-                             <property name="prefix">
-                              <string>Mins: </string>
-                             </property>
-                            </widget>
-                           </item>
-                          </layout>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QGroupBox" name="groupBox_62">
-                          <property name="maximumSize">
-                           <size>
-                            <width>230</width>
-                            <height>120</height>
-                           </size>
-                          </property>
-                          <property name="toolTip">
-                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Handles the generation of special periods (like Recess or &amp;quot;Break&amp;quot;) and their insertion into the list of periods for the day.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                          </property>
-                          <property name="title">
-                           <string>Special Periods</string>
-                          </property>
-                          <property name="alignment">
-                           <set>Qt::AlignCenter</set>
-                          </property>
-                          <layout class="QVBoxLayout" name="verticalLayout_57">
-                           <property name="spacing">
-                            <number>1</number>
-                           </property>
-                           <property name="leftMargin">
-                            <number>3</number>
-                           </property>
-                           <property name="topMargin">
-                            <number>3</number>
-                           </property>
-                           <property name="rightMargin">
-                            <number>3</number>
-                           </property>
-                           <property name="bottomMargin">
-                            <number>3</number>
-                           </property>
-                           <item>
-                            <widget class="QTableWidget" name="tableWidget_3">
-                             <column>
-                              <property name="text">
-                               <string>N-A Subjects</string>
-                              </property>
-                              <property name="toolTip">
-                               <string>Non-academic subjects</string>
-                              </property>
-                             </column>
-                             <column>
-                              <property name="text">
-                               <string>Duration</string>
-                              </property>
-                              <property name="toolTip">
-                               <string>Duration in Minutes</string>
-                              </property>
-                             </column>
-                             <column>
-                              <property name="text">
-                               <string>Position</string>
-                              </property>
-                              <property name="toolTip">
-                               <string>Comma-seperated numbers (for more than one position) for where this period should lie.
-E.g. 2 implies this period should occupy the 2nd period.
-2,3 implies 2nd and 3rd periods.</string>
-                              </property>
-                             </column>
-                            </widget>
-                           </item>
-                          </layout>
-                         </widget>
-                        </item>
-                       </layout>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pushButton_3">
-                       <property name="text">
-                        <string>Generate periods</string>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QFrame" name="frame_11">
-                    <property name="maximumSize">
-                     <size>
-                      <width>250</width>
-                      <height>16777215</height>
-                     </size>
-                    </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_43">
-                     <property name="leftMargin">
-                      <number>3</number>
-                     </property>
-                     <property name="topMargin">
-                      <number>3</number>
-                     </property>
-                     <property name="rightMargin">
-                      <number>3</number>
-                     </property>
-                     <item>
-                      <widget class="QFrame" name="frame_34">
-                       <property name="maximumSize">
-                        <size>
-                         <width>16777215</width>
-                         <height>45</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">background:#000;</string>
-                       </property>
-                       <property name="frameShape">
-                        <enum>QFrame::StyledPanel</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Raised</enum>
-                       </property>
-                       <layout class="QHBoxLayout" name="horizontalLayout_22">
-                        <property name="spacing">
-                         <number>10</number>
-                        </property>
-                        <property name="leftMargin">
-                         <number>3</number>
-                        </property>
-                        <property name="topMargin">
-                         <number>3</number>
-                        </property>
-                        <property name="rightMargin">
-                         <number>3</number>
-                        </property>
-                        <property name="bottomMargin">
-                         <number>3</number>
-                        </property>
-                        <item>
-                         <widget class="QLabel" name="label_56">
-                          <property name="minimumSize">
-                           <size>
-                            <width>40</width>
-                            <height>35</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>40</width>
-                            <height>35</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                          <property name="pixmap">
-                           <pixmap>../Icons-mine/Day.png</pixmap>
-                          </property>
-                          <property name="scaledContents">
-                           <bool>true</bool>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QLabel" name="label_110">
-                          <property name="maximumSize">
-                           <size>
-                            <width>16777215</width>
-                            <height>16777215</height>
-                           </size>
-                          </property>
-                          <property name="font">
-                           <font>
-                            <weight>75</weight>
-                            <bold>true</bold>
-                           </font>
-                          </property>
-                          <property name="styleSheet">
-                           <string notr="true">color:#e6e6e6;</string>
-                          </property>
-                          <property name="text">
-                           <string>Select the days in which these apply</string>
-                          </property>
-                          <property name="wordWrap">
-                           <bool>true</bool>
-                          </property>
-                         </widget>
-                        </item>
-                       </layout>
-                      </widget>
-                     </item>
-                     <item alignment="Qt::AlignTop">
-                      <widget class="QListWidget" name="days_for_arms_listwidget">
-                       <property name="minimumSize">
-                        <size>
-                         <width>0</width>
-                         <height>350</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>16777215</width>
-                         <height>350</height>
-                        </size>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <spacer name="verticalSpacer">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>15</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item>
-                <widget class="QGroupBox" name="groupBox_54">
-                 <property name="minimumSize">
-                  <size>
-                   <width>500</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>16777215</height>
-                  </size>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="title">
-                  <string>School class Arms' Particulars</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignCenter</set>
-                 </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout_23">
-                  <property name="spacing">
-                   <number>5</number>
-                  </property>
-                  <property name="leftMargin">
-                   <number>4</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>4</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>4</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>4</number>
-                  </property>
-                  <item>
-                   <widget class="QGroupBox" name="groupBox_52">
-                    <property name="title">
-                     <string/>
-                    </property>
-                    <layout class="QHBoxLayout" name="horizontalLayout_24">
-                     <property name="spacing">
-                      <number>5</number>
-                     </property>
-                     <property name="leftMargin">
-                      <number>3</number>
-                     </property>
-                     <property name="topMargin">
-                      <number>3</number>
-                     </property>
-                     <property name="rightMargin">
-                      <number>3</number>
-                     </property>
-                     <property name="bottomMargin">
-                      <number>3</number>
-                     </property>
-                     <item>
-                      <widget class="QGroupBox" name="groupBox_65">
-                       <property name="minimumSize">
-                        <size>
-                         <width>0</width>
-                         <height>650</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>16777215</width>
-                         <height>700</height>
-                        </size>
-                       </property>
-                       <property name="title">
-                        <string/>
-                       </property>
-                       <layout class="QVBoxLayout" name="verticalLayout_50">
-                        <property name="spacing">
-                         <number>11</number>
-                        </property>
-                        <property name="leftMargin">
-                         <number>3</number>
-                        </property>
-                        <property name="topMargin">
-                         <number>3</number>
-                        </property>
-                        <property name="rightMargin">
-                         <number>3</number>
-                        </property>
-                        <property name="bottomMargin">
-                         <number>3</number>
-                        </property>
-                        <item>
-                         <widget class="QLabel" name="label_103">
-                          <property name="font">
-                           <font>
-                            <weight>75</weight>
-                            <bold>true</bold>
-                           </font>
-                          </property>
-                          <property name="text">
-                           <string>School class arm-periods Table.</string>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QTableView" name="tableView_2"/>
-                        </item>
-                       </layout>
-                      </widget>
-                     </item>
-                     <item>
-                      <spacer name="horizontalSpacer">
-                       <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
-                       </property>
-                       <property name="sizeType">
-                        <enum>QSizePolicy::Fixed</enum>
-                       </property>
-                       <property name="sizeHint" stdset="0">
-                        <size>
-                         <width>10</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                      </spacer>
-                     </item>
-                     <item alignment="Qt::AlignTop">
-                      <widget class="QGroupBox" name="groupBox_67">
-                       <property name="maximumSize">
-                        <size>
-                         <width>200</width>
-                         <height>90</height>
-                        </size>
-                       </property>
-                       <property name="title">
-                        <string/>
-                       </property>
-                       <layout class="QVBoxLayout" name="verticalLayout_38">
-                        <property name="spacing">
-                         <number>4</number>
-                        </property>
-                        <property name="leftMargin">
-                         <number>4</number>
-                        </property>
-                        <property name="topMargin">
-                         <number>4</number>
-                        </property>
-                        <property name="rightMargin">
-                         <number>4</number>
-                        </property>
-                        <property name="bottomMargin">
-                         <number>4</number>
-                        </property>
-                        <item>
-                         <widget class="QPushButton" name="enable_chunktable_btn">
-                          <property name="toolTip">
-                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Activate the table above so that frequencies and chunks can be assigned to the class arms you wish to mark.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                          </property>
-                          <property name="text">
-                           <string>Activate</string>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QPushButton" name="pushButton_10">
-                          <property name="text">
-                           <string>Edit </string>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QPushButton" name="pushButton_2">
-                          <property name="text">
-                           <string>Commit</string>
-                          </property>
-                         </widget>
-                        </item>
-                       </layout>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QGroupBox" name="groupBox_66">
-                       <property name="maximumSize">
-                        <size>
-                         <width>400</width>
-                         <height>16777215</height>
-                        </size>
-                       </property>
-                       <property name="title">
-                        <string/>
-                       </property>
-                       <layout class="QVBoxLayout" name="verticalLayout_51">
-                        <item>
-                         <widget class="QLabel" name="label_114">
-                          <property name="font">
-                           <font>
-                            <weight>75</weight>
-                            <bold>true</bold>
-                           </font>
-                          </property>
-                          <property name="text">
-                           <string>Enter each subject's weekly frequencies and chunk values for each of the class arms of your choice.</string>
-                          </property>
-                          <property name="wordWrap">
-                           <bool>true</bool>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QTableWidget" name="subject_freq_chunk_table">
-                          <property name="minimumSize">
-                           <size>
-                            <width>0</width>
-                            <height>300</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>375</width>
-                            <height>430</height>
-                           </size>
-                          </property>
-                          <column>
-                           <property name="text">
-                            <string>Subjects</string>
-                           </property>
-                           <property name="font">
-                            <font>
-                             <weight>75</weight>
-                             <bold>true</bold>
-                            </font>
-                           </property>
-                           <property name="icon">
-                            <iconset>
-                             <normaloff>../Icons-mine/subject.png</normaloff>../Icons-mine/subject.png</iconset>
-                           </property>
-                          </column>
-                          <column>
-                           <property name="text">
-                            <string>Freq.</string>
-                           </property>
-                           <property name="toolTip">
-                            <string>Subject's weekly frequency, i.e. how many periods per week.</string>
-                           </property>
-                           <property name="font">
-                            <font>
-                             <weight>75</weight>
-                             <bold>true</bold>
-                            </font>
-                           </property>
-                          </column>
-                          <column>
-                           <property name="text">
-                            <string>Chunk value</string>
-                           </property>
-                           <property name="toolTip">
-                            <string>Enter 1 for single period each time, 2 for double and so on.</string>
-                           </property>
-                           <property name="font">
-                            <font>
-                             <weight>75</weight>
-                             <bold>true</bold>
-                            </font>
-                           </property>
-                          </column>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QGroupBox" name="groupBox_24">
-                          <property name="title">
-                           <string/>
-                          </property>
-                          <layout class="QHBoxLayout" name="horizontalLayout_29">
-                           <property name="spacing">
-                            <number>20</number>
-                           </property>
-                           <property name="leftMargin">
-                            <number>5</number>
-                           </property>
-                           <property name="topMargin">
-                            <number>5</number>
-                           </property>
-                           <property name="rightMargin">
-                            <number>5</number>
-                           </property>
-                           <property name="bottomMargin">
-                            <number>5</number>
-                           </property>
-                           <item>
-                            <widget class="QPushButton" name="pushButton_57">
-                             <property name="toolTip">
-                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Checks whether, given the total number of periods across all the days, the frequency and chunk values can be accommodated within the number of periods.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                             </property>
-                             <property name="text">
-                              <string>Feasibility check</string>
-                             </property>
-                             <property name="icon">
-                              <iconset>
-                               <normaloff>../Icons-mine/Inspect_glasses.png</normaloff>../Icons-mine/Inspect_glasses.png</iconset>
-                             </property>
-                             <property name="iconSize">
-                              <size>
-                               <width>25</width>
-                               <height>25</height>
-                              </size>
-                             </property>
-                             <property name="autoDefault">
-                              <bool>false</bool>
-                             </property>
-                             <property name="flat">
-                              <bool>false</bool>
-                             </property>
-                            </widget>
-                           </item>
-                           <item>
-                            <widget class="QLabel" name="label_20">
-                             <property name="text">
-                              <string>Result of check</string>
-                             </property>
-                             <property name="alignment">
-                              <set>Qt::AlignCenter</set>
-                             </property>
-                            </widget>
-                           </item>
-                          </layout>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QGroupBox" name="groupBox_25">
-                          <property name="maximumSize">
-                           <size>
-                            <width>16777215</width>
-                            <height>350</height>
-                           </size>
-                          </property>
-                          <property name="font">
-                           <font>
-                            <pointsize>8</pointsize>
-                            <weight>50</weight>
-                            <bold>false</bold>
-                           </font>
-                          </property>
-                          <property name="title">
-                           <string>Assign Teachers to class arms</string>
-                          </property>
-                          <property name="alignment">
-                           <set>Qt::AlignCenter</set>
-                          </property>
-                          <layout class="QHBoxLayout" name="horizontalLayout_30">
-                           <property name="leftMargin">
-                            <number>1</number>
-                           </property>
-                           <property name="topMargin">
-                            <number>9</number>
-                           </property>
-                           <property name="rightMargin">
-                            <number>1</number>
-                           </property>
-                           <property name="bottomMargin">
-                            <number>1</number>
-                           </property>
-                           <item alignment="Qt::AlignTop">
-                            <widget class="QGroupBox" name="groupBox_26">
-                             <property name="maximumSize">
-                              <size>
-                               <width>130</width>
-                               <height>70</height>
-                              </size>
-                             </property>
-                             <property name="toolTip">
-                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically assign all teachers to arms which offer their subjects.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                             </property>
-                             <property name="title">
-                              <string/>
-                             </property>
-                             <layout class="QVBoxLayout" name="verticalLayout_59">
-                              <property name="leftMargin">
-                               <number>3</number>
-                              </property>
-                              <property name="topMargin">
-                               <number>3</number>
-                              </property>
-                              <property name="rightMargin">
-                               <number>3</number>
-                              </property>
-                              <property name="bottomMargin">
-                               <number>3</number>
-                              </property>
-                              <item>
-                               <widget class="QRadioButton" name="radioButton_3">
-                                <property name="font">
-                                 <font>
-                                  <weight>75</weight>
-                                  <bold>true</bold>
-                                 </font>
-                                </property>
-                                <property name="text">
-                                 <string>Auto-assign</string>
-                                </property>
-                               </widget>
-                              </item>
-                              <item>
-                               <widget class="QPushButton" name="pushButton_58">
-                                <property name="text">
-                                 <string>Assign</string>
-                                </property>
-                               </widget>
-                              </item>
-                             </layout>
-                            </widget>
-                           </item>
-                           <item>
-                            <widget class="QGroupBox" name="groupBox_28">
-                             <property name="title">
-                              <string/>
-                             </property>
-                             <layout class="QVBoxLayout" name="verticalLayout_60">
-                              <property name="leftMargin">
-                               <number>1</number>
-                              </property>
-                              <property name="topMargin">
-                               <number>1</number>
-                              </property>
-                              <property name="rightMargin">
-                               <number>1</number>
-                              </property>
-                              <property name="bottomMargin">
-                               <number>1</number>
-                              </property>
-                              <item>
-                               <widget class="QRadioButton" name="radioButton_4">
-                                <property name="font">
-                                 <font>
-                                  <weight>75</weight>
-                                  <bold>true</bold>
-                                 </font>
-                                </property>
-                                <property name="text">
-                                 <string>Assign specific teacher to arm</string>
-                                </property>
-                               </widget>
-                              </item>
-                              <item>
-                               <widget class="QGroupBox" name="groupBox_31">
-                                <property name="title">
-                                 <string/>
-                                </property>
-                                <layout class="QVBoxLayout" name="verticalLayout_58">
-                                 <property name="leftMargin">
-                                  <number>5</number>
-                                 </property>
-                                 <property name="topMargin">
-                                  <number>5</number>
-                                 </property>
-                                 <property name="rightMargin">
-                                  <number>5</number>
-                                 </property>
-                                 <property name="bottomMargin">
-                                  <number>5</number>
-                                 </property>
-                                 <item>
-                                  <widget class="QLabel" name="label_21">
-                                   <property name="text">
-                                    <string>Select class arm</string>
-                                   </property>
-                                  </widget>
-                                 </item>
-                                 <item>
-                                  <widget class="QComboBox" name="comboBox_3"/>
-                                 </item>
-                                 <item>
-                                  <widget class="QLabel" name="label_22">
-                                   <property name="text">
-                                    <string>Select subject and its specific teacher.</string>
-                                   </property>
-                                  </widget>
-                                 </item>
-                                 <item>
-                                  <widget class="QTableWidget" name="tableWidget_4">
-                                   <column>
-                                    <property name="text">
-                                     <string>Subject</string>
-                                    </property>
-                                    <property name="font">
-                                     <font>
-                                      <weight>75</weight>
-                                      <bold>true</bold>
-                                     </font>
-                                    </property>
-                                    <property name="icon">
-                                     <iconset>
-                                      <normaloff>../Icons-mine/subject.png</normaloff>../Icons-mine/subject.png</iconset>
-                                    </property>
-                                   </column>
-                                   <column>
-                                    <property name="text">
-                                     <string>Teacher</string>
-                                    </property>
-                                    <property name="font">
-                                     <font>
-                                      <weight>75</weight>
-                                      <bold>true</bold>
-                                     </font>
-                                    </property>
-                                    <property name="icon">
-                                     <iconset>
-                                      <normaloff>../Icons-mine/teacher.png</normaloff>../Icons-mine/teacher.png</iconset>
-                                    </property>
-                                   </column>
-                                  </widget>
-                                 </item>
-                                 <item>
-                                  <widget class="QPushButton" name="pushButton_59">
-                                   <property name="text">
-                                    <string>Assign</string>
-                                   </property>
-                                  </widget>
-                                 </item>
-                                </layout>
-                               </widget>
-                              </item>
-                             </layout>
-                            </widget>
-                           </item>
-                          </layout>
-                         </widget>
-                        </item>
-                       </layout>
-                      </widget>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </widget>
-           </item>
-          </layout>
-         </widget>
          <widget class="QWidget" name="page_2">
           <layout class="QVBoxLayout" name="verticalLayout_61">
            <item>
@@ -9565,8 +9913,8 @@ E.g. 2 implies this period should occupy the 2nd period.
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1175</width>
-                <height>479</height>
+                <width>98</width>
+                <height>88</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_62">
@@ -9641,8 +9989,8 @@ E.g. 2 implies this period should occupy the 2nd period.
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1175</width>
-                <height>479</height>
+                <width>832</width>
+                <height>338</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_47">
@@ -9880,8 +10228,8 @@ p, li { white-space: pre-wrap; }
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>557</width>
-                 <height>290</height>
+                 <width>98</width>
+                 <height>28</height>
                 </rect>
                </property>
                <attribute name="label">
@@ -9923,7 +10271,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1338</width>
+     <width>1288</width>
      <height>21</height>
     </rect>
    </property>
@@ -9932,8 +10280,7 @@ p, li { white-space: pre-wrap; }
      <string>File</string>
     </property>
     <addaction name="actionNew"/>
-    <addaction name="actionOpen_Recent"/>
-    <addaction name="actionSave_File_2"/>
+    <addaction name="actionSave"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
@@ -10069,11 +10416,6 @@ p, li { white-space: pre-wrap; }
   <action name="actionOpen_Recent">
    <property name="text">
     <string>Open Recent</string>
-   </property>
-  </action>
-  <action name="actionSave_File_2">
-   <property name="text">
-    <string>Save File</string>
    </property>
   </action>
   <action name="actionTheme">

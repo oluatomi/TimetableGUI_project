@@ -1,5 +1,5 @@
 # - ************************************************************************************************************
-# -- WRITTEN AND OWNED BY OWOEYE, OLUWATOMILAYO INIOLUWA. APRIL, 2022.
+# -- WRITTEN AND OWNED BY OWOEYE, OLUWATOMILAYO INIOLUWA. JANUARY, 2022.
 
 # -- All rights (whichever applies) reserved!
 # **************************************************************************************************************
@@ -24,7 +24,7 @@ from PyQt5 import uic
 import Tt_manager
 from Tt_manager import get_obj_from_param as object_getter
 from Tt_gui_handler import load_manual
-from Tt_GuiExtras import WidgetTree
+from Tt_GuiExtras import WidgetTree, MySpinBox
 from collections import namedtuple
 from PyQt5.QtCore import Qt
 
@@ -96,6 +96,23 @@ class UITimetable(QtWidgets.QMainWindow):
         self.acronym = self.findChild(QtWidgets.QLineEdit, "acronym_lineedit")
         self.extra_info = self.findChild(QtWidgets.QPlainTextEdit, "extra_info_plaintextedit")
         self.logo_path = "../Icons-mine/App_logo.png"
+
+        self.browse_for_logo = self.findChild(QtWidgets.QPushButton, "browse_for_logo_btn")
+        self.gen_info_commit = self.findChild(QtWidgets.QPushButton, "gen_info_commit")
+        self.gen_info_edit = self.findChild(QtWidgets.QPushButton, "gen_info_edit")
+
+        self.gen_info_commit.clicked.connect(self.commit_general_info)
+        self.gen_info_edit.clicked.connect(self.edit_general_info)
+        self.browse_for_logo.clicked.connect(self.dialog_for_logo)
+
+        # -------------- general info labels
+        self.institution_label = self.findChild(QtWidgets.QLabel, "institution_label")
+        self.session_label = self.findChild(QtWidgets.QLabel, "session_label")
+        self.acronym_label = self.findChild(QtWidgets.QLabel, "acronym_label")
+        self.extra_info_label = self.findChild(QtWidgets.QLabel, "extra_info_label")
+        self.director_label = self.findChild(QtWidgets.QLabel, "director_label")
+        self.pre_logo_pic_label = self.findChild(QtWidgets.QLabel, "pre_logo_pic_label")
+        self.logo_pic_label = self.findChild(QtWidgets.QLabel, "logo_pic_label")
 
 
 
@@ -323,13 +340,55 @@ class UITimetable(QtWidgets.QMainWindow):
         self.del_teacher_btn.clicked.connect(self.del_teacher)
 
 
-
-
     # ---------------------------------------------------------------------------------------------------------
-    # ------------------ Handles mapping depts to class arms as well as their frequencies and chunk values --------------------
+    # ------------------ HANDLES PERIODS MAPPING DEPTS TO CLASS ARMS AND HANDLES THEIR CHUNK VALUES --------------------
+
         self.subj_freq_chunk_table = self.findChild(QtWidgets.QTableWidget, "subject_freq_chunk_table")
         self.arms_for_chunk_tree = self.findChild(QtWidgets.QTreeWidget, "arms_for_chunk_tree")
-        self.arms_for_chunk_tree.expandAll()
+
+        # self.subj_freq_chunk_table.setEditable(False)
+        self.adjust_table_columns(self.subj_freq_chunk_table, column_width_cont=[(0,200),(1,70),(2,70)])
+        
+
+        # ------------ PERIOD GENERATION ----------------------
+        # Grab the radiobuttons
+        self.duration_radbtn = self.findChild(QtWidgets.QRadioButton, "duration_radbtn")
+        self.day_startend_radbtn = self.findChild(QtWidgets.QRadioButton, "day_startend_radbtn")
+        self.abs_day_startend_radbtn = self.findChild(QtWidgets.QRadioButton, "abs_day_startend_radbtn")
+        self.duration_gbox = self.findChild(QtWidgets.QGroupBox, "duration_gbox")
+        self.day_startend_gbox = self.findChild(QtWidgets.QGroupBox, "day_startend_gbox")
+        self.abs_startend_gbox = self.findChild(QtWidgets.QGroupBox, "abs_startend_gbox")
+        self.gen_periods_btn = self.findChild(QtWidgets.QPushButton, "gen_periods_btn")
+        # --- non-academic tables
+        self.nonacad_table1 = self.findChild(QtWidgets.QTableWidget, "nonacad_table1")
+        self.nonacad_table2 = self.findChild(QtWidgets.QTableWidget, "nonacad_table2")
+        self.nonacad_table3 = self.findChild(QtWidgets.QTableWidget, "nonacad_table3")
+
+        self.gen_periods_btn.clicked.connect(self.generate_periods)
+
+        # Restructure the table's columns
+        self.adjust_table_columns(self.nonacad_table1, column_width_cont=[(0,170),(1,60),(2,60)])
+        self.adjust_table_columns(self.nonacad_table2, column_width_cont=[(0,170),(1,60),(2,60)])
+        self.adjust_table_columns(self.nonacad_table3, column_width_cont=[(0,170),(1,60),(2,60)])
+
+
+        self.days_for_arms_listwidget = self.findChild(QtWidgets.QListWidget, "days_for_arms_listwidget")
+        self.arms_feasible_table = self.findChild(QtWidgets.QTableWidget, "arms_feasible_table")
+        self.arms_periods_table = self.findChild(QtWidgets.QTableWidget, "arms_periods_table")
+        self.feasibility_btn = self.findChild(QtWidgets.QPushButton, "feasibility_btn")
+        self.days_combobox_for_chunk = self.findChild(QtWidgets.QComboBox, "days_combobox_for_chunk")
+
+        self.adjust_table_columns(self.arms_feasible_table, column_width_cont=[(0,175),(1,70),(2,70),(3,70)])
+
+        # -----------------------------------------------
+        #  first period groupbox box that is not disabled
+        self.period_gbox = self.duration_gbox
+        # -----------------------------------------------
+
+        # Connect signals to deactivate other gboxes when radiobutton is clicked
+        self.duration_radbtn.toggled.connect(lambda boole, gbox=self.duration_gbox: self.disable_period_boxes(gbox))
+        self.day_startend_radbtn.toggled.connect(lambda boole, gbox=self.day_startend_gbox: self.disable_period_boxes(gbox))
+        self.abs_day_startend_radbtn.toggled.connect(lambda boole, gbox=self.abs_startend_gbox: self.disable_period_boxes(gbox))
 
 
     # -------------------------------- Template textedit operations -------------------------------------------------------
@@ -498,11 +557,21 @@ class UITimetable(QtWidgets.QMainWindow):
                 child.setEnabled(enable)
 
 
+    def dialog_for_logo(self):
+        """ This function fires when the browse button is clicked (to open a dialog from which to select a logo picture) """
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select your school/institution's logo (JPEG or PNG)",
+            "", "JPEG files(*.jpg);; JPEG files(*.JPEG);;PNG files(*.png)")
+
+        if filename.endswith(".jpg") or filename.endswith(".jpeg") or filename.endswith(".png"):
+            self.logo_path = filename
+            self.pre_logo_pic_label.setPixmap(QtGui.QPixmap(filename))
+
+
     def commit_general_info(self):
         """ Registration OR UPDATE of all the general info fields"""
         institution = self.institution.text().strip()
         director = self.director.text().strip()
-        session = self.session.text().strip()
+        session = self.session_or_year.text().strip()
         acronym = self.acronym.text().strip()
         extra_info = self.extra_info.toPlainText().strip()
 
@@ -517,6 +586,37 @@ class UITimetable(QtWidgets.QMainWindow):
             "extra_info":extra_info,
             "logo_path":self.logo_path
             })
+
+        # Clear the fields
+        self.institution.clear()
+        self.director.clear()
+        self.session_or_year.clear()
+        self.acronym.clear()
+        self.extra_info.clear()
+
+
+        values_gotten = self.Timetable.get_general_info()
+        self.institution_label.setText(values_gotten["institution"] if values_gotten["institution"] else "None provided.")
+        self.session_label.setText(values_gotten["session_or_year"] if values_gotten["session_or_year"] else "None provided.")
+        self.acronym_label.setText(values_gotten["acronym"] if values_gotten["acronym"] else "None provided.")
+        self.director_label.setText(values_gotten["director"] if values_gotten["director"] else "None provided.")
+        self.extra_info_label.setText(values_gotten["extra_info"] if values_gotten["extra_info"] else "None provided.")
+        self.logo_pic_label.setPixmap(QtGui.QPixmap(values_gotten["logo_path"]))
+
+        # ALSO ENABLE THE LOGO. THE LABEL FOR IT HAS BEEN DEFINED UP TOP!
+
+        self.gen_info_edit.setEnabled(True)
+
+
+    def edit_general_info(self):
+        """ This function simply pulls all the general info details on to the lineedit widgets on the GUI screen """
+        values_gotten = self.Timetable.get_general_info()
+
+        self.institution.setText(values_gotten["institution"])
+        self.session_or_year.setText(values_gotten["session_or_year"])
+        self.acronym.setText(values_gotten["acronym"])
+        self.director.setText(values_gotten["director"])
+        self.extra_info.insertPlainText(values_gotten["extra_info"])
 
 
     def register_deptfac(self):
@@ -619,9 +719,14 @@ class UITimetable(QtWidgets.QMainWindow):
                 else:
                     # one of the fields have not been filled. display error message
                     UITimetable.messagebox(title="Fields error",icon="critical",text="No Department under which to create subject/course")
+            
+            # -------------------------- BELOW IS FOR NON-ACAD REG -------------------------------------
             else:
                 # If it is a non-academic department
                 self.Timetable.create_special_department(course_name_text, update=update)
+
+                # Load this non-academic department into the first if three period tables
+                self._load_nonacad_tables(self.findChild(QtWidgets.QTableWidget, "nonacad_table1"))
 
         else:
             UITimetable.messagebox(title="Empty field error",icon="critical",text="You have not entered the name of the course.")
@@ -641,6 +746,8 @@ class UITimetable(QtWidgets.QMainWindow):
         self.load_faculty_courses_teachers_tree()
 
         self.load_gen_teachers_courselist()
+
+        # self.load_depts_for_map_to_arms()
 
         # ----------- set text back to "creating models" ----
         self.dept_create_update_label.setText("Create Department Models")
@@ -1061,22 +1168,25 @@ class UITimetable(QtWidgets.QMainWindow):
         root = self.arms_for_chunk_tree.invisibleRootItem()
         child_count = root.childCount()
 
+        # -------------------------------------
+        
+
         # If it has no parents, that is it is the class clicked and not the class arm
         for index in range(child_count):
             class_item = root.child(index)
             class_widget = self.arms_for_chunk_tree.itemWidget(class_item, 0)
             # The above returns the widgetTree class I defined myself
-            class_checkbox = class_widget.checkBox
+            class_checkbox = class_widget.get_checkbox()
 
             # Add a signal to the class_checkBox
-            class_checkbox.stateChanged.connect(lambda checked: self.bulk_mark_class_arms(checked=checked, tree_item=class_item))
+            class_checkbox.stateChanged.connect(lambda checked, tree_item=class_item: self.bulk_mark_class_arms(checked=checked, tree_item=tree_item))
 
 
     # ------------------- This section reserved for methods that modify class models ---------------------------
     # -----------------------------------------------------------------------------------------------------------
 
     def class_expand_contract(self):
-        """Mthod to expand or contract the class-class-arm tree widget upon click"""
+        """Method to expand or contract the class-classarm tree widget upon click"""
 
         if "expand" in self.class_expand_btn.text().lower():
             # Expand the tree
@@ -1474,6 +1584,8 @@ class UITimetable(QtWidgets.QMainWindow):
         self.day_checkbox.setCheckState(False)
         
         self.load_days_list()
+        self.load_days_for_arms_listwidget()
+
         # Load teachers days with checkboxes
         self.load_gen_teachers_day_chboxes()
 
@@ -1782,8 +1894,97 @@ class UITimetable(QtWidgets.QMainWindow):
         self.mark_teachers_btn.setText("Mark for delete")
 
 
-    # ------------------------------------------------------------------------------------------------------
-    def gen_arms_freq_chunk_tree(self):
+# --------------------------------------------------------------------------------------------------------------
+# ---------------- PERIOD GENERATION AND MAPPING SUBJ, FREQ AND CHUNK TO ARM------------------------------------
+    def _load_nonacad_tables(self, nonacad_table):
+        """ populates one of th three nonacad tables in the period generation page """
+
+        # 
+        def disabled_tablewidgetitem(enable=False):
+            item = QtWidgets.QLineEdit()
+            item.setPlaceholderText("hh:mm:ss")
+            item.setStyleSheet("""
+                border:none;
+                padding:1px;
+                """)
+            item.setEnabled(enable)
+            return item
+
+        # Function to help enable or disable rows of each nonacad table when checked False
+        def enable_nonacad_table_row(state, duration, position):
+            style = f"""color: {"#1e1e1e" if state else "#858585"};"""
+            duration.setEnabled(state)
+            duration.setStyleSheet(style)
+            position.setEnabled(state)
+            position.setStyleSheet(style)
+
+
+        nonacad_table.clearContents()
+        # Get all the non-academic subjects
+        nonacad_subjs = self.Timetable.get_model_items("nonacads")
+        # Reload the contents of table from scratch
+        nonacad_table.setRowCount(len(nonacad_subjs))
+
+        for index,nonacad in enumerate(nonacad_subjs):
+            row = index
+            # Sets the checked variable fir the checkbox in the teacher widget
+            nonacad_widg = WidgetTree(icon_path="../Icons-mine/nonacad.png", label_text=nonacad, icon_width=17, with_checkbox=True)
+            duration = disabled_tablewidgetitem()
+            position = disabled_tablewidgetitem()
+
+            nonacad_table.setCellWidget(row, 0, nonacad_widg)
+            nonacad_table.setCellWidget(row, 1, duration)
+            nonacad_table.setCellWidget(row, 2, position)
+
+            # set a signal for when the checkbox of the nonacad_widg checkbox is checked
+            nonacad_widg.get_checkbox().stateChanged.connect(lambda state, duration=duration, position=position: enable_nonacad_table_row(state, duration, position))
+
+
+
+    def load_days_for_arms_listwidget(self):
+        """ Loads the day objects into the days_for_arms_listwidget in the page for period generation """
+        self.days_for_arms_listwidget.clear()
+
+        all_days = self.Timetable.get_model_items("days")
+        for day in all_days:
+            item = QtWidgets.QListWidgetItem()
+            widg = WidgetTree(icon_path="../Icons-mine/day.png",icon_width=16, icon_height=14, label_text=day, with_checkbox=True)
+            self.days_for_arms_listwidget.addItem(item)
+            self.days_for_arms_listwidget.setItemWidget(item, widg)
+
+
+    def disable_period_boxes(self, gbox):
+        """ For period generation, disables groupboxes based on what radio button is clicked """
+
+        self.period_gbox = gbox
+
+        # List of all the groupboxes
+        all_list = {(1,self.duration_gbox), (3,self.abs_startend_gbox), (2,self.day_startend_gbox)}
+
+        for num, g_box in all_list:
+            # Now to populate the tables containing details of the non-academic subjects
+            nonacad_table = self.findChild(QtWidgets.QTableWidget, f"nonacad_table{num}")
+            nonacad_table.clearContents()
+
+            if g_box == gbox:
+                gbox.setEnabled(True)
+                gbox.setStyleSheet("background:none;")
+
+                # ----------------------------------------------------------------------------------------
+                # Load the non-acad table
+                self._load_nonacad_tables(nonacad_table)
+
+            else:
+                g_box.setEnabled(False)
+                g_box.setStyleSheet("""QWidget{
+                    color:#888888;
+                    border-color:#bfbfbf;
+                    }""")
+
+        # Also, load the table
+
+
+    def gen_arms_freq_chunk_tree(self, expand=True):
         """ Generate class arms (and classes) into the tree  upon which selection for chunking would be carried out """
 
         # clear the table first
@@ -1796,6 +1997,7 @@ class UITimetable(QtWidgets.QMainWindow):
             clss_widg = WidgetTree(icon_path="../Icons-mine/classgroup.png",label_text=clss.full_name, with_checkbox=True)
             self.arms_for_chunk_tree.addTopLevelItem(clss_item)
             self.arms_for_chunk_tree.setItemWidget(clss_item, 0, clss_widg)
+            clss_item.setExpanded(expand)
 
 
             for arm in clss.school_class_arm_list:
@@ -1813,30 +2015,43 @@ class UITimetable(QtWidgets.QMainWindow):
         # Clear contents of the table 
         self.subj_freq_chunk_table.clearContents()
         # Make first column have a width of 140
-        self.subj_freq_chunk_table.setColumnWidth(0,250)
+        
 
         all_depts = self.Timetable.Timetable_obj.list_of_departments
         self.subj_freq_chunk_table.setRowCount(len(all_depts))
+        
 
         for index,dept in enumerate(all_depts):
             dept_widget = WidgetTree(icon_path="../Icons-mine/subject.png",label_text=dept.full_name, with_checkbox=True)
+            freq = MySpinBox(minimum=1,border="0.9px solid #b9b9b9", color="#b9b9b9", background="transparent",padding="0px 0px 0px 5px", enabled=False)
+            chunk = MySpinBox(minimum=1,border="0.9px solid #b9b9b9", color="#b9b9b9", background="transparent",padding="0px 0px 0px 5px", enabled=False)
+
             # SET a widget into the first row of the cells of a table
             self.subj_freq_chunk_table.setCellWidget(index, 0, dept_widget)
-            self.subj_freq_chunk_table.setItem(index, 1, QtWidgets.QTableWidgetItem("0"))
-            self.subj_freq_chunk_table.setItem(index, 2, QtWidgets.QTableWidgetItem("None"))
+            self.subj_freq_chunk_table.setCellWidget(index, 1, freq)
+            self.subj_freq_chunk_table.setCellWidget(index, 2, chunk)
+
+            # Add a signal and a slot to the dept widget's checkbox
+            dept_widget.get_checkbox().stateChanged.connect(lambda checked, dept_widg=dept_widget, freq_=freq, chunkval=chunk: self.enable_adjacent_cells(checked, dept_widg, freq_,chunkval))
+    
+
+    def enable_adjacent_cells(self, checked, dept_, freq_, chunkval):
+        """ The slot (function) for the checkboxes in the self.subj_freq_chunk_table. Renders them enabled only when checkbox is checked """
+        freq_.render_enabled(enable=checked)
+        chunkval.render_enabled(enable=checked)
 
 
     def bulk_mark_class_arms(self, checked=False, tree_item=None):
-        """ Specifically for school class objects. It marks (checks) all the arms under it if is checked """
+        """ Specifically for school classes. It marks (checks) all the arms under it if is checked """
 
-        if checked:
-            child_count = tree_item.childCount()
+        check = QtCore.Qt.Checked if checked else checked   #QtChecked if checked is true else false
+        child_count = tree_item.childCount()
 
-            for i in range(child_count):
-                arm_item = tree_item.child(i)
-                # Locate the WidgetTree class I defined myself
-                arm_widget = self.arms_for_chunk_tree.itemWidget(arm_item, 0)
-                arm_widget.checkBox.setCheckState(True)
+        for i in range(child_count):
+            arm_item = tree_item.child(i)
+            # Locate the WidgetTree class I defined myself
+            arm_widget = self.arms_for_chunk_tree.itemWidget(arm_item, 0)
+            arm_widget.checkBox.setCheckState(check)
 
 
     def map_depts_to_freq_chunk(self):
@@ -1861,6 +2076,53 @@ class UITimetable(QtWidgets.QMainWindow):
                     selected_arms.append(arm_widget.full_name_label)
 
 
+    def generate_periods(self):
+        """ Generates periods for the class arm """
+
+        if self.period_gbox == self.duration_gbox:
+            start = self.findChild(QtWidgets.QLineEdit, "start1").text()
+            dur= self.findChild(QtWidgets.QLineEdit, "duration1").text()
+            freq = self.findChild(QtWidgets.QSpinBox, "freq1").value()
+            interval = self.findChild(QtWidgets.QLineEdit, "int1").text()
+
+            periodgen_dict = {"start":start, "dur":dur, "freq":freq, "interval":interval}
+
+            self.findChild(QtWidgets.QLineEdit, "start1").clear()
+            self.findChild(QtWidgets.QLineEdit, "duration1").clear()
+            self.findChild(QtWidgets.QSpinBox, "freq1").clear()
+            self.findChild(QtWidgets.QLineEdit, "int1").clear()
+
+
+        elif self.period_gbox == self.day_startend_gbox:
+            # Given start end, not constrained
+            start = self.findChild(QtWidgets.QLineEdit, "start2").text()
+            end = self.findChild(QtWidgets.QLineEdit, "end2").text()
+            freq = self.findChild(QtWidgets.QSpinBox, "freq2").value()
+            interval = self.findChild(QtWidgets.QLineEdit, "int2").text()
+
+            periodgen_dict = {"start":start, "end":end, "freq":freq, "interval":interval}
+
+            self.findChild(QtWidgets.QLineEdit, "start2").clear()
+            self.findChild(QtWidgets.QLineEdit, "end2").clear()
+            self.findChild(QtWidgets.QSpinBox, "freq2").clear()
+            self.findChild(QtWidgets.QLineEdit, "int2").clear()
+
+        else:
+            # Given absolute start and end values
+            start = self.findChild(QtWidgets.QLineEdit, "start3").text()
+            end = self.findChild(QtWidgets.QLineEdit, "end3").text()
+            freq = self.findChild(QtWidgets.QSpinBox, "freq3").value()
+            interval = self.findChild(QtWidgets.QLineEdit, "int3").text()
+
+            periodgen_dict = {"start":start, "end":end, "freq":freq, "interval":interval}
+
+            self.findChild(QtWidgets.QLineEdit, "start3").clear()
+            self.findChild(QtWidgets.QLineEdit, "end3").clear()
+            self.findChild(QtWidgets.QSpinBox, "freq3").clear()
+            self.findChild(QtWidgets.QLineEdit, "int3").clear()
+
+        print()
+        print(periodgen_dict)
 
 # ------------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------------------
@@ -1877,6 +2139,15 @@ class UITimetable(QtWidgets.QMainWindow):
                 selected.append(item_widg.full_name_label.text())
 
         return selected
+
+
+    def adjust_table_columns(self,table, column_width_cont=None):
+        """ Function to automate the width of the columns of 'table'. column_width_cont, is a list
+        containing tuples of (column, width integer) """
+
+        for col, width in column_width_cont:
+            table.setColumnWidth(col, width)
+
 
 
     def checkall_widgtree_in_listwidget(self, listwidget, checkall=True):

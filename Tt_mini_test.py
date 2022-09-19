@@ -252,9 +252,9 @@ iter_list = []
 
 
 def really_run():
-    for subj in my_tt.list_of_departments:
+    for subj in my_tt.list_of_departments[:5]:
         b = iterable(subj, random.randint(1,4), random.randint(1,2))
-        # b = iterable(subj, 3, 2)
+        b = iterable(subj, 1, 1)
         iter_list.append(b)
 
     print(iter_list)
@@ -296,19 +296,19 @@ def really_run():
     #     print(arm, arm.depts_and_teachers.keys())
     print(my_sort.Sort_manager(SortAlgorithms.centercluster, reference_arm=m))
     
-really_run()
+# really_run()
 
-# count=0
-# for _ in range(10):
-#     count += 1
-#     try:
-#         really_run()
-#         print()
-#     except Exception as e:
-#         print(f"Bailed on number: {count}")
-#         print(e)
-#         break
-# else:
-#     print("ABSOLUTE SUCCESS")
+                    # count=0
+                    # for _ in range(10):
+                    #     count += 1
+                    #     try:
+                    #         really_run()
+                    #         print()
+                    #     except Exception as e:
+                    #         print(f"Bailed on number: {count}")
+                    #         print(e)
+                    #         break
+                    # else:
+                    #     print("ABSOLUTE SUCCESS")
 
 # print(my_sort.summon_all(d, CenterCluster))

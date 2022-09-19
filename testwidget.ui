@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>265</width>
-    <height>91</height>
+    <width>467</width>
+    <height>228</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>20</x>
      <y>20</y>
-     <width>196</width>
-     <height>31</height>
+     <width>376</width>
+     <height>121</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -27,9 +27,15 @@
      <widget class="QCheckBox" name="checkBox">
       <property name="maximumSize">
        <size>
-        <width>15</width>
+        <width>16777215</width>
         <height>16777215</height>
        </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QCheckBox::indicator{
+
+
+}</string>
       </property>
       <property name="text">
        <string/>

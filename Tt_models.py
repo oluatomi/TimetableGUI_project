@@ -60,8 +60,7 @@ class TimeTable:
         the info_dict has the same keys as the attributes of this timetable. """
 
         for info, val in info_dict.items():
-            attr = getattr(self, info)
-            attr = val
+            attr = setattr(self, info, val)
 
 
     def get_general_info(self):
@@ -264,7 +263,7 @@ class TimeTable:
 
         for tday in teaching_days:
             preexisting_obj.add_day_to_teacher(tday)
-            
+
         preexisting_obj.specialty = specialty
     # --------------------------------------------------------------------------------------
 
@@ -297,10 +296,7 @@ class TimeTable:
             self.day_id += 1
             day.id = self.day_id
             return
-
         preexisting_obj.day = day_name
-
-
 
 
     def del_day(self, day_obj):
@@ -624,11 +620,16 @@ class TimeTable:
             del self.teachers_for_client_class_arms[class_arm]
 
 
+        def assign_teacher_to_arm(self, clss_arm):
+            """ Assigns teacher to a class arm and records in the teacher_fir_client_class_arms dictionary """
+            teacher = self.assign_teacher()
+            self.teachers_for_client_class_arms[clss_arm] = teacher
+
+
         def assign_teachers_to_all_arms(self):
-            """ This method makes sure teachers are assigned to all the depts in the class_arms. 
+            """ This method makes sure teachers are assigned to all the class_arms in the dept. 
             (Those to whom teachers have not been assigned yet)
             Should be called only when absolutely needed """
-
 
             for arm, teacher in self.teachers_for_client_class_arms.items():
                 if not teacher:
@@ -885,10 +886,13 @@ class TimeTable:
 
         def add_day_to_arm(self, day_obj):
             """ Adds a day object to the days_list for this classarm. """
-            self.days_list.append(day_obj)
+            
+            if day_obj not in self.days_list:
+                self.days_list.append(day_obj)
 
-            # Add this class arm to the day_obj
-            day_obj.school_class_arms_today.append(self)
+                # Add this class arm to the day_obj
+                day_obj.school_class_arms_today.append(self)
+
 
         def remove_day_from_arm(self, day_obj):
             """Removes a day object from the list of days of this class arm"""
@@ -997,41 +1001,23 @@ class TimeTable:
         def normal_period(self, day_obj, start, duration, sch_class_arm_obj, dept_obj=None, end=None):
             """   This is the model of a normal academic period  """
 
-            # Just an attribute to indicate that this is a special 'favourite' period
-            self.is_favourite = False
+            # Just an attribute to indicate that this is an academic or non-academic period
+            self.is_acad = True
 
             # ------------------------------------------------
             self.subject = dept_obj # the department (subject)
-
             self.day = day_obj  # the day of the week, or the time period
-
             self.school_class_arm = sch_class_arm_obj
             self.teacher = None if not self.subject else self.subject.assign_teacher()
-            # Doing this because it's very possible for the period to be free (without a department handling it!)
-
-            # Add the class to the list of classes taught by the teacher
-            if self.subject:
-                self.teacher.classes_taught.append(self.school_class_arm)
-
-                # -- The below is to register the class arm as one of the classes taught by the department
-                # -- This could have been extracted from the teacher.classes_taught of each teacher in the department
-                # -- But, what if the department (maybe break time e.g) has no teacher? its class arms would still need to be recorded
-                self.subject.client_classes.add(self.school_class_arm)
-
-
-                # -- adds the subject to the list of subjects taken by the class arm
-                self.school_class_arm.list_of_all_subjects.append(self.subject)
-
             self.start = start  # The start time for the period
 
             if duration:
                 # -- if duration is given, calculate the end from the duration
                 self.duration = duration
-                self.end = TimeTable.add_sub_time(start, duration)
+                self.end = TimeTable.add_sub_time(self.start, duration)
 
             elif end:
                 # -- if duration isn't given but end is
-
                 self.end = end  # The end time for the period
                 self.duration = TimeTable.add_sub_time(self.end, self.start, add=False)
                 
@@ -1058,8 +1044,8 @@ class TimeTable:
 
             self.day = day_obj
 
-            # Just an attribute to indicate that this is a special 'favourite' period
-            self.is_favourite = True
+            # Just an attribute to indicate that this is an academic period or not
+            self.is_acad = False
 
             if spot:
                 # Put the period in the (spot-1)th spot of the period list
@@ -1116,7 +1102,7 @@ class TimeTable:
                 return
 
             self.subject = dept_obj
-            self.teacher = self.subject.assign_teacher() if self.subject.is_special else "Teacher not needed"
+            self.teacher = dept_obj.teachers_for_client_class_arms[self.school_class_arm]
             self.teacher.classes_taught.append(self.school_class_arm)
 
 
@@ -1125,18 +1111,17 @@ class TimeTable:
             adds a period one at a time """
 
             if self.day in self.school_class_arm.days_list:
-                #  To update the list of periods
+                # ---- To update the list of periods
                 if self.day in self.school_class_arm.periods:
                     self.school_class_arm.periods[self.day].append(self)
                 else:
                     self.school_class_arm.periods[self.day] = [self]
 
-                # To update the period counter
+                # ---- To update the period counter
                 if self.day in self.school_class_arm.period_id_counter.keys():
                     self.school_class_arm.period_id_counter[self.day] += 1
                 else:
                     self.school_class_arm.period_id_counter[self.day] = 1
-
             else:
                 return ProjectExceptions.SomethingWentWrong(f"{self.day} is not in the days_list of {self.school_class_arm}")
 
@@ -1405,27 +1390,24 @@ class TimeTable:
         return ans
 
 
-    def _add_sub_time(time_tuple1, time_tuple2, add=True):
+    def _add_sub_time(time_tuple1, time_tuple2, add=True, base=60):
         '''
-        Adds or subtracts two (hour, minute, seconds) tuples.
-        time_tuple1 always is a tuple, 
+        Adds or subtracts two (hour, minute, seconds) tuples. time_tuple1 always is a tuple, 
 
-        However, time_tuple2 could
-        be an integer or a tuple, depending on if it is an actual time
+        However, time_tuple2 couldbe an integer or a tuple, depending on if it is an actual time
         (rendered as a tuple) or duration.
 
-        WORKS FOR BOTH TIME DIFFERENCE (BETWEEN TWO TIME TUPLES) 
-        AND TIME AND DURATION (TIME TUPLE AND AN INTEGER)!
+        WORKS FOR BOTH TIME DIFFERENCE (BETWEEN TWO TIME TUPLES) AND TIME AND DURATION (TIME TUPLE AND AN INTEGER)!
 
-        time_tuple2 is the duration for the period or whatever
+        time_tuple2 is the duration for the period.
         '''
 
         if isinstance(time_tuple2, tuple):
-            time2 = TimeTable.tuple_to_num(time_tuple2, 60)
+            time2 = TimeTable.tuple_to_num(time_tuple2, base)
         else:
             time2 = time_tuple2
         # the above unpacks the tuple arguments.
-        time1 = TimeTable.tuple_to_num(time_tuple1, 60)
+        time1 = TimeTable.tuple_to_num(time_tuple1, base)
         
         # The above converts the time to absolute time in 
         # seconds
@@ -1434,7 +1416,8 @@ class TimeTable:
         else:
             time3 = time1 - time2
         # Adds or subtracts the time depending on the add argument
-        return TimeTable.num_to_tuple(time3, 60)
+        return TimeTable.num_to_tuple(time3, base)
+
 
 
     def _boundary_split_into_periods(start, end, n):
@@ -1455,10 +1438,9 @@ class TimeTable:
         start_iter = start
         
         for m in range(n):
-            """ Primarily, this part adds the time interval the start to get 
-            the end, and then the start updates to the end, so the next period begins 
-            at the end of the first!
-            """
+             # Primarily, this part adds the time interval the start to get the end, and then the start updates to the end, so the next period begins 
+            # at the end of the first!
+            
             add_interval_tup = TimeTable.add_sub_time(start_iter, interval)
 
             #---- Adds the "interval tuple" to the start time tuple which is given as
@@ -1476,7 +1458,7 @@ class TimeTable:
     def _to_base(num, base):
         '''Converts a number "num" to base "base"
         and renders it as a tuple of place values according to
-        said base '''
+        said base. Returns the time tuple '''
         valid, ans_list, number = True, [], num % 86400
         
         while valid:

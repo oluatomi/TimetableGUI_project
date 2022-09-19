@@ -190,6 +190,7 @@ class TimetableSorter:
         return container_list
 
 
+# ------------------- GENERATED PERIODS ----------------------------------------
     def generate_periods_classarms(self,day_obj,class_arm_obj, start, end, n):
         """This method generates the periods given a day, for a given class arm by chunking its 
         start and end times into 'n' amounts of equal periods."""
@@ -203,30 +204,23 @@ class TimetableSorter:
         return val
 
 
-    def generate_periods_classarms_week(self, class_arm_obj, start_per_day, end_per_day, n):
+
+    def generate_periods_classarms_weekdays(self, class_arm_obj, start_per_day, end_per_day, n, days_list):
         """Generates periods for every day of the week for a given class arm, by generating for 
         each day (in the method defined above) """
 
-        week = []
-        for each_day in self.tt_obj.list_of_days:
-            week.append({each_day: generate_periods_classarms(each_day,class_arm_obj, start_per_day, end_per_day, n)})
+        if days_list:
+            week = []
+            for each_day in days_list:
+                week.append({each_day: generate_periods_classarms(each_day,class_arm_obj, start_per_day, end_per_day, n)})
+            return week
 
-        return week
-
-
-    def special_period_insertion(self, class_arm, day_obj, period_obj, n):
-        """This method is to help insert a period into a particular spot in the list of 
-        periods for a day at the (n-1)th position"""
-
-        pos = int(n) - 1
-        class_arm.periods[day_obj].insert(pos, period_obj)
 
 
     def update_periods_after_insertion(self, period_list, boundary_thickness=(0,0,0)):
         """ This method updates all the start and end times of the list of periods for a classarm for a 
-        single day in case some custom inserions were made that messed up the order. The boundary thickness 
-        determines whether the periods are contiguous or have 
-        some space in between.
+        single day in case some custom insertions were made that messed up the order. The boundary thickness 
+        determines whether the periods are contiguous or have some space (interval) in between.
 
         this doesn't need a day object or a class arm argument """
 
@@ -237,62 +231,147 @@ class TimetableSorter:
             period_list[index].end = TimeTable.add_sub_time(period_list[index].start, period_list[index].duration)
 
 
-    def generate_normal_n_special_in_time_bound(self, spec_periods_dict, day_obj, class_arm, start, end, n=None, total = None, bound=(0,0)):
-        """This method generates periods for a given day for a classarm if the absolute start
-        and end times are given.
-        The 'spec_periods_dict' is a dictionary that holds the special periods as keys and their
-        position in the list as the value.
 
-        'n' (if given) is the frequency of normal periods excluding the specials, so not an absolute boundary.
-        'total' (if given) is the total number of periods for the day, including the special periods
+    def generate_periods_given_duration(self, class_arm, day,start, duration,freq, nonacad_tuple=None, boundary_interval=(0,0)):
+        """ Generates periods along with nonacademic periods given start and duration. freq denotes the frequency of the normal periods.
+         """
+        # stretch out all the durations of the frequencies into one thin strip (i.e. duration in frequency places)
+        total_duration = TimeTable._tuple_to_absolute(duration) * freq
+        end = TimeTable.add_sub_time(start, TimeTable._to_base(total_duration, 60))
+
+        academic_periods = self.generate_periods_classarms(day,class_arm, start, end, freq)
+        # now insert the special (non-acad periods)
+
+        all_periods = self._insert_nonacad(academic_periods, nonacad_tuple)
+        # Just to help print it out
+        # Mesh the periods with one another
+        self.update_periods_after_insertion(all_periods, boundary_thickness=boundary_interval)
+        return all_periods
+
+
+
+    def generate_periods_given_acadspan(self, class_arm, day, start, limit, freq, nonacad_tuple, boundary_interval=(0,0)):
+        """ Generates academic periods between start and limit. That is before fixing the special (nonacad) periods Duration
+         is calculated implicitly """
+        academic_periods = self.generate_periods_classarms(day,class_arm, start, limit, freq)
+        # insert non-acad (special) periods
+        all_periods = self._insert_nonacad(academic_periods, nonacad_tuple)
+
+        # Mesh the periods with one another
+        self.update_periods_after_insertion(all_periods, boundary_thickness=boundary_interval)
+        return all_periods
+
+
+
+    def generate_periods_given_abs_constraints(self, class_arm, day, abs_start, abs_end, freq, nonacad_tuple, boundary_interval=(0,0)):
+        """ Generates periods with the non-acads and all, with end point fixed """
+
+        # Get sum the non-academic periods durations first
+        sum_dur = (0,0)
+
+        for _, positions, duration in nonacad_tuple:
+            for _ in positions:
+                sum_dur = TimeTable.add_sub_time(sum_dur, duration)
+
+        # Subtract this sum of durations time from the span, i.e. end - start
+        span = TimeTable.add_sub_time(abs_end, abs_start, add=False)
+        # What is left of the span when non-acads durations have been removed
+        sub_span = TimeTable.add_sub_time(span, sum_dur, add=False)
+        # Add this sub_span to abs_start to get the limit of the academic periods
+        limit = TimeTable.add_sub_time(abs_start, sub_span)
+        # Now generate periods
+        academic_periods = self.generate_periods_classarms(day, class_arm, abs_start, limit, freq)
+        # insert non-acad (special) periods
+        all_periods = self._insert_nonacad(academic_periods, nonacad_tuple)
+
+        # Mesh the periods with one another
+        self.update_periods_after_insertion(all_periods, boundary_thickness=boundary_interval)
+        return all_periods
+
+
+
+    # ----------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------
+    def _insert_nonacad(self, academic_periods, nonacad_tuple):
+        """ Inserts the non-academic periods into the already generated normal (academic) periods.
+        The nonacad_dict is a a tuple with of form:  (nonacad_name(str), [positions (int)], duration_nonacad(time tuple)).
+        THE duration_nonacad IS A TIME-TUPLE
         """
+        academic_periods = academic
+        nonacads = []
 
-        # The span of the entire day
-        span = TimeTable.tuple_to_num(TimeTable.add_sub_time(end, start, add=False), 60)
-        # The above subtracts the end from the start
+        for non_acad, poslist, duration_nonacad in nonacad_tuple:
+            for position in poslist:
+                # Create the non-academic period
+                nonacad_period = self.tt_obj.create_period(start=(8,0,0), day=day, end=None, sch_class_arm_obj=class_arm, dept_=None, is_fav=True,
+                    duration=duration_nonacad,spot=None, title_of_fav=non_acad)
+                nonacads.append((position, nonacad_period))
 
-        dur = (0,0,0)
+        # Now insert all of these nonacads contents into the main list
+        for position, nonacad_period in nonacads:
+            academic_periods.insert(position - 1, nonacad_period)
 
-        # This sums up the durations of all the special periods
-        for period in spec_periods_dict:
-            dur = TimeTable.add_sub_time(dur, period.duration)
+        return academic_periods
+        # --------------------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------------------
 
-        abs_dur = TimeTable.tuple_to_num(dur, 60)
+                                                                                    # def generate_normal_n_special_in_time_bound(self, spec_periods_dict, day_obj, class_arm, start, end, n=None, total=None, bound=(0,0)):
+                                                                                    #     """This method generates periods for a given day for a classarm if the absolute start
+                                                                                    #     and end times are given.
+                                                                                    #     The 'spec_periods_dict' is a dictionary that holds the special periods as keys and their
+                                                                                    #     position in the list as the value.
 
-        # the sum of the durations of the special periods is subtracted from the span.
-        # and made into the 'end' for the normal periods
-        diff = span - abs_dur
-        diffy = TimeTable.add_sub_time(start, diff)
+                                                                                    #     'n' (if given) is the frequency of normal periods excluding the specials, so not an absolute boundary.
+                                                                                    #     'total' (if given) is the total number of periods for the day, including the special periods
+                                                                                    #     """
 
-        if total:
-            n = total - len(spec_periods_dict)
-        elif n:
-            pass
-        elif not total and not n:
-            raise ValueError
-
-        all_periods = self.generate_periods_classarms(day_obj,class_arm, start, diffy, n)
-
-
-
-        # Inserting the special periods into the specified positions, whilst subtracting 1 to account for zero-based index
-        for period in spec_periods_dict:
-            all_periods.insert(spec_periods_dict[period] - 1, period)
-
-        # -- At this point, the start and end of all these periods is messed up.
-        # It needs to be updated. So we call the method defined earlier.
-
-        self.update_periods_after_insertion(all_periods, boundary_thickness=bound)
-
-        # Just to be certain
-
-        # return all_periods
+                                                                                    #     periods_list = []
+                                                                                    #     # make first period with "start", the rest with duration
 
 
-    # def teachers_for_arms_today(self, day_obj):
-    #     """ This method extracts all the teacher objects that feature on a particular day.
-    #     But extracts also the classes they teach today, and not all the classes they teach as a whole """
-    #     return day_obj.get_all_teachers_for_today()
+
+
+
+
+                                                                                    #     # The span of the entire day
+                                                                                    #     span = TimeTable.tuple_to_num(TimeTable.add_sub_time(end, start, add=False), 60)
+                                                                                    #     # The above subtracts the end from the start
+
+                                                                                    #     dur = (0,0,0)
+
+                                                                                    #     # This sums up the durations of all the special periods
+                                                                                    #     for period, pos in spec_periods_dict.items():
+                                                                                    #         for _ in range(len(pos)):
+                                                                                    #             dur = TimeTable.add_sub_time(dur, period.duration)
+
+
+                                                                                    #     abs_dur = TimeTable.tuple_to_num(dur, 60)
+                                                                                    #     # the sum of the durations of the special periods is subtracted from the span.
+                                                                                    #     # and made into the 'end' for the normal periods. so we can start splitting
+                                                                                    #     diff = span - abs_dur
+                                                                                    #     diffy = TimeTable.add_sub_time(start, diff)
+
+                                                                                    #     if total:
+                                                                                    #         n_ = total - len(spec_periods_dict)
+                                                                                    #     elif n:
+                                                                                    #         n_=n
+                                                                                    #     elif not total and not n:
+                                                                                    #         raise ValueError
+
+                                                                                    #     all_periods = self.generate_periods_classarms(day_obj,class_arm, start, diffy, n_)
+
+
+
+                                                                                    #     # Inserting the special periods into the specified positions, whilst subtracting 1 to account for zero-based index
+                                                                                    #     for period in spec_periods_dict:
+                                                                                    #         all_periods.insert(spec_periods_dict[period] - 1, period)
+
+                                                                                    #     # -- At this point, the start and end of all these periods is messed up.
+                                                                                    #     # It needs to be updated. So we call the method defined earlier.
+                                                                                    #     self.update_periods_after_insertion(all_periods, boundary_thickness=bound)
+                                                                                    #     # Just to be certain
+
+                                                                                    #     # return all_periods
 
 
     def set_deptpacket_into_day_per_class_arm(self, class_arm, iterable_from_gui):
@@ -583,10 +662,10 @@ class TimetableSorter:
         # Also, this is {teacher:arm,dept, chunk}
         Teachers_and_chunked_val = {teacher:[] for teacher in todays_teachers}
 
-    # =========================================
-     # Couple the new chunked value [a,b] and the arm into a dictionary {arm:[(dept,[a,b])]}
-        # --------------------------------------------
-    # -----------------------------------------------------------------------------------------------------------------
+        # =========================================
+         # Couple the new chunked value [a,b] and the arm into a dictionary {arm:[(dept,[a,b])]}
+            # --------------------------------------------
+        # -----------------------------------------------------------------------------------------------------------------
         # Teachers already handled so we dont handle them
         touched_teachers = []
         # visited = []
@@ -647,9 +726,9 @@ class TimetableSorter:
             
                 print(f"This is the count_dict for chunking: {count_dict[teacher]} for Teacher: {teacher}")                
                 
-        # -------------------------------------------------------------------------------------------------
-        # --------------------------- FEED INTO THE CHUNKING ALGORITHM ------------------------------------
-        # -------------------------------------------------------------------------------------------------
+            # -------------------------------------------------------------------------------------------------
+            # --------------------------- FEED INTO THE CHUNKING ALGORITHM ------------------------------------
+            # -------------------------------------------------------------------------------------------------
                 # Shift with the int_values of the ArmsPeriodsLeft_objs of the arm so we can keep track of which ones have been poppwd when occupied2
                 
                 # this_teacher = algorithm.doubles_and_singles(p_singDoub.single, p_singDoub.double, array, 
@@ -953,11 +1032,15 @@ class TimetableSorter:
 
 
         # -----------------------------------------------------------------------------------------------
-        def patch_teachers(days_list):
+        def patch_teachers(days_list, x_info=None):
             """ The function that finds an empty, non-overlapping spot to put teachers in """
 
             # ------------------------------------------------------------------
             if not self.handled:
+                print()
+                print(f"Yee-haw {x_info}")
+                print()
+
                 for day in days_list:
                     # check if arm has class on this day, (you know to be robust)
                     if arm in day.school_class_arms_today:
@@ -1001,6 +1084,9 @@ class TimetableSorter:
                                     self.displaced_teachers[teacher][index][day_].remove(elem)
 
 
+            else:
+                print("Begin again!!")
+                print()
             # ------------------------------------------------------------
             # Delete teacher's details from displaced teachers if teacher has already been handled
             try:
@@ -1010,6 +1096,8 @@ class TimetableSorter:
                 # If the day_chunk list (the big list right next to teacher is empty, remove the teacher)
                 if not second_displaced[teacher]:
                     del self.displaced_teachers[teacher]
+                    print()
+                    print(f"Teacher: {teacher} safely removed")
             except Exception:
                 pass
         # -----------------------------------------------------------------------------------------------
@@ -1050,9 +1138,9 @@ class TimetableSorter:
                         
                         # COMING BACK HERE!!!!
                         self.handled = False
-                        patch_teachers(free_day)
-                        patch_teachers(work_day)
-                        patch_teachers(over_day)
+                        patch_teachers(free_day, x_info="When I actually can.")
+                        patch_teachers(work_day, x_info="Now on my works days")
+                        patch_teachers(over_day, x_info="OVERTIME DAY")
                         if self.handled:
                             break
 

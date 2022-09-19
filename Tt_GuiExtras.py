@@ -6,7 +6,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class WidgetTree(QtWidgets.QWidget):
     """Class to generate the widgets which would go into the trees in the gui, rather than mere text"""
-    def __init__(self,icon_path="../Icons-mine/teacher.png",icon_width=14, icon_height=16, label_text="", with_checkbox=False):
+    def __init__(self,icon_path="../Icons-mine/teacher.png",icon_width=14, icon_height=16, label_text="",extra_text="",with_checkbox=False):
         super().__init__()
         self.setGeometry(QtCore.QRect(20, 20, 194, 51))
         self.resize(31, 191)
@@ -20,6 +20,8 @@ class WidgetTree(QtWidgets.QWidget):
         self.checkBox.setObjectName("checkBox")
         self.horizontalLayout.addWidget(self.checkBox)
         self.checkBox.hide()
+
+        self.extra_text = QtWidgets.QLabel(extra_text)
         # If checkbox is desired to be added
         if with_checkbox:
             self.checkBox.show()                
@@ -35,32 +37,47 @@ class WidgetTree(QtWidgets.QWidget):
         self.full_name_label.setObjectName("full_name_label")
         self.full_name_label.setText(label_text)
         self.horizontalLayout.addWidget(self.full_name_label)
+        self.horizontalLayout.addWidget(self.extra_text)
 
 
     def get_checkbox(self):
         """Gets the checkbox"""
         return self.checkBox
 
+    def add_extra_text(self, txt, color="black"):
+        """ Adds text to the self.extra_text label """
+        self.extra_text.setText(txt)
+        self.extra_text.setStyleSheet(f"""
+            color:{color};
+            """)
+
+
     
-    # Instantiate this mini-class
-    # my_widget = WidgetTree(with_checkbox=with_checkbox)
-    # return my_widget
 
-
-class MyFontDialog(QtWidgets.QFontDialog, QtWidgets.QMainWindow):
-    def __init__(self, title="Timetable Dialog", icon_path="../Icons-mine/App_logo.png"):
+class MySpinBox(QtWidgets.QSpinBox):
+    """ Generate the special kind of spinbox that sits in a table """
+    def __init__(self, minimum=0, maximum=None, border="1px solid black",rad=0, color="black",
+        background="white",padding="0px 0px 0px 0px", enabled=True):
         super().__init__()
-        self.setWindowTitle(title)
-        self.setWindowIcon(QtGui.QIcon(icon_path))
-        self.show()
 
+        self.setMinimum(minimum)
+        if maximum:
+            self.setMaximum(maximum)
 
-class MyColourDialog(QtWidgets.QColorDialog, QtWidgets.QMainWindow):
-    def __init__(self, title="Timetable Dialog", icon_path="../Icons-mine/App_logo.png"):
-        super().__init__()
-        self.setWindowTitle(title)
-        self.setWindowIcon(QtGui.QIcon(icon_path))
-        self.show()
+        self.setStyleSheet(f""" 
+            border:{border};
+            border-radius:{rad};
+            color:{color};
+            background:{background};
+            padding:{padding};
+         """)
+        self.setEnabled(enabled)
+
+    def render_enabled(self, enable=True):
+        self.setEnabled(enable)
+        styles = self.styleSheet()
+        styles += f"color:{'#151515' if enable else '#b9b9b9'};"
+        self.setStyleSheet(styles)
 
 
 
