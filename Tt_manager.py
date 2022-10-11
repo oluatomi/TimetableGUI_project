@@ -10,11 +10,11 @@
 
 # -- THIS IS THE OFFICIAL FORM OF THE TESTING_SETUP.PY MODULE
 
-
+from collections import namedtuple
 from Tt_models import TimeTable
 from inspect import isfunction
 from Tt_algo import TimetableSorter
-import string
+import string, re, Tt_exceptions
 
 
 
@@ -32,7 +32,7 @@ def get_obj_from_param(g_list, attr, param):
                     return item
 
             else:
-                if getattr(item, attr).lower() == param.lower():
+                if str(getattr(item, attr)).lower() == param.lower():
                     return item
     else:
         raise ValueError(f"{param} not found. No item has what you checked for.")
@@ -45,11 +45,14 @@ class TimeTableManager:
 
     def __init__(self, time_t_obj=None):
         self.Timetable_obj = TimeTable() if not time_t_obj else time_t_obj
-        self.TimetableSorter = self.Timetable_obj
+        self.TimetableSorter = TimetableSorter(tt_obj=self.Timetable_obj)
         self.object_getter = get_obj_from_param
         # In the event of an update to a model, the pre_existing model to be edited
         self.pre_existing = None
-        self.regex_dration_pattern = '\d{1,2}:\d{1,2}:\d{1,2}'
+        self.regex_time_pattern = "\d+:\d+:\d+"
+        self.regex_position_pattern = "^(\d+,?)+$"
+
+        # The table data for the arms_feasible_table
 
 
     def stash_general_info(self, info_dict):
@@ -72,18 +75,30 @@ class TimeTableManager:
             mod_list = self.Timetable_obj.list_of_nonacad_depts
         elif model_name == "faculties":
             mod_list = self.Timetable_obj.list_of_faculties
-        elif model_name == "teachers":
+        elif model_name in ["teachers", "staff"]:
             mod_list = self.Timetable_obj.list_of_all_teachers
         elif model_name in ["classes", "school_classes"]:
             mod_list = self.Timetable_obj.list_of_school_classes
-        elif model_name == "arms":
+        elif model_name in ["arms", "class_arms"]:
             mod_list = self.Timetable_obj.list_of_school_class_arms
         elif model_name == "days":
             mod_list = self.Timetable_obj.list_of_days
         else:
             raise ValueError(f"{model_name} not legal!!")
 
-        return [item.full_name for item in mod_list]
+        # returns a tuple of the below
+        return [item.full_name for item in mod_list], mod_list
+
+
+    def get_object_from_list_by_fullname(self, model_name, object_fullname):
+        """ Returns an object (arm, or dept, etc) from its list. serves as a substitute for self.object_getter. More suitable for functions
+        that may call for objects outside this module """
+        mod_list = self.get_model_items(model_name)[1]
+
+        for obj in mod_list:
+            if obj.full_name == object_fullname:
+                return obj
+        return ValueError(f"{object_fullname} not found in model list")
 
 
     def create_faculty(self, faculty_name, HOD="Esteemed HOD Sir/Ma'am", description="", update=False):
@@ -184,7 +199,7 @@ class TimeTableManager:
         self.Timetable_obj.create_school_class(name,classgroup_obj, update=update, preexisting_obj=pre_existing_obj)
 
 
-    def generate_school_class_arms(self,class_fullname,frequency=1, as_alpha=True, override=False):
+    def generate_school_class_arms(self, class_fullname, frequency=1, as_alpha=True, override=False):
         #  ...
         #  ...
         #  ...
@@ -205,21 +220,30 @@ class TimeTableManager:
             self.Timetable_obj.create_school_class_arm(school_class_obj, as_alpha=as_alpha)
 
 
-    def generate_teachers(self, frequency=1, teaching_days=None, specialty="All", course_list=None, update=False):
+    def generate_teachers(self, frequency=1, teaching_days=None, specialty="All", designation="Member of staff", course_list=None, update=False):
         #  ...
         #  ...
         dept_objs_list = [self.object_getter(self.Timetable_obj.list_of_departments, "full_name", course_fullname) for course_fullname in course_list]
         # get all the teaching day objects
         teaching_days_list = [self.object_getter(self.Timetable_obj.list_of_days, "full_name", day_fullname) for day_fullname in teaching_days]
-
+        designation = designation if designation else "Member of staff"
+        # ----------------------------------------------
+        if specialty == "All":
+            specialty = self.Timetable_obj.list_of_school_class_groups
+        else:
+            specialty = [self.object_getter(self.Timetable_obj.list_of_school_class_groups, "full_name", specialty)]
+        
+        # ----------------------------------------------
         if not update:
             # Create teacher with the first course hence, simply add the other courses to the teacher
             for _ in range(frequency):
-                self.Timetable_obj.create_teacher(dept_objs_list=dept_objs_list, teaching_days=teaching_days_list, specialty=specialty)
+                self.Timetable_obj.create_teacher(dept_objs_list=dept_objs_list, teaching_days=teaching_days_list, 
+                    specialty=specialty, designation=designation)
             return
-        # If we are updating
-        self.Timetable_obj.create_teacher(dept_objs_list=dept_objs_list, teaching_days=teaching_days_list, specialty=specialty, update=True,
-            preexisting_obj=self.pre_existing)
+        
+        # ---- WHEN UPDATE IS BEING MADE
+        self.Timetable_obj.create_teacher(dept_objs_list=dept_objs_list, teaching_days=teaching_days_list, 
+            specialty=specialty, designation=designation, update=True, preexisting_obj=self.pre_existing)
 
 
     def search_out_teacher(self, ID):
@@ -238,6 +262,10 @@ class TimeTableManager:
         teacher_obj = self.object_getter(self.Timetable_obj.list_of_all_teachers, "full_name", teacher_fullname)
         courses = teacher_obj.teachers_department_list
         tdays = teacher_obj.teaching_days
+        designation = teacher_obj.designation
+        specialty = teacher_obj.specialty
+
+        # specialty_text = "All" if set(specialty) == set(self.Timetable_obj.list_of_school_class_groups) else specialty[0].full_name
 
         # Slap courses into a dictionary (key) and whether they should be checked or not as the value
         courses_for_gui = {course.full_name:False for course in self.Timetable_obj.list_of_departments}
@@ -253,7 +281,7 @@ class TimeTableManager:
 
         # send both out to the GUI class
         self.pre_existing = teacher_obj
-        return courses_for_gui, days_for_gui
+        return courses_for_gui, days_for_gui, designation
 
 
     def delete_teacher(self, teachers_list):
@@ -274,13 +302,6 @@ class TimeTableManager:
         # The rating parameter helps to situate the day in te list of days
         rating = rating - 1 if rating else None
         self.Timetable_obj.create_day(day_name, rating=rating, update=update, preexisting_obj=pre_existing_obj)
-
-
-    def remove_day(self, id):
-        #  ...
-        #  ...
-        #  ...
-        self.Timetable_obj.del_day(day_obj)
 
 
     # --------------- delete models, class group, class, day, dept, teacher. e.t.c
@@ -310,7 +331,6 @@ class TimeTableManager:
                 classcat_obj = self.object_getter(self.Timetable_obj.list_of_school_class_groups, "full_name", classcat_fullname)
                 self.Timetable_obj.del_school_class_group(classcat_obj)
 
-
         elif mod_name_key == "Department":
             # To delete faculty objects
             for fac_fullname in selected_items:
@@ -331,42 +351,190 @@ class TimeTableManager:
                 self.Timetable_obj.del_nonacad_department(nonacad_obj)
 
 
+    # -----------------------------------------------------------------------------------------
+    # ----------------------------- PERIOD GENERATION SECTION ---------------------------------
     def add_days_to_selected_classarms(self, selected_arms_list=None, selected_days_list=None):
-        """ This method add each of the days to each of the class arms in the arms_list. arms_list is a list of strings
-        with full_name attr of the class arms """
-
-        arm_objs = [self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", arm_fullname) for arm_fullname in selected_arms_list]
-        day_objs = [self.object_getter(self.Timetable_obj.list_of_days, "full_name", day_fullname) for day_fullname in selected_days_list]
-
+        """ This method add each of the days to each of the class arms in the arms_list """
+        
         # Add each day object to each arm
-        for arm in arm_objs:
-            arm.days_list = []
-            for day in day_objs:
-                arm.add_day_to_arm(day)
+        for arm in selected_arms_list:
+            # Empty out the days_list of the arm before filling it again
+            self.Timetable_obj.unmap_all_depts_from_arm(arm)
+            
+            for day in selected_days_list:
+                self.Timetable_obj.map_day_to_arm(arm, day)
 
 
+    def add_depts_to_selected_classarms(self, arm_objs_list=None, iterable_from_gui=None):
+        """ This method adds the courses from the iterable_from_gui into the selected arms """
+        # arm_objs = [self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", arm_fullname) 
+        # for arm_fullname in selected_arms_list]
 
-    def generate_periods_for_classarms(self, g_box_id, selected_arms_list=None, selected_days_list=None):
+        for arm in arm_objs_list:
+            for detail in iterable_from_gui:
+                dept, _, _ = detail
+                self.Timetable_obj.map_dept_to_arm(arm, dept)
+
+
+    def generate_periods_for_classarms(self, g_box_id, selected_arms_list=None, selected_days_list=None, acad_periods_dict=None, nonacad_tuple_list=None):
         """ This method generates periods for all the arms for all the days that have been selected from the GUI """
-        arm_objs = [self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", arm_fullname) for arm_fullname in selected_arms_list]
-        day_objs = [self.object_getter(self.Timetable_obj.list_of_days, "full_name", day_fullname) for day_fullname in selected_days_list]
         
         if g_box_id == "by_duration":
-            for arm in arm_objs:
-                for day in day_objs:
-                    self.TimetableSorter.generate_periods_given_duration(arm, day,start, duration,freq, nonacad_tuple=None, boundary_interval=(0,0))
+            for arm in selected_arms_list:
+                for day in selected_days_list:
+                    self.TimetableSorter.generate_periods_given_duration(arm, day, acad_periods_dict=acad_periods_dict, nonacad_tuple_list=nonacad_tuple_list)
         elif g_box_id == "by_acadspan":
-            for arm in arm_objs:
-                for day in day_objs:
-                    self.TimetableSorter.generate_periods_given_acadspan(arm, day, start, limit, freq, nonacad_tuple, boundary_interval=(0,0))
+            for arm in selected_arms_list:
+                for day in selected_days_list:
+                    self.TimetableSorter.generate_periods_given_acadspan(arm, day, acad_periods_dict=acad_periods_dict, nonacad_tuple_list=nonacad_tuple_list)
         else:
-            for arm in arm_objs:
-                for day in day_objs:
-                    self.TimetableSorter.generate_periods_given_abs_constraints(arm, day, abs_start, abs_end, freq, nonacad_tuple, boundary_interval=(0,0))
+            for arm in selected_arms_list:
+                for day in selected_days_list:
+                    self.TimetableSorter.generate_periods_given_abs_constraints(arm, day, acad_periods_dict=acad_periods_dict, nonacad_tuple_list=nonacad_tuple_list)
 
 
-    def add_day_and_periods_to_arm(self, g_box_id, selected_arms=None, selected_days=None):
+
+    def pin_day_generate_periods(self, g_box_id, selected_arms_list=None, selected_days_list=None, normal_periods_dict=None, nonacad_tuple_list=None):
         """ Handles adding days selected to class arms selected  and generates periods from the GUI """
+        def _to_time_tuple(time_str):
+            """ Convers string of format hh:mm:ss to the time tuple to be used in calculations """
+            var = time_str.split(":")
+            ret_list = [int(k) for k in var]
+            return tuple(ret_list)
 
-        self.generate_periods_for_classarms(g_box_id, selected_arms_list=selected_arms, selected_days_list=selected_days)
+        def _to_int_list(pos_str):
+            """ converts the string items in positio list to al list of integers """
+            var = pos_str.split(",")
+            return [int(k) for k in var]
 
+        # --------------------------------------------------------------------------------------------------
+        # ----------- First, validate the necessary fields with the regular expressions pattern
+        # Validate all the elements normal_periods_dict except the freq and see if they all match to true
+        match_list = []
+        for field, val in normal_periods_dict.items():
+            if field == "freq":
+                continue
+            match = re.match(self.regex_time_pattern, val)
+            match_list.append(match)
+
+        # Also validate the nonacad_tuple
+        for name, duration, pos_list in nonacad_tuple_list:
+            match = re.match(self.regex_time_pattern, duration)
+            rematch = re.match(self.regex_position_pattern, pos_list)
+            match_list.append(match)
+            match_list.append(rematch)
+
+        # If all these fields (acad and non-acad) are not of the right pattern, ERROR OUT!!
+        if not all(match_list):
+            return "Invalid field input"
+
+        # Morphe normal_periods_dict and nonacad_tuple from mere strings into the accepted formats
+        for field, val in normal_periods_dict.copy().items():
+            if field == "freq":
+                continue
+            normal_periods_dict[field] = _to_time_tuple(val)
+        
+        # --- And
+        for index, elem in enumerate(nonacad_tuple_list.copy()):
+            name, duration, positions = elem
+            # Get the non-acad dept object and re-assign to 'name' variable
+            name = self.object_getter(self.Timetable_obj.list_of_nonacad_depts, "full_name", name)
+            nonacad_tuple_list[index] = (name, _to_time_tuple(duration), _to_int_list(positions))
+
+        # print(f"nonacad_tuple_list: {nonacad_tuple_list}")
+
+
+        arm_objs = [self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", arm_fullname) for arm_fullname in selected_arms_list]
+        day_objs = [self.object_getter(self.Timetable_obj.list_of_days, "full_name", day_fullname) for day_fullname in selected_days_list]
+        # ------------------------------------------------
+        # Add days to class arm
+        self.add_days_to_selected_classarms(selected_arms_list=arm_objs, selected_days_list=day_objs)
+        # Generate periods for the days established
+        self.generate_periods_for_classarms(g_box_id, selected_arms_list=arm_objs, selected_days_list=day_objs,
+            acad_periods_dict=normal_periods_dict, nonacad_tuple_list=nonacad_tuple_list)
+
+        # for arm in arm_objs:
+        #     print()
+        #     print(arm, [(period.start, period.end) for period in arm.periods[day_objs[0]]])
+
+
+    def nullify_day_and_periods_from_arms(self, selected_arms_list, selected_days_list):
+        """ This method handles removing the day and periods generated therein from each class arm in the list """
+        arm_objs = [self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", arm_fullname) for arm_fullname in selected_arms_list]
+        day_objs = [self.object_getter(self.Timetable_obj.list_of_days, "full_name", day_fullname) for day_fullname in selected_days_list]
+
+        for classarm in arm_objs:
+            for day in day_objs:
+                self.Timetable_obj.unmap_day_from_arm(classarm, day)
+
+
+    def map_arms_to_chunkfreq_details(self, selected_arms_list, iterable_from_gui):
+        """ This method receives the dept and chunk details (freq and chunk) along with all the arms from the GUI.
+        iterable_from_gui is a list of tuples. DEPTS HAVE BEEN ADDED TO THE CLASS ARMS """
+
+        arm_objs = [self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", arm_fullname) for arm_fullname in selected_arms_list]
+        subj_freq_chunk = namedtuple("subj_freq_chunk", "dept frequency chunk")
+
+        # 1. Morphe the iterable_from_gui list of tuples into a list of namedtuples to be used in the TimetableSorter
+        total_frequency = 0
+        for index, details in enumerate(iterable_from_gui.copy()):
+            dept, freq, chunk = details
+            total_frequency += freq
+            # Get the real dept object for the dept variable
+            dept = self.object_getter(self.Timetable_obj.list_of_departments, "full_name", dept)
+
+            # Replace the items in the list of tuples (from the GUI) with the namedtuples
+            # This is the iterable_from_gui in the TimetableSorter code
+            iterable_from_gui[index] = subj_freq_chunk(dept, freq, chunk)
+
+
+        # 2. Compile list of tuples bearing: (arm_fullnames, periods sum, frequency_sum, feasible)
+        for arm in arm_objs:
+            full_name = arm.full_name
+            periods_sum = arm.period_count_total()
+            frequency_sum = total_frequency
+            feasible_bool = arm.total_period_contains_freq(total_frequency)
+            feasible = str(feasible_bool)
+            # An extra parameter to help colour the entry in the table
+            feasible_colour = "#000" if feasible_bool else "#df0000"
+            # populate the table_data list
+            # table_data.append((full_name, periods_sum, frequency_sum, feasible, feasible_colour))
+
+            # Now packet the "iterable_from_gui" into each arm if it is feasible, i.e. arm's number of periods can contain it
+            if feasible_bool:
+                # Store thids particulrs in the arm
+                arm.store_iterable_from_gui(iterable_from_gui)
+                arm.store_arms_feasible_table_data([periods_sum, frequency_sum, feasible, feasible_colour])
+
+        # Add the courses in iterable_from_gui to the class arm
+        self.add_depts_to_selected_classarms(arm_objs_list=arm_objs, iterable_from_gui=iterable_from_gui)
+            
+
+    def get_arms_feasible_table_data(self):
+        """ Returns the arms_feasible_table_data for every class arm to be used in the GUI """
+        return [arm.get_arms_feasible_table_data() for arm in self.Timetable_obj.list_of_school_class_arms]
+
+
+    # ---------------- ASSIGN TEACHERS TO TEACH SUBJECTS IN CLASS ARMS ---------------------
+    def auto_assign_teachers_to_arms(self):
+        """ calls the Tt_models module and automatically assigns teacher to arm """
+
+        # First loads the teachers generators to yiled teachers for assignment
+        self.Timetable_obj.load_teachers_from_all_depts(ascending=True)
+        self.Timetable_obj.auto_assign_teachers_to_all_arms()
+
+
+    def undo_assign_teachers_to_arms(self):
+        """ Calls the Tt_models module to strips each class arm of its subject teacher """
+        self.Timetable_obj.undo_assign_teachers_to_arms()
+
+
+    def get_arm_object(self, arm_cred):
+        """ Returns tha arm object with full_name of arm_fullname """
+        attr = "full_name" if isinstance(arm_cred, str) else "id"
+        # in case the arm_cred does not match any teacher
+        try:
+            arm_obj = self.object_getter(self.Timetable_obj.list_of_school_class_arms, attr, str(arm_cred))
+        except ValueError:
+            raise Tt_exceptions.SomethingWentWrong(f"No class arm with ID: {arm_cred}")
+        return arm_obj

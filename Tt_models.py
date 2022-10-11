@@ -1,9 +1,6 @@
 # - ************************************************************************
-
 # -- WRITTEN AND OWNED BY OWOEYE, OLUWATOMILAYO INIOLUWA. APRIL, 2022.
-
 # -- All rights (whichever applies) reserved!
-
 # **************************************************************************
 
 
@@ -11,10 +8,10 @@
 # ------------------------------------------
 
 from collections import namedtuple
-from Tt_exceptions import ProjectExceptions
-import string, datetime
+import Tt_exceptions
+import string, datetime, itertools
 from queue import Queue
-# import itertools
+
 
 #-----------------------------------------------------------------------------------
 # --------------------------- THE TIMETABLE OBJECT ITSELF ----------------------------
@@ -91,16 +88,16 @@ class TimeTable:
         preexisting_obj.description = description
 
 
+
     def del_faculty(self, faculty_obj):
         """ Remove this faculty from the list of all this timetable's faculties """
 
         self.list_of_faculties.remove(faculty_obj)
         # go through every dept object in its courselist and delete them too
 
-        # if faculty_obj.course_list:
-            # If the faculty list is not empty
         for dept in faculty_obj.course_list:
             self.del_department(dept)
+
 
 
     def create_department(self, name, faculty=None, hos=None, is_special=False,A=1,T=1,P=1,G=1,update=False,preexisting_obj=None):
@@ -147,6 +144,7 @@ class TimeTable:
         self.list_of_nonacad_depts.remove(nonacad_obj)
 
 
+
     def create_school_class_group(self, class_group_name, description='', abbrev=None, update=False, preexisting_obj=None):
         """ This function instantiates the school_class_group, i.e. maybe Junior school 
             or Senior school or updates the fields of a preexisting class group object. """
@@ -163,6 +161,7 @@ class TimeTable:
         preexisting_obj.abbreviation = abbrev
 
 
+
     def del_school_class_group(self, clssgroup_obj):
         """ Handles the deletion of a class category (class group) """
         self.list_of_school_class_groups.remove(clssgroup_obj)
@@ -170,6 +169,7 @@ class TimeTable:
         # Delete all the school classes under it
         for sch_clss in clssgroup_obj.school_class_list:
             self.del_school_class(sch_clss)
+
 
 
     def create_school_class(self, name, class_group_obj, update=False, preexisting_obj=None):
@@ -185,6 +185,7 @@ class TimeTable:
             return school_class
         # Else
         preexisting_obj.level = name
+
 
 
     def del_school_class(self, sch_class_obj):
@@ -206,13 +207,14 @@ class TimeTable:
         parameter is kinda like the '1' behind 'Jss 1'. Helps to identify the class
          """
         class_arm = self.SchoolClassArm(school_class_obj, as_alpha=as_alpha)
-        self.list_of_school_class_arms.append(class_arm)
         self.clsarm_id += 1
-
         class_arm.id = self.clsarm_id
+        self.list_of_school_class_arms.append(class_arm)
+
         return class_arm
 
     
+
     def del_school_class_arm(self, arm):
         # Removes a school class from the list todays list of class arms
         self.list_of_school_class_arms.remove(arm)
@@ -227,33 +229,33 @@ class TimeTable:
 
 
 
-    def create_teacher(self, dept_objs_list=None, teaching_days=None,specialty=None, update=False, preexisting_obj=None):
+    def create_teacher(self, dept_objs_list=None, teaching_days=None, specialty=None, designation=None, update=False, preexisting_obj=None):
         """Hangles the creation of a teacher object under a department dept_obj (Under a course, not faculty)"""
 
+        #--- WHEN CREATING TEACHER
         if not update:
             # dept_objs (in the args) is now a list of all the depts(subjects) the teacher teaches
             # Teacher is first of all instantiated under a dept object. NEVER DIRECTLY!
-            teacher = dept_objs_list[0]._add_teacher(self)   
+            teacher = self.Teacher()   
             #-- Add teacher to the list of all teachers
             self.list_of_all_teachers.append(teacher)
             # -- create a personal id attr for teacher. It is their index on the list of all teachers + 1
-
             self.teacher_id += 1
             teacher.id = self.teacher_id
 
             # Add teachers days to  the teacher
             for day_obj in teaching_days:
                 teacher.add_day_to_teacher(day_obj)
-
             # Now add the rest of the dept_objs to the teacher (obviously apart from the first one)
-            for dept in dept_objs_list[1:]:
+            for dept in dept_objs_list:
                 # Add this departments to the teacher
-                teacher.add_dept_to_teacher(dept)
+                self.map_teacher_to_dept(teacher, dept)
 
             teacher.specialty = specialty
+            teacher.designation = designation
             return
 
-        # -------- To update teacher object ----------
+        # -------- TO UPDATE TEACHER ----------
         # The preexisting teacher object ---
         preexisting_obj.teachers_department_list = []
         preexisting_obj.teaching_days = []
@@ -265,6 +267,7 @@ class TimeTable:
             preexisting_obj.add_day_to_teacher(tday)
 
         preexisting_obj.specialty = specialty
+        preexisting_obj.designation = designation
     # --------------------------------------------------------------------------------------
 
 
@@ -320,19 +323,12 @@ class TimeTable:
 
         dept_obj, sch_class_arm_obj, day_obj = dept_, sch_class_arm_obj, day
 
-
-        if not sch_class_arm_obj or not day_obj:
-            raise ProjectExceptions().SubjectOrClassNotRegistered("Period cannot be created! school class or "
-             "subject(department) or the Day is missing")
-
-
         if not is_fav:
             # checking if it is OR isn't a special period
             indiv_period = self.Period().normal_period(day_obj, start, duration, sch_class_arm_obj,dept_obj=dept_obj, end=end)
         else:
             indiv_period = self.Period().fav_period(day_obj, duration, spot=spot, start=start, dept_obj=dept_obj, 
                 sch_class_arm_obj=sch_class_arm_obj, title_of_fav=title_of_fav)
-
 
         return indiv_period
 
@@ -345,60 +341,122 @@ class TimeTable:
 
     def tt_save(self, project_name):
         """ This big-boy function will handle storing all the important info to a database.
-        
         More on that later.
-
         Maybe a pickle file, really.
 
         """
         self.time_table_project_name = project_name
         self.todays_date = datetime.date.today()
         # ...
-        # ...
-
+    
 
     # --------------------------------------------------------------------------------------------------
     # ----------- METHODs TO CARRY OUT OPERATIONS BETWEEN THE AFOREMENTIONED CONTAINERS -----------------
     # --------------------------------------------------------------------------------------------------
-
-    def get_class_arm_periods_today(self, day_obj, class_arm_obj):
-        # Returns the periods of a calss arm for a particular day
-        if class_arm_obj in self.list_of_school_class_arms:
-            #-- Validate class arm object 
-            return day_obj.get_one_sch_class_periods(class_arm_obj)
+    def map_dept_to_arm(self, classarm, dept):
+        """ This method adds a  dept to a class arm and does all the registration and stuff """
+        classarm.add_dept_to_class_arm(dept)
+        dept.add_arm_to_dept(classarm)
 
 
-    def get_class_arm_periods_thru_week(self, class_arm_obj):
-        """
-            This method gets and returns all the periods of a given class arm for all the days in the week.
-        """
-        val = []
-        for day in self.list_of_days:
-            self.get_class_arm_periods_today(day, class_arm_obj)
-        return val
+    def unmap_dept_from_arm(self, classarm, dept):
+        """ Removes dept from arm and arm from dept """
+        classarm.remove_dept_from_class_arm(dept)
+        dept.remove_arm_from_dept(classarm)
 
 
-    def dept_assigns_teacher_to_arm(self, dept_obj, class_arm):
+    def unmap_all_depts_from_arm(self, classarm):
+        """ removes all the depts from classarm and removes class_arm from the records of each dept """
+        for dept in classarm.depts_and_teachers:
+            self.unmap_dept_from_arm(classarm, dept)
+
+
+    def map_day_to_arm(self, classarm, day_obj):
+        """ Adds day_obj to class arm and also adds class_arm to the day_obj """
+        classarm.add_day_to_arm(day_obj)
+        day_obj.add_arm_to_day(classarm)
+
+
+    def unmap_day_from_arm(self, classarm, day_obj):
+        """ Removes day from arm, and arm from day. """
+        classarm.remove_day_hence_periods_from_arm(day_obj)
+        day_obj.remove_arm_from_day(classarm)
+
+
+    def unmap_all_arms_from_day(self, day_obj):
+        """ Removes all arm objects from the day object and every other attatchment"""
+        for arm in day_obj.school_class_arms_today:
+            self.unmap_day_from_arm(arm, day_obj)
+
+
+    def map_teacher_to_dept(self, teacher, dept):
+        """ Adds dept to teacher, teacher to dept """
+        teacher.add_dept_to_teacher(dept)
+        # To add this teacher to the list of teachers of the department that was added
+        dept.add_ready_made_teacher(teacher)
+
+
+    def unmap_teacher_from_dept(self, teacher, dept):
+        """ Completely disengages teacher from dept, dept from teacher """
+        teacher.remove_dept_from_teacher(dept)
+        dept.remove_teacher_from_dept(teacher)
+
+
+    def load_teachers_from_all_depts(self, ascending=True):
+        """ TO BE CALLED ONLY ONCE!! 
+        Makes the generators that yield teachers for assignment to class arms FOR ALL DEPTS (SUBJECTS) """
+        for dept_obj in self.list_of_departments:
+            # load all the generators to help yield teacher
+            dept_obj.load_teachers_for_classgroup(ascending=ascending)
+
+
+    def map_teacher_from_dept_to_arm(self, dept_obj, class_arm, ascending=True, teacher_obj=None):
         """This method does all the labour of assigning a teacher to a class arm.
         It notifies the teacher, dept and class arm objects of this and satisfies all of them
         accordingly, no trouble."""
 
         if class_arm in dept_obj.teachers_for_client_class_arms:
             # The generated teacher
-            gen_teacher = dept_obj.assign_teacher(descent=False, auto=True, teacher_index=None)
-            # Add this class and the teacher to the department's records
+            gen_teacher = dept_obj.assign_teacher(class_arm, teacher_obj=teacher_obj)
 
-            dept_obj.teachers_for_client_class_arms[class_arm] = gen_teacher
-
-            # Add the department and teacher to the class' records
-            class_arm.depts_and_teachers[dept_obj] = gen_teacher
-
-            # Add the class arm to the teacher's list of class arms they are teaching
-            gen_teacher.classes_taught.add(class_arm)
+            if gen_teacher:
+                # Add this class and the teacher to the department's records
+                dept_obj.teachers_for_client_class_arms[class_arm] = gen_teacher
+                # Add the department and teacher to the class' records
+                class_arm.depts_and_teachers[dept_obj] = gen_teacher
+                # Add the class arm to the teacher's list of class arms they are teaching
+                gen_teacher.classes_taught.add(class_arm)
         else:
             raise ProjectExceptions.SomethingWentWrong("Teachers could not be assigned to class arm")
 
 
+    def unmap_teacher_from_dept_from_arm(self, dept_obj, class_arm):
+        """ Removes assigned teacher from class arm and all the other stuff that goes with it """
+
+        teacher = class_arm.depts_and_teachers[dept_obj]
+        # teacher could be None, but in the event that it isn't
+        if teacher:
+            dept_obj.teachers_for_client_class_arms[class_arm] = None
+            # remove this class from the teacher's record
+            teacher.classes_taught.remove(class_arm)
+
+
+    def auto_assign_teachers_to_all_arms(self, ascending=True):
+        """ Assigns teachers to to eavery department offered by every class arm. AUTOMATED """
+        for arm in self.list_of_school_class_arms:
+            for dept, teacher in arm.depts_and_teachers.items():
+                # if teacher had not been previously assigned
+                if not teacher:
+                # map teacher to each dept of each arm
+                    self.map_teacher_from_dept_to_arm(dept, arm, ascending=ascending)
+
+
+    def undo_assign_teachers_to_arms(self):
+        """ Strips each arm of its subject teacher """
+        for arm in self.list_of_school_class_arms:
+            for dept in arm.depts_and_teachers:
+                self.unmap_teacher_from_dept_from_arm(dept, arm)
+            
 
     # ------------------------------------------------------------------------------
     # ---------- FUNCTION DEFINITIONS ABOVE AND CLASS DEFINITIONS BELOW ------------
@@ -450,7 +508,6 @@ class TimeTable:
 
             self.dept_name = name.title()
             self.is_special = is_special
-
             self.id = 0
 
             # Rating on how critical, mathematical or otherwise this department is
@@ -472,11 +529,14 @@ class TimeTable:
 
 
                 # Very important list, DONT TOUCH!
-                self.teachers_list=[]       
+                self.teachers_list=[]
 
+                # A dictionary holding class_group:[teachers who can teach it]
+                self.teachers_for_classgroup  = {}  
 
                 # This is a dictionary of each class arm object (the key) and the teacher (the value) from this department handling it
                 self.teachers_for_client_class_arms = {}
+                
 
                 # ---------------------------------------------------------------------
                 # The descriptive attributes of the department (on how analytic, theoretical and such)
@@ -492,14 +552,13 @@ class TimeTable:
             # in the timetable alongside another department during the same period.
             self.is_para = False
 
+        @property
         def class_group_span(self):
             """ IMPORTANT! This method retrieves all the classgroups across which all the school classes taking this 
             dept are. This function is to help place teachers who are only specialized to a certain class group (category).
             Only works for academic courses. """
-
             if not self.is_special:
                 return {arm.school_class.school_class_group for arm in self.teachers_for_client_class_arms}
-
 
 
 
@@ -511,7 +570,7 @@ class TimeTable:
             return weight
                 
 
-        def teachers_rating_list(self, desc=False):
+        def teachers_rating_list(self, arg_list, desc=False):
             """ This function, by default, rates the teachers according to how many classes they teach in ascending order.
              Descending order when the 'desc' (for descending) parameter is set to True """
 
@@ -525,85 +584,57 @@ class TimeTable:
                 else:
                     # In the descending order
                     rating_list.sort(key=lambda item: item.classes_taught, reverse=True)
-
                 return rating_list
-
             raise ProjectExceptions.IsASpecialDept("This special subject does not possess teachers' info ")
-            
-
-
-        def _add_teacher(self, tt_self):
-            """ This function CREATES A TEACHER from scratch as a member of the department.
-            The function that adds the teacher to the list of teachers in the department
-            is built into the "Teacher class", and so is not necessary here. 
-            tt_self is the currently instantiated Timetable object"""
-
-            teacher = tt_self.Teacher(self)
-            # Add this teacher to the department's list of teachers
-            # self.teachers_list.append(teacher)
-
-            return teacher
 
 
         def remove_teacher_from_dept(self, teacher_obj):
             """Removes a teacher object from the department!"""
-
             self.teachers_list.remove(teacher_obj)
 
 
         def add_ready_made_teacher(self, teacher_obj):
             """This methods adds an ALREADY-MADE teacher object to the teachers_list.
             This really is adding a teacher from another department, e.g a futher maths teacher to teach math"""
-
             self.teachers_list.append(teacher_obj)
 
-            # ADD A NEW TEACHER TO A DEPARTMENT IN THE TEACHER OBJECT!!
+
+        def load_teachers_for_classgroup(self, ascending=True):
+            """ Populates the self.teacher_for_classgroup dictionary with the classgroup(key) and
+             the list of teachers who can teach it (value) """
+
+            self.teachers_for_classgroup.clear()
+
+            for classgroup in self.class_group_span:
+                for teacher in self.teachers_list:
+                    if classgroup in teacher.specialty:
+                        if classgroup not in self.teachers_for_classgroup:
+                            self.teachers_for_classgroup[classgroup] = []
+                        self.teachers_for_classgroup[classgroup].append(teacher)
+
+                # Sort the teachers in the list according to the how many class groups
+                # they can teach across. Least to greatest (if ascending is true)
             
+            for classgroup in self.class_group_span:
+                # In the event that teachers have NOT been generated to teach the course, which in turn affects the self.teachers_for_classgroup dict
+                try:
+                    sorted_list = sorted(self.teachers_for_classgroup[classgroup], key=lambda teacher: len(teacher.specialty), reverse=not(ascending))
+                    # turn this sorted list into a generator object that cycles through all the items inside
+                    sorted_list_gen = (elem for elem in itertools.cycle(sorted_list))
+                    self.teachers_for_classgroup[classgroup] = sorted_list_gen
 
-        def assign_teacher(self, descent=False, auto=True, teacher_index=None):
-            '''This function assigns a teacher already in 
-            the list to a class.
-            It simply gives the teacher with the lowest class rating'''
-
-
-            # To rearrange the teachers according to the ratings_list sorting
-            if not self.is_special:
-                if auto:
-                    self.teachers_list = [x.teacher_obj for x in self.teachers_rating_list(desc=descent)]
-                    return self.teachers_list[0]
-
-                if teacher_index:
-                    return self.teachers_list[teacher_index]
-
-                # --- the function to assign teacher returns False if it is a special period
-            return False
+                except KeyError:
+                    self.teachers_for_classgroup[classgroup] = (elem for elem in itertools.cycle([None]))
             
 
         def __repr__(self):
             return f"{self.dept_name}, ID:{self.id}"
 
+
         @property
         def full_name(self):
             return f"COURSE ID:{self.id}: {self.dept_name}"
-
-        @property
-        def detailed_info(self):
             
-            return f"""
-            <html>
-            <p>Subject/course ID and full name: {self.full_name}.</p>
-            <p>Headed by {self.hos}.
-            <p>Mother Department: {self.faculty.full_name}.</p>
-            <p>This course, based on the nature of its contents scores <strong>{self.dept_ATPG()}</strong> on the ATPG-
-            course structure scale.
-            <p>N.B: The ATPG scale is not by any means a measure of the importance of a subject/course. Such judgement is within the descretion
-            of the school or Ministry of Education or the presiding institution(s) involved. This rating simply helps sort the courses.</p>
-            <p>Number of resident teachers: {len(self.teachers_list)}</p>
-            </html>
-            """
-        
-
-
         # ---------------------------------------------------------
         # Pro-Tip: first add a classarm using the function below before assigning a teacher
         # using the function below below
@@ -620,47 +651,55 @@ class TimeTable:
             del self.teachers_for_client_class_arms[class_arm]
 
 
-        def assign_teacher_to_arm(self, clss_arm):
-            """ Assigns teacher to a class arm and records in the teacher_fir_client_class_arms dictionary """
-            teacher = self.assign_teacher()
-            self.teachers_for_client_class_arms[clss_arm] = teacher
+        def assign_teacher(self, class_arm, teacher_obj=None):
+            '''This function assigns a teacher already in the list to a class.
+            It simply gives the teacher with the lowest class rating'''
 
 
-        def assign_teachers_to_all_arms(self):
-            """ This method makes sure teachers are assigned to all the class_arms in the dept. 
-            (Those to whom teachers have not been assigned yet)
-            Should be called only when absolutely needed """
+            # Only works if this is not a nonacad (special) department
+            if not self.is_special:
+                classgroup = class_arm.school_class.school_class_group
 
-            for arm, teacher in self.teachers_for_client_class_arms.items():
-                if not teacher:
-                    # Assigns teacher to a class arm if it previously hadn't a teacher
-                    self.assign_teacher_to_arm(arm)
+                # If a teacher has been manually assigned
+                if teacher_obj:
+                    if classgroup in teacher_obj.specialty:
+                        self.teachers_for_client_class_arms[class_arm] = teacher_obj
+                    else:
+                        raise Tt_exceptions.SomethingWentWrong(f"""Teacher: {teacher_obj.full_name} does not teach {class_arm.full_name}'s
+                             class category and so does not qualify to handle {self.full_name} for this class arm.""")
 
-            # Just to be sure
-            return self.teachers_for_client_class_arms
+                # When teacher is programmatically assigned
+                else:
+                    # yield the teacher from the self.teacher_for_classgroup dict which houses classgroup:teacher_generator
+                    teacher_obj = next(self.teachers_for_classgroup[classgroup])
+                return teacher_obj
 
 
-        def delete(self, tt_obj):
-            """This function deletes the instance of this class from the any of the lists that house it"""
-            tt_obj.list_of_departments.remove(self)
-            self.faculty.course_list.remove(self)
-
+        @property
+        def detailed_info(self):
+        
+            return f"""
+            <html>
+            <p>Subject/course ID and full name: {self.full_name}.</p>
+            <p>Headed by {self.hos}.
+            <p>Mother Department: {self.faculty.full_name}.</p>
+            <p>This course, based on the nature of its contents scores <strong>{self.dept_ATPG()}</strong> on the ATPG-
+            course structure scale.
+            <p>N.B: The ATPG scale is not by any means a measure of the importance of a subject/course. Such judgement is within the descretion
+            of the school or Ministry of Education or the presiding institution(s) involved. This rating simply helps sort the courses.</p>
+            <p>Number of resident teachers: {len(self.teachers_list)}</p>
+            </html>
+            """
 
 
     class Teacher:
         '''The teacher object which is in composition
         with the department object, i.e, "teacher has a department"
         he is from'''
-        def __init__(self, dept_obj):
+        def __init__(self):
 
             self.id = 0
-            self.teachers_department_list = [dept_obj]
-            # -------------------------------------------------------------------------------------------
-            # -- Upon initialization, only one dept object is given thus teacher 
-            # -- instance is given to its list of teachers
-
-            self.teachers_department_list[0].add_ready_made_teacher(self)
-            # the above stores the current teacher in the array of its department for easy referencing
+            self.teachers_department_list = []
 
             # SHOULD I USE A SET FOR THIS?
             # Used a set!
@@ -668,8 +707,9 @@ class TimeTable:
 
             # The set containing the days in which the teacher can teach
             self.teaching_days = []
-            # Specialty refers to the number of arms across which teacher can teach
-            self.specialty = "All"
+            # Specialty refers to the LIST of class groups across which teacher can teach
+            self.specialty = None
+            self.designation = ""
 
 
         @property
@@ -692,6 +732,12 @@ class TimeTable:
 
             day_diff_list = [day.day for day in day_diff]
             return "All Except " + ", ".join(day_diff_list)
+
+        
+        @property
+        def specialization(self):
+            """ MANAGER_GUI method. Returns the list of the full_names for all the classgroups in teachers specialty """
+            return ", ".join([item.full_name for item in self.specialty])
 
 
         def regular_or_no(self, tt_obj):
@@ -727,8 +773,6 @@ class TimeTable:
             if dept_obj not in self.teachers_department_list:
                 self.teachers_department_list.append(dept_obj)
             
-                # To add this teacher to the list of teachers of the department that was added
-                dept_obj.add_ready_made_teacher(self)
             
 
         def remove_dept_from_teacher(self, dept_obj):
@@ -758,7 +802,7 @@ class TimeTable:
 
         @property
         def full_name(self):
-            return f"ID: {self.id}. Member of staff"
+            return f"ID: {self.id}. {self.designation}"
 
 
 # ---------------------------------------------------------------------------------------
@@ -772,16 +816,13 @@ class TimeTable:
             self.description = class_group_description
             self.abbreviation = abbrev
             self.id = 0
-
             # -- contains all the school classes in the group
             self.school_class_list = []
-
 
         def remove_clss_from_clss_group(self, sch_clss):
             """ Removes a school class from the list held by the school class group """
 
             self.school_class_list.remove(sch_clss)
-            
 
         def __repr__(self):
             return self.abbreviation if self.abbreviation else self.class_group_name
@@ -790,11 +831,9 @@ class TimeTable:
             """ Name tag to prefix child school classes """
             return self.abbreviation if self.abbreviation else self.class_group_name
 
-
         @property
         def full_name(self):
             return f"ID: {self.id}. {self.class_group_name}"
-
 
         def delete(self, tt_obj):
             """This function deletes the instance of this class from the any of the lists that house it"""
@@ -857,12 +896,19 @@ class TimeTable:
             self.local_identifier = self.school_class.school_class_arm_list.index(self)
 
             if as_alpha:
-                self.local_id = string.ascii_letters[self.local_identifier].capitalize()
+                self.local_id = TimeTable.stringify(self.local_identifier)
             else:
                 self.local_id = self.local_identifier + 1
 
             # -- Dictionary to hold... dept(key) and teacher(value)
             self.depts_and_teachers = {}
+
+            # below is a variable to store the iterable_from_gui list of tuples
+            self.iterable_from_gui = None
+
+            # Variable to store this arms properties for the arms_feasible_periods
+            self.arms_feasible_table_data = [None, None, False, "#df0000"]
+
             # --- Tentative dictionary (below) to hold the list of subjects offered per day
             #  'day' is the key and the list of subjects is the value. It is first put as None for ease
             self.temp_dept_holder_for_days = {x:None for x in self.get_class_arm_days}
@@ -886,39 +932,49 @@ class TimeTable:
 
         def add_day_to_arm(self, day_obj):
             """ Adds a day object to the days_list for this classarm. """
-            
             if day_obj not in self.days_list:
                 self.days_list.append(day_obj)
 
-                # Add this class arm to the day_obj
-                day_obj.school_class_arms_today.append(self)
 
-
-        def remove_day_from_arm(self, day_obj):
-            """Removes a day object from the list of days of this class arm"""
+        def remove_day_hence_periods_from_arm(self, day_obj):
+            """Removes a day object from the list of days of this class arm and empties out all the periods for that day for the class arm too"""
             if day_obj in self.days_list:
                 self.days_list.remove(day_obj)
             # Remove this arm from the list of arms in the day_obj
                 day_obj.school_class_arms_today.remove(self)
 
+            # Also remove this day from this class arm's periods dictionary
+            if day_obj in self.periods:
+                del self.periods[day_obj]
+
+
+        def store_iterable_from_gui(self, iterable):
+            """ Stores the iterable_from_gui into the iterable_from_gui variable """
+            self.iterable_from_gui = iterable
+
+
+        def store_arms_feasible_table_data(self, data):
+            """ method stores the properties of the arms_feasible_table """
+            self.arms_feasible_table_data = data
+
+        def get_arms_feasible_table_data(self):
+            """ retrieves the arms_feasible _table_data """
+
+            # the arm's full_name is added
+            return tuple([self.full_name] + self.arms_feasible_table_data)
+
 
         def add_dept_to_class_arm(self, dept_obj, descent=False, auto=True, teacher_index=None):
-            """ Adds to the dictionary the department as the key and the teacher object as the value.
-            The teacher is first set None.
-            The 'get_teacher_for_department_in_arm method' is called to assign the teacher given by 
-            the department to this subject for this class.
+            """ Adds to the dictionary the department as the key and the teacher object as the value. The teacher is first set None. 
+            The 'get_teacher_for_department_in_arm method' is called to assign the teacher given by the department to this subject for this class.
 
             This adds a new subject for learning to the class arm """
-
-            if dept_obj in self.depts_and_teachers:
-                pass
-            else:                
-                # Now register the assigned teacher with the class arm
+            if dept_obj not in self.depts_and_teachers:
                 self.depts_and_teachers[dept_obj] = None
 
 
         def remove_dept_from_class_arm(self, dept_obj):
-            """ Removes a subject from the subjects stored by the class arm """
+            """ Removes a subject from the offered subjects stored by the class arm """
             del self.depts_and_teachers[dept_obj]
 
 
@@ -928,22 +984,7 @@ class TimeTable:
             dept_obj.add_arm_to_dept(self)
             # use the dept obj to assign a teacher to this class arm
             dept_obj.assign_teacher_to_arm(self, descent=False, auto=True, teacher_index=None)
-
             self.depts_and_teachers[dept_obj] = dept_obj.teachers_for_client_class_arms[self]
-
-
-        def para_departments(self, *dept_names):
-            """This method handles a group of two more departments in which one class occur simultaneously 
-            as an alternative to the other"""
-
-            # -- this is a tuple holding the para-departments
-
-            # ----------------------------------------------------------------------------------
-            #  I'D RATHER THINK OF IT AS TWO DEPARTMENTS ACTING AS ONE, THOUGH WITH TWO TEACHERS BUT THE TEACHER OF THE FIRST
-            # GOES WITH THE TEACHER OF THE SECOND.
-
-            self.para_depts = str(dept_names).strip("()")
-            # --more on this later
 
 
         def all_teachers_for_class_arm(self):
@@ -953,16 +994,23 @@ class TimeTable:
             return {teacher for teacher in self.depts_and_teachers.values()}
 
 
-        def depts_offered_and_weights(self):
-            """This function returns every subject/dept offered by the class arm 
-            and how many periods(weights or frequencies, if you prefer) that they 
-            take up for each per week """
-            
-            weight_dict = {}
+        def period_count_per_day(self, day_obj, include_nonacads=False):
+            """ INT. Returns the number of periods for this class arm today """
+            if day_obj in self.periods:
+                if include_nonacads:
+                    return len(self.periods[day_obj])
+                return len([period for period in self.periods[day_obj] if period.is_acad])
+            return 0
 
-            for dept in self.departments_offered:
-                weight_dict[dept] = 0
-            return weight_dict
+        def period_count_total(self, include_nonacads=False):
+            """ INT. Returns the total number of all the periods for all the days available for this arm """
+            return sum([self.period_count_per_day(day, include_nonacads=include_nonacads) for day in self.periods])
+
+
+        def total_period_contains_freq(self, freq):
+            """ BOOL. checks whether 'num' is greater than the total number of periods or not. in other words, checks if
+            num can be contained in the total number of periods. """
+            return self.period_count_total() > freq
             
 
         def add_algoassigned_dept_today(self, dept_obj, day_obj):
@@ -1061,25 +1109,17 @@ class TimeTable:
 
                     if dept_obj:
                         self.subject = dept_obj
-                        self.teacher = self.subject.assign_teacher()
 
-                        # --Add the class arm to the list of arms taught by the teacher
-                        self.teacher.classes_taught.append(self.school_class_arm)
-
-                        # -- The below is to register the class arm as one of the classes taught by the department
-                        # -- This could have been extracted from the teacher.classes_taught of each teacher in the department
-                        # --But, what if the department (maybe break time e.g) has no teacher? its class arms would still need to be recorded
-                        self.subject.client_classes.add(self.school_class_arm)
                     else:
-                        self.subject = title_of_fav if title_of_fav else "Special static period"
+                        self.subject = title_of_fav if title_of_fav else "Non-academic period"
                     # self.school_class_arm.periods.append(self)
                     self.period_name = f"Specially for {self.school_class_arm}"
+
 
             self.add_to_armses_periods()
             # self.school_class_arm.period_id_counter += 1
             self.period_id = self.school_class_arm.period_id_counter
 
-            self.day.school_class_arms_today.add(self.school_class_arm)
             return self
 
 
@@ -1117,7 +1157,7 @@ class TimeTable:
                 else:
                     self.school_class_arm.periods[self.day] = [self]
 
-                # ---- To update the period counter
+                # ---------- To update the period counter of this periods's arm ----------
                 if self.day in self.school_class_arm.period_id_counter.keys():
                     self.school_class_arm.period_id_counter[self.day] += 1
                 else:
@@ -1128,9 +1168,7 @@ class TimeTable:
 
     class Day:
         """
-            This class represents all the days for which the timetable runs. This could be 5 days (
-            the standard for schools) or other. 
-
+            This class represents all the days for which the timetable runs. This could be 5 days (the standard for schools) or other. 
             The 'rating' parameter in the init method is to help rank
             the objects of this class
         """
@@ -1146,6 +1184,16 @@ class TimeTable:
             self.school_class_arms_today = []
 
 
+        def add_arm_to_day(self, class_arm):
+            """ Adds class_arm to the days list containing class arms """
+            if class_arm not in self.school_class_arms_today:
+                self.school_class_arms_today.append(class_arm)
+
+        def remove_arm_from_day(self, class_arm):
+            """ Remove class_arm from this day object """
+            self.school_class_arms_today.remove(class_arm)
+
+
         @property
         def arms_today_list(self):
             # Attribute to return the set of arms today in a list
@@ -1153,9 +1201,7 @@ class TimeTable:
         # ---- ADDING AND REMOVING DAYS HAS ALREADY BEEN HANDLED BY THE CLASS ARM
 
         def get_one_sch_class_periods_for_today(self, class_arm_obj):
-            """This function squeezes out all the periods for a 
-            particular class arm today """
-
+            """This function squeezes out all the periods for a particular class arm today """
             return class_arm_obj.periods[self]
                         
 
@@ -1234,14 +1280,10 @@ class TimeTable:
             return teach_assgn_today
 
 
-
-
         def get_all_teachers_today_from_depts_assgn(self):
-            """
-            gets all the assigned teachers (from the algorithm) from all the class_arms.
-            it does so by calling the 'self.get_arm_teachers_today_from_depts_assgn' method (which happens on
-             a class arm) on all the class arms
-             """
+            """gets all the assigned teachers (from the algorithm) from all the class_arms.
+                it does so by calling the 'self.get_arm_teachers_today_from_depts_assgn' method (which happens on
+                a class arm) on all the class arms. """
 
             # A set is used here to avoid duplicates
             all_teachers = set()
@@ -1376,7 +1418,7 @@ class TimeTable:
 
 
 
-    def _tuple_to_absolute(tuple, base):
+    def _tuple_to_absolute(tuple, base=60):
         '''Important function to convert all the numbers in a 
         tuple, say a time tuple to an integer, based on a certain base.
         this could be used to convert a time tuple (hours, mins, secs) to 
@@ -1455,23 +1497,25 @@ class TimeTable:
         return period_interval_list
         
         
-    def _to_base(num, base):
-        '''Converts a number "num" to base "base"
-        and renders it as a tuple of place values according to
+    def _to_base(num, base=60):
+        '''Converts a number "num" to base "base" and renders it as a tuple of place values according to
         said base. Returns the time tuple '''
-        valid, ans_list, number = True, [], num % 86400
         
-        while valid:
-            if number == 0:
-                valid = False
-            else:
-                ans_list.append(number % base)
-                number = number // base
+        # valid, ans_list, number = True, [], num % 86400
+        ans = []
+        while num > 0:
+            num, rem = divmod(num, base)
+            ans.insert(0, rem)
 
-        ans_list.reverse()
-        return tuple(ans_list)
+        return tuple(ans)
+
+    def _stringify(num):
+        """ FOR ARMS.  """
+        in_tuple = TimeTable.num_to_tuple(num, base=27)
+        return "".join([string.ascii_uppercase[k-1] for k in in_tuple])
 
 
+    stringify = staticmethod(_stringify)
     remove_from_list = staticmethod(_remove_obj_from_list)
     split_into_periods = staticmethod(_boundary_split_into_periods)
     add_sub_time = staticmethod(_add_sub_time)
