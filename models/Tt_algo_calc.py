@@ -269,18 +269,13 @@ def strip_list_wrapper(list_arg):
     def strip_list(list_arg):
         """This function goes through nested lists and strips them out as bare items in the list
         e,g ([1,2,3,[4,5]] to [1,2,3,4,5])"""
-
-        global fin_list
-
         for item in list_arg:
-
             # If it is not an iterator, that is a list, tuple or something
             if not hasattr(item, "__iter__"):
                 fin_list.append(item)
             else:
                 # Recursion here!
                 strip_list(item)
-        
         return fin_list
 
     fin_list = []
@@ -430,14 +425,11 @@ def Moveover_with_fixed(list_arg, array,fixed_item=None, fixed_index=0):
     return poss_with_fixed[0]
 
 
-def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
+def Moveover_fixed(list_arg_, array,fixed_item=None, fixed_index=0):
     """This function does the work of the moveover function except for the fact that it holds an item (if given), or it's 
-    index (if given) fixed.
-    It is done this way, we pop out the fixed item and moveover whats left. Then we concatenate what's left.
-    
+    index (if given) fixed. It is done this way, we pop out the fixed item and moveover whats left. Then we concatenate what's left.
     Fixed_item is a list containing all the chunks (which could have lists within)
     """
-
 
     # --------------------------------------------------------------------------
     # def slide_right_left(list_arg,array, trans=1):
@@ -446,11 +438,8 @@ def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
         # global pos, sorted_list_arg, fin_dict, test_li st
 
         test_list = []
-
         sorted_list_ = in_list.copy() if rightward else list(reversed(in_list))
-
         trans = 1 if rightward else -1
-        
         for item in sorted_list_:
             # if item is already in testlist or greater than array, or lower than 0, then translate by trans
             if abs_match_list_int(test_list + strip_list_wrapper([const_list]), item) or abs_match_list_int(list(range(array, array*3)), item)\
@@ -466,6 +455,7 @@ def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
     # -----------------------------------------------------------------------
 
     # In the event that list_arg is just one item and part_chunk is [] return list_arg back
+    list_arg = list_arg_.copy()
     if len(list_arg) <= 1:
         return list_arg
 
@@ -484,10 +474,9 @@ def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
     else:
         const_item = list_arg[fixed_index]
 
-    limst = list_arg.copy()
+    list_arg_copy = list_arg.copy()
 
     # Put the const item in the finished_list for now
-
     # const_item = const_item if isinstance(const_item, list) else [const_item]
     const_list = const_item.copy()
     print(f"This is const item {const_item}")
@@ -503,8 +492,7 @@ def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
     # After the fixed items have been removed from list_arg, if list_arg is empty, (i.e. no other elemet apart from the fixed item),
     # return the old list_arg
     if not list_arg:
-        return limst
-
+        return list_arg_copy
 
     # --------------------------------------------
     # Now start moving over
@@ -520,9 +508,7 @@ def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
 
     sorted_list_arg = list_arg
     # --------------------------------
-
     final_val = sorted_list_arg
-
     count = 0
     loop = True
     forward = True
@@ -532,7 +518,6 @@ def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
         count +=1
 
         final_val = slide_right_left(final_val, rightward=forward)
-
         print(f"Final_val: just checking: {final_val}")
 
         if max(strip_list_wrapper(final_val)) < array and min(strip_list_wrapper(final_val)) >= 0:
@@ -548,13 +533,19 @@ def Moveover_fixed(list_arg, array,fixed_item=None, fixed_index=0):
             elif min(strip_list_wrapper(final_val)) < 0:
                 forward = True
 
-        if count >= array*4:
-            raise StopIteration(f"OVERLOADED!! moveover_fixed with listarg {limst} with const {const_list} did not work")
-           
+        if count == array*4:
+            raise StopIteration(f"OVERLOADED!! moveover_fixed with listarg {list_arg_copy} with const {const_list} did not work")
+            # print()
+            # count = 0
+            # print("FELL THROUGH")
+            # loop = False
+            # final_val = Moveover_fixed(strip_list_wrapper(list_arg_copy), array, fixed_item=fixed_item, fixed_index=fixed_index)
+            # return final_val
+            # print(f"List_arg is: {list_arg_copy}, fixed_item ; {fixed_item}")
+            
 
     for ind, item in zip(indices,const_list):
         final_val.insert(ind, item)
-
     return final_val
 
 
@@ -599,7 +590,7 @@ def Possible_combs(listarg, array):
             count += 1
 
             if not check_for_overlap(_sec_list_arg):
-                if min(strip_list_wrapper(_sec_list_arg)) >= 0 and max(strip_list_wrapper(_sec_list_arg)) <= array:
+                if min(strip_list_wrapper(_sec_list_arg)) >= 0 and max(strip_list_wrapper(_sec_list_arg)) < array:
                     
                     ans = _sec_list_arg.copy()
 
@@ -661,7 +652,7 @@ def Possible_combs_with_fixed(list_arg,const,array):
         # For each item in all_, cycle through the const list
         for x in const:
             if x not in item:
-                # Even if one isn't in that list abandon it
+                # Even if one isn't in that list, abandon it
                 break
         else:
             # only add if all const are in the item list
@@ -1147,10 +1138,12 @@ if __name__ == "__main__":
     # casual_removeall(cast, 4)
     # print(cast)
 
-    print(PacketAlgos.direct(10,15))
-    print(PacketAlgos.rev_direct(10,15))
-    print(PacketAlgos.leapfrog(10,15))
-    print(PacketAlgos.rev_leapfrog(10,15))
-    print(PacketAlgos.xlxreflection(25,30))
-    print(PacketAlgos.rev_xlxreflection(10,15))
+    # print(PacketAlgos.direct(10,15))
+    # print(PacketAlgos.rev_direct(10,15))
+    # print(PacketAlgos.leapfrog(10,15))
+    # print(PacketAlgos.rev_leapfrog(10,15))
+    # print(PacketAlgos.xlxreflection(25,30))
+    # print(PacketAlgos.rev_xlxreflection(10,15))
+
+    print(Moveover_fixed([7, 8, [0, 1], [2, 3], [4, 5], [6, 7]], 10, fixed_item=[7,8]))
     

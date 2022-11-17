@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1288</width>
+    <width>1290</width>
     <height>727</height>
    </rect>
   </property>
@@ -104,7 +104,7 @@ QLabel{
 }
 
 QFrame[objectName=&quot;nav_bar&quot;]{	
-	background-color:qlineargradient(spread:pad, x1:0.483, y1:0.017, x2:0.506, y2:0.983, stop:0.488636 rgba(255, 255, 255, 255), stop:0.670455 rgba(213, 213, 255, 255), stop:0.852273 rgba(255, 255, 255, 255));
+	background-color:qlineargradient(spread:pad, x1:0.487, y1:0.0519091, x2:0.463, y2:0.988364, stop:0.534091 rgba(66, 57, 76, 255), stop:0.870976 rgba(0, 0, 11, 255), stop:0.9375 rgba(0, 0, 11, 255));
 }
 
 QSpinBox{
@@ -170,7 +170,7 @@ QScrollBar::handle::horizontal{
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1282</width>
+            <width>1284</width>
             <height>124</height>
            </rect>
           </property>
@@ -204,22 +204,21 @@ QScrollBar::handle::horizontal{
              <property name="styleSheet">
               <string notr="true">*{
 	color:#121212;
-	
 }
 
 QTabBar::tab{
-	background:transparent;
+	background:#312938;
 	padding: 7px 15px;
 	color:#ebebeb;
 }
 
 QTabBar::tab:selected{
-	background:qlineargradient(spread:pad, x1:0.926, y1:0.528682, x2:0.0626818, y2:0.54, stop:0.0625 rgba(0, 0, 0, 255), stop:0.454545 rgba(147, 147, 147, 255), stop:0.551136 rgba(147, 147, 147, 255), stop:0.909091 rgba(0, 0, 0, 255));
+	background:qlineargradient(spread:pad, x1:0.012, y1:0.522727, x2:0.978, y2:0.523, stop:0.0340909 rgba(27, 27, 27, 255), stop:0.494318 rgba(122, 106, 143, 255), stop:0.954545 rgba(27, 27, 27, 255));
 }
 
 QWidget{
 	background:transparent;
-	color:#121212;
+	color:#e0e0e0;
 }
 
 
@@ -9075,7 +9074,7 @@ padding:2px;</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1137</width>
+                <width>1139</width>
                 <height>499</height>
                </rect>
               </property>
@@ -10261,7 +10260,7 @@ font-weight:bold;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1288</width>
+     <width>1290</width>
      <height>21</height>
     </rect>
    </property>

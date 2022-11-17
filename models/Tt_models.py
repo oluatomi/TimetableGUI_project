@@ -543,7 +543,6 @@ class TimeTable:
                 # This is a dictionary of each class arm object (the key) and the teacher (the value) from this department handling it
                 self.teachers_for_client_class_arms = {}
                 
-
                 # ---------------------------------------------------------------------
                 # The descriptive attributes of the department (on how analytic, theoretical and such)
                 # Numerical values are added to help sort the departments or the teachers that teach 
@@ -640,10 +639,10 @@ class TimeTable:
                 # In the event that teachers have NOT been generated to teach the course, which in turn affects the self.teachers_for_classgroup dict
                 try:
                     sorted_list = sorted(self.teachers_for_classgroup[classgroup], key=lambda teacher: len(teacher.specialty), reverse=not(ascending))
-                    # turn this sorted list into a generator object that cycles through all the teacher items inside
+                    # turn this sorted list (of teacher objects) into a generator object that cycles through all the teacher items inside
                     sorted_list_gen = (
                         elem for elem in itertools.cycle(sorted_list)
-                        if self.teachers_count[elem][0] <= self.teachers_count[elem][1]
+                        # if self.teachers_count[elem][0] <= self.teachers_count[elem][1]
                         )
                     self.teachers_for_classgroup[classgroup] = sorted_list_gen
 
@@ -682,7 +681,7 @@ class TimeTable:
 
                         while spill:
                             trim += 1
-                            spillover -=frequency
+                            spillover -= frequency
                             if spillover <= 0:
                                 spill = False
 
@@ -696,7 +695,6 @@ class TimeTable:
 
             # For the number of extra teachers to be idealy added "K"
             K = math.ceil(summation_teaching_days * (num_arms - summation_ideal)/(all_days_len * num_arms))
-
             total_min_teachers = len(self.teachers_list) + K
 
             return total_min_teachers, K
@@ -792,6 +790,8 @@ class TimeTable:
             self.designation = ""
             # A dictionary that stores (dept, arm) as key and frequency as value
             self.dept_and_arms = {}
+            # A dictionary that of day_obj:[arms_taught]
+            self.days_and_arms_taught = {}
 
 
         @property
@@ -922,6 +922,17 @@ class TimeTable:
             return self.teachers_total_frequency <= min([len(periods)
                 for arm in self.classarms_taught
                 for periods in arm.periods.values()])*len(self.teaching_days)
+
+
+        def teachers_arms_taught_per_day(self):
+            """ Populates the dictionary containing the arms (in its duplicate) that teacher teachers on a GIVEN DAY """
+            for day in self.teaching_days:
+                self.days_and_arms_taught[day] = day.teachers_depts_today(self)
+
+        @property
+        def teachers_freq_average(self):
+            """ Returns the average frequency of the teacher per day """
+            return math.ceil(self.teachers_total_frequency/len(self.teaching_days))
 
 
         @property
@@ -1522,7 +1533,6 @@ class TimeTable:
             list_obj.remove(obj)
         else:
             del list_obj[int(id)]
-
 
 
     def _tuple_to_absolute(tuple, base=60):
