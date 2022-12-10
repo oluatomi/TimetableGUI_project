@@ -139,8 +139,9 @@ class PeriodsContainer(QtWidgets.QFrame):
 
 
 
-# Class to model each widget that bears the period details of each class arm per day
+# 
 class IndivPeriodsWidget(QtWidgets.QFrame):
+    """ Class to model each widget that bears the period details of each class arm per day """
     style_count = 0
 
     def __init__(self, period_obj=None, index=0):
@@ -169,7 +170,7 @@ class IndivPeriodsWidget(QtWidgets.QFrame):
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
 
         if period_obj:
-            self.period_name_label.setText("Academic" if period_obj.is_acad else period_obj.subject.dept_name)
+            self.period_name_label.setText("Academic" if period_obj.is_acad else period_obj.nonacad_title.dept_name)
         else:
             self.period_name_label.setText("No period exists yet")
 

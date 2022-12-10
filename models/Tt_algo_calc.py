@@ -248,7 +248,7 @@ def spread_over(list_arg, skip_list=0):
 
 def refine_translate(list_arg, array):
     """After the chunked list has been translated, it is very possible for a double period to straddle
-    the end and beginning of the array, e.g [9,0] (or more generically, [len(array), 0]), which would be impossible
+    the end and beginning of the array, e.g [9,0] (or more generically, [len(array)-1, 0]), which would be impossible
     in real life. This helper function checks if such occurs and shifts it by the necessary amount of places
     so that it no more does.
     This only affects doubles so its a list i'm checking for"""
@@ -479,7 +479,7 @@ def Moveover_fixed(list_arg_, array,fixed_item=None, fixed_index=0):
     # Put the const item in the finished_list for now
     # const_item = const_item if isinstance(const_item, list) else [const_item]
     const_list = const_item.copy()
-    print(f"This is const item {const_item}")
+    # print(f"This is const item {const_item}")
 
     indices = [list_arg.index(k) for k in const_list]
 
@@ -487,7 +487,7 @@ def Moveover_fixed(list_arg_, array,fixed_item=None, fixed_index=0):
     for kitem in const_list:
         list_arg.remove(kitem)
 
-    print(f"listarg here {list_arg}")
+    # print(f"listarg here {list_arg}")
 
     # After the fixed items have been removed from list_arg, if list_arg is empty, (i.e. no other elemet apart from the fixed item),
     # return the old list_arg
@@ -518,11 +518,11 @@ def Moveover_fixed(list_arg_, array,fixed_item=None, fixed_index=0):
         count +=1
 
         final_val = slide_right_left(final_val, rightward=forward)
-        print(f"Final_val: just checking: {final_val}")
+        # print(f"Final_val: just checking: {final_val}")
 
         if max(strip_list_wrapper(final_val)) < array and min(strip_list_wrapper(final_val)) >= 0:
             if not check_for_overlap(final_val) and not abs_match_list_int(final_val, const_list):
-                print("Out with ye")
+                # print("Out with ye")
                 loop = False
 
         else:
@@ -533,7 +533,7 @@ def Moveover_fixed(list_arg_, array,fixed_item=None, fixed_index=0):
             elif min(strip_list_wrapper(final_val)) < 0:
                 forward = True
 
-        if count == array*4:
+        if count == array*3:
             raise StopIteration(f"OVERLOADED!! moveover_fixed with listarg {list_arg_copy} with const {const_list} did not work")
             # print()
             # count = 0
@@ -624,9 +624,7 @@ def Possible_combs(listarg, array):
             item = PlainTranslate(item, trans_num)
             _sec_list_arg[index] = item
 
-
         _sec_list_arg = _const_sec_list_arg.copy()
-    
     #---- A set cannot be used to weed out duplicates because of the nested lists, therefore a for-loop is used
     # ---Possible list is now populated
     final_list =[]
@@ -637,7 +635,7 @@ def Possible_combs(listarg, array):
     return final_list
 
 
-def Possible_combs_with_fixed(list_arg,const,array):
+def Possible_combs_with_fixed(list_arg, const, array):
     # Gets all the possible combinations with a fixed item inside. 
     # const is now an iterable holding all values
     
@@ -990,23 +988,23 @@ class SortAlgorithms:
         return final_ans
 
         # ----------------------------------------------------------------------------------------------
-
+    @staticmethod
     def r_leap_frog(array, chunk_list={1:1, 2:2}, shift_value=0):
         """ The leap_frog algorithm, but in reverse. """
-
         leapfrog = SortAlgorithms.leap_frog(array, chunk_list=chunk_list, shift_value=shift_value)
         # Reverse the whole thing
         r_leapfrog = SortAlgorithms.Add_list_to_x(leapfrog, array)
         return r_leapfrog
-
+    
+    @staticmethod        
     def r_xlx_reflection(array, chunk_list={1:1, 2:2}, shift_value=0):
         """ The xlx_reflection algorithm, but in reverse """
         xlx = SortAlgorithms.xlx_reflection(array, chunk_list=chunk_list, shift_value=shift_value)
-
         r_xlx = SortAlgorithms.Add_list_to_x(xlx, array)
         return r_xlx
 
-    def r_center_cluster(array, chunk_list={1:1, 2:2}, shift_value=0):
+    @staticmethod
+    def r_centercluster(array, chunk_list={1:1, 2:2}, shift_value=0):
         """ The xlx_reflection algorithm, but in reverse """
         cen_cl = SortAlgorithms.centercluster(array, chunk_list=chunk_list, shift_value=shift_value)
 
@@ -1084,7 +1082,7 @@ class SortAlgorithms:
 
     @staticmethod
     def _semi_strip_list(list_arg):
-        """Private method used to strip elements in a list of its length is one. This method strips the abouve chunked values into values
+        """Private method used to strip elements in a list if its length is one. This method strips the abouve chunked values into values
         usable by the rest of the software, i.e. from [[1,2], [3]] to [[1,2], 3]"""
 
         ans = []
@@ -1145,5 +1143,9 @@ if __name__ == "__main__":
     # print(PacketAlgos.xlxreflection(25,30))
     # print(PacketAlgos.rev_xlxreflection(10,15))
 
-    print(Moveover_fixed([7, 8, [0, 1], [2, 3], [4, 5], [6, 7]], 10, fixed_item=[7,8]))
+    # ---------------------------------------------------------
+    # movedover_fixed error handled
+    # print(Moveover_fixed([7, 8, [0, 1], [2, 3], [4, 5], [6, 7]], 10, fixed_item=[7,8]))
+
+    print(SortAlgorithms.xlx_reflection(10, chunk_list={2:5}, shift_value=5))
     

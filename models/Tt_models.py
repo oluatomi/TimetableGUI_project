@@ -71,7 +71,6 @@ class TimeTable:
         }
 
 
-
     def create_faculty(self, faculty_name, HOD="Esteemed HOD Sir/Ma'am", description="", update=False, preexisting_obj=None):
         """Creates a faculty to hold departments"""
         if not update:
@@ -87,16 +86,13 @@ class TimeTable:
         preexisting_obj.description = description
 
 
-
     def del_faculty(self, faculty_obj):
         """ Remove this faculty from the list of all this timetable's faculties """
 
         self.list_of_faculties.remove(faculty_obj)
         # go through every dept object in its courselist and delete them too
-
         for dept in faculty_obj.course_list:
             self.del_department(dept)
-
 
 
     def create_department(self, name, faculty=None, hos=None, is_special=False,A=1,T=1,P=1,G=1,update=False,preexisting_obj=None):
@@ -310,26 +306,15 @@ class TimeTable:
             del arm.periods[day_obj]
 
 
-    def create_period(self, start=None, day=None, end=None, sch_class_arm_obj=None, 
-        dept_=None, is_fav=False, duration=None,  spot=None, title_of_fav=None):
+    def create_period(self, start=None, day=None, end=None, duration=None, sch_class_arm_obj=None, is_acad=True, title_of_fav=None):
         '''This creates the periods, both the usual and the special period
-        
         dept_, sch_class_ represent the department object and the 
         school class object respectively, if none is specified, an object is expected.
-
         if your dept doesn't exist yet, you should call the function to make it first
-        '''
-
-        dept_obj, sch_class_arm_obj, day_obj = dept_, sch_class_arm_obj, day
-
-        if not is_fav:
-            # checking if it is OR isn't a special period
-            indiv_period = self.Period().normal_period(day_obj, start, duration, sch_class_arm_obj,dept_obj=dept_obj, end=end)
-        else:
-            indiv_period = self.Period().fav_period(day_obj, duration, spot=spot, start=start, dept_obj=dept_obj, 
-                sch_class_arm_obj=sch_class_arm_obj, title_of_fav=title_of_fav)
-
-        return indiv_period
+        
+        title_of_fav is the nonacademic OBJECT'''
+        
+        return self.Period(day, sch_class_arm_obj, start, end=end, duration=duration, is_acad=is_acad, title_of_nonacad=title_of_fav)
 
 
     def del_period(self, day_obj, class_arm, index):
@@ -934,11 +919,9 @@ class TimeTable:
             """ Returns the average frequency of the teacher per day """
             return math.ceil(self.teachers_total_frequency/len(self.teaching_days))
 
-
         @property
         def full_name(self):
             return f"ID: {self.id}. {self.designation}"
-
 
 # ---------------------------------------------------------------------------------------
     class SchoolClassGroup:
@@ -1062,7 +1045,6 @@ class TimeTable:
         def get_class_arm_days(self):
             """Returns every school day for which the class runs"""
             
-            self.days_list.sort(key=lambda day: day.id)
             return self.days_list
 
 
@@ -1086,6 +1068,7 @@ class TimeTable:
             # Also remove this day from this class arm's periods dictionary
             if day_obj in self.periods:
                 del self.periods[day_obj]
+
 
 
         def store_iterable_from_gui(self, iterable):
@@ -1185,125 +1168,70 @@ class TimeTable:
         '''Model for every class period.
         it is owned by a school class ARM and has a teacher
         from a department (or not, if it is a special (favourite) period)'''
+        def __init__(self, day, class_arm, start, end=None, duration=None, is_acad=True, title_of_nonacad=None):
+            self.is_acad = is_acad
+            self.dept = None
+            self.day = day
+            self.class_arm = class_arm
+            self.start = start
+            self.nonacad_title = title_of_nonacad if not self.is_acad else None
+            self.teacher = None 
+            self.end = end
+            self.duration = self.get_duration() if self.end else duration
 
-        def normal_period(self, day_obj, start, duration, sch_class_arm_obj, dept_obj=None, end=None):
-            """   This is the model of a normal academic period  """
-
-            # Just an attribute to indicate that this is an academic or non-academic period
-            self.is_acad = True
-
-            # ------------------------------------------------
-            self.subject = dept_obj # the department (subject)
-            self.day = day_obj  # the day of the week, or the time period
-            self.school_class_arm = sch_class_arm_obj
-            self.teacher = None if not self.subject else self.subject.assign_teacher()
-            self.start = start  # The start time for the period
-
-            if duration:
-                # -- if duration is given, calculate the end from the duration
-                self.duration = duration
-                self.end = TimeTable.add_sub_time(self.start, duration)
-
-            elif end:
-                # -- if duration isn't given but end is
-                self.end = end  # The end time for the period
-                self.duration = TimeTable.add_sub_time(self.end, self.start, add=False)
-                
-            # self.school_class_arm.periods.append(self)
-
-            # self.day.school_class_arms_today.add(self.school_class_arm)
-            self.period_name = f"'{self.subject.dept_name}' period for {self.school_class_arm}" if self.subject else "Free Period"
-            self.add_to_armses_periods()
-
-            # -- Update the period counter of the school_class arm
-            # self.school_class_arm.period_id_counter += 1
-
-            self.period_id = self.school_class_arm.period_id_counter
-            return self
+            self.add_period_to_arm()
 
 
-        def fav_period(self, day_obj, duration, spot=None, start=None, dept_obj=None, sch_class_arm_obj=None, title_of_fav=None):
-            """Short for 'favourite period'. This is a period which MUST occupy a 
-            particular spot on the time-table. A static period.
-            'end' is not given here. just the 'start' and 'duration' parameters are needed
-            START has to be a time tuple.
-            so also DURATION.
-            """
-
-            self.day = day_obj
-
-            # Just an attribute to indicate that this is an academic period or not
-            self.is_acad = False
-
-            if spot:
-                # Put the period in the (spot-1)th spot of the period list
-                pass
-            else:
-                if not start:
-                    raise ProjectExceptions.CannotAssignFavPeriod("Cannot assign special period. Parameters have not been met")
-                else:
-                    self.duration = duration if duration else (0,0,0)
-                    self.start = start if start else (0,0,0)
-                    self.end = TimeTable.add_sub_time(self.start, self.duration)
-                    self.school_class_arm = sch_class_arm_obj
-
-                    if dept_obj:
-                        self.subject = dept_obj
-
-                    else:
-                        self.subject = title_of_fav if title_of_fav else "Non-academic period"
-                    # self.school_class_arm.periods.append(self)
-                    self.period_name = f"Specially for {self.school_class_arm}"
+        def get_duration(self):
+            return TimeTable.add_sub_time(self.end, self.start, add=False)
 
 
-            self.add_to_armses_periods()
-            # self.school_class_arm.period_id_counter += 1
-            self.period_id = self.school_class_arm.period_id_counter
-
-            return self
-
-
-        @property
-        def get_period_name(self):
-            num_name = f"{self.day.day} - {self.school_class_arm.periods[self.day].index(self) + 1}"
-            return f"Period_{num_name}: {self.period_name}"
-
-
-        def __repr__(self):
-            return self.get_period_name
-
-
-        def add_dept_to_period(self, dept_obj):
-            """ If the period was initially created free,and it was decided as an afterthought 
-            to add a subject to it, i.e. make it an academic class, this function does the needful 
-            of providing a teacher and all the other below-mentioned things. """
-           
-            if self.subject:
-                return
-
-            self.subject = dept_obj
-            self.teacher = dept_obj.teachers_for_client_class_arms[self.school_class_arm]
-            self.teacher.classes_taught.append(self.school_class_arm)
-
-
-        def add_to_armses_periods(self):
+        def add_period_to_arm(self):
             """ Method to add this period object to the dictionary of the school_class_arm
             adds a period one at a time """
 
-            if self.day in self.school_class_arm.days_list:
+            if self.day in self.class_arm.days_list:
                 # ---- To update the list of periods
-                if self.day in self.school_class_arm.periods:
-                    self.school_class_arm.periods[self.day].append(self)
-                else:
-                    self.school_class_arm.periods[self.day] = [self]
+                if not self.day in self.class_arm.periods:
+                    self.class_arm.periods[self.day] = []
+                self.class_arm.periods[self.day].append(self)
 
                 # ---------- To update the period counter of this periods's arm ----------
-                if self.day in self.school_class_arm.period_id_counter.keys():
-                    self.school_class_arm.period_id_counter[self.day] += 1
-                else:
-                    self.school_class_arm.period_id_counter[self.day] = 1
+                if not self.day in self.class_arm.period_id_counter:
+                    self.class_arm.period_id_counter[self.day] = 0
+                self.class_arm.period_id_counter[self.day] += 1
             else:
-                return ProjectExceptions.SomethingWentWrong(f"{self.day} is not in the days_list of {self.school_class_arm}")
+                raise ProjectExceptions.SomethingWentWrong(f"{self.day} is not in the days_list of {self.school_class_arm}")
+
+
+        def add_details_to_period(self, dept, teacher):
+            """ Adds a dept object to this period """
+            self.dept = dept
+            self.teacher = teacher
+
+
+        @property
+        def id_barebones(self):
+            """ Returns the actual position of this period in its arm's list of periods today. 
+            Useful for inputting dept objects after chunking is done, as it is zero-indexed """
+            return self.class_arm.periods[self.day].index(self)
+
+        @property
+        def id(self):
+            """ Returns the formal (formal as in to be displayed on the GUI) ID of this period. """
+            return self.id_barebones + 1
+        
+
+        @property
+        def period_name(self):
+            if self.is_acad:
+                return f"Academic period {self.id} for {self.class_arm}"
+            return f"Non-academic period {self.id} for {self.class_arm}"
+
+
+        def __repr__(self):
+            return self.period_name
+
 
 
     class Day:
@@ -1417,12 +1345,13 @@ class TimeTable:
                 a class arm) on all the class arms. """
 
             # A set is used here to avoid duplicates
-            all_teachers = set()
+            all_teachers = []
 
             for arm in self.school_class_arms_today:
             # get teacher for each arm
                 for teacher in self.get_arm_teachers_today_from_depts_assgn(arm):
-                    all_teachers.add(teacher)
+                    if teacher not in all_teachers:
+                        all_teachers.append(teacher)
 
             # Returns just a set of all the teachers today
             return all_teachers

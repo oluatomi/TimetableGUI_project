@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1290</width>
-    <height>727</height>
+    <width>1289</width>
+    <height>730</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -104,7 +104,7 @@ QLabel{
 }
 
 QFrame[objectName=&quot;nav_bar&quot;]{	
-	background-color:qlineargradient(spread:pad, x1:0.487, y1:0.0519091, x2:0.463, y2:0.988364, stop:0.534091 rgba(66, 57, 76, 255), stop:0.870976 rgba(0, 0, 11, 255), stop:0.9375 rgba(0, 0, 11, 255));
+	background-color:qlineargradient(spread:pad, x1:0.51, y1:0.995, x2:0.531, y2:0.0115909, stop:0.0397727 rgba(121, 88, 67, 255), stop:0.272727 rgba(35, 20, 17, 255), stop:0.988636 rgba(0, 0, 0, 255));
 }
 
 QSpinBox{
@@ -170,7 +170,7 @@ QScrollBar::handle::horizontal{
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1284</width>
+            <width>1283</width>
             <height>124</height>
            </rect>
           </property>
@@ -223,14 +223,13 @@ QWidget{
 
 
 QPushButton{
+	background:#080808;
 	border-left:1px solid #7d7d7d;
 	border-right:1px solid #7d7d7d;
 	padding:3px;
 	font-weight:500;
 	font-size:11px;
-	border-radius:2px;
-color:#1d1d1d;
-	
+	border-radius:2px;	
 }
 
 QPushButton::hover{
@@ -259,7 +258,7 @@ QComboBox{
               <enum>QTabWidget::Rounded</enum>
              </property>
              <property name="currentIndex">
-              <number>2</number>
+              <number>0</number>
              </property>
              <property name="iconSize">
               <size>
@@ -282,6 +281,230 @@ QComboBox{
              <property name="tabBarAutoHide">
               <bool>false</bool>
              </property>
+             <widget class="QWidget" name="file_tab">
+              <attribute name="title">
+               <string>File and Settings</string>
+              </attribute>
+              <widget class="QFrame" name="frame_64">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>10</y>
+                 <width>416</width>
+                 <height>71</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_26">
+                <item>
+                 <widget class="QPushButton" name="pushButton_12">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Exit</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_7">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>New</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_5">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Open</string>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normaloff>../Icons-mine/Open_file.png</normaloff>../Icons-mine/Open_file.png</iconset>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>40</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_14">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Recent</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_4">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Save</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_10">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Save As</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QFrame" name="frame_67">
+               <property name="geometry">
+                <rect>
+                 <x>795</x>
+                 <y>10</y>
+                 <width>116</width>
+                 <height>66</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <widget class="QPushButton" name="pushButton_15">
+                <property name="geometry">
+                 <rect>
+                  <x>25</x>
+                  <y>30</y>
+                  <width>75</width>
+                  <height>23</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>About</string>
+                </property>
+               </widget>
+              </widget>
+              <widget class="QFrame" name="frame_68">
+               <property name="geometry">
+                <rect>
+                 <x>540</x>
+                 <y>5</y>
+                 <width>241</width>
+                 <height>86</height>
+                </rect>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_56">
+                <property name="leftMargin">
+                 <number>6</number>
+                </property>
+                <property name="topMargin">
+                 <number>3</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>3</number>
+                </property>
+                <item>
+                 <widget class="QFrame" name="frame_66">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_90">
+                   <property name="spacing">
+                    <number>5</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>9</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>1</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>9</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>1</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="label_33">
+                     <property name="text">
+                      <string>Appearance</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="comboBox_8">
+                     <item>
+                      <property name="text">
+                       <string>Dark Mode</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Light Mode</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Mid mode</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_13">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Irrevocably resets the current timetable operation. Days, classes, class arms, etc. are permanently lost.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>Reset Timetable</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
              <widget class="QWidget" name="archive">
               <attribute name="title">
                <string>Archive </string>
@@ -366,6 +589,12 @@ QComboBox{
                    <property name="icon">
                     <iconset>
                      <normaloff>../Icons-mine/class.png</normaloff>../Icons-mine/class.png</iconset>
+                   </property>
+                   <property name="iconSize">
+                    <size>
+                     <width>24</width>
+                     <height>18</height>
+                    </size>
                    </property>
                   </widget>
                  </item>
@@ -1240,85 +1469,6 @@ Sort</string>
                      </item>
                     </widget>
                    </item>
-                   <item>
-                    <widget class="QFrame" name="frame_21">
-                     <property name="maximumSize">
-                      <size>
-                       <width>65</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <layout class="QHBoxLayout" name="horizontalLayout_28">
-                      <property name="spacing">
-                       <number>3</number>
-                      </property>
-                      <property name="leftMargin">
-                       <number>1</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>1</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>1</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>1</number>
-                      </property>
-                      <item>
-                       <widget class="QPushButton" name="pushButton_37">
-                        <property name="maximumSize">
-                         <size>
-                          <width>22</width>
-                          <height>16</height>
-                         </size>
-                        </property>
-                        <property name="toolTip">
-                         <string>Landscape mode</string>
-                        </property>
-                        <property name="text">
-                         <string/>
-                        </property>
-                        <property name="icon">
-                         <iconset>
-                          <normaloff>../Icons-mine/Effects/landscape.png</normaloff>../Icons-mine/Effects/landscape.png</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>22</width>
-                          <height>16</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="pushButton_48">
-                        <property name="maximumSize">
-                         <size>
-                          <width>17</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="toolTip">
-                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Portrait mode&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                        </property>
-                        <property name="text">
-                         <string/>
-                        </property>
-                        <property name="icon">
-                         <iconset>
-                          <normaloff>../Icons-mine/Effects/portrait.png</normaloff>../Icons-mine/Effects/portrait.png</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>20</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
                   </layout>
                  </widget>
                 </item>
@@ -1669,7 +1819,7 @@ QPushButton::hover{
              </property>
              <property name="icon">
               <iconset>
-               <normaloff>../Icons folder/bonus/icons-24/arrow-180.png</normaloff>../Icons folder/bonus/icons-24/arrow-180.png</iconset>
+               <normaloff>../Icons-mine/arrow-left.png</normaloff>../Icons-mine/arrow-left.png</iconset>
              </property>
              <property name="iconSize">
               <size>
@@ -1694,7 +1844,7 @@ QPushButton::hover{
              </property>
              <property name="icon">
               <iconset>
-               <normaloff>../Icons folder/bonus/icons-24/arrow.png</normaloff>../Icons folder/bonus/icons-24/arrow.png</iconset>
+               <normaloff>../Icons-mine/arrow-right.png</normaloff>../Icons-mine/arrow-right.png</iconset>
              </property>
              <property name="iconSize">
               <size>
@@ -1713,7 +1863,7 @@ QPushButton::hover{
           <property name="geometry">
            <rect>
             <x>5</x>
-            <y>130</y>
+            <y>115</y>
             <width>121</width>
             <height>231</height>
            </rect>
@@ -1816,7 +1966,7 @@ Subjects</string>
           <property name="geometry">
            <rect>
             <x>25</x>
-            <y>105</y>
+            <y>85</y>
             <width>86</width>
             <height>16</height>
            </rect>
@@ -1848,7 +1998,7 @@ Subjects</string>
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>375</y>
+            <y>360</y>
             <width>106</width>
             <height>80</height>
            </rect>
@@ -2307,8 +2457,8 @@ Subjects</string>
                          <rect>
                           <x>0</x>
                           <y>0</y>
-                          <width>107</width>
-                          <height>241</height>
+                          <width>183</width>
+                          <height>343</height>
                          </rect>
                         </property>
                         <layout class="QVBoxLayout" name="verticalLayout_58">
@@ -2467,8 +2617,8 @@ Subjects</string>
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>98</width>
-                    <height>28</height>
+                    <width>69</width>
+                    <height>467</height>
                    </rect>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_41"/>
@@ -4426,8 +4576,8 @@ QLineEdit, QTextEdit, QComboBox{
                          <rect>
                           <x>0</x>
                           <y>0</y>
-                          <width>186</width>
-                          <height>255</height>
+                          <width>203</width>
+                          <height>507</height>
                          </rect>
                         </property>
                         <property name="styleSheet">
@@ -5265,7 +5415,7 @@ QLabel{
                           <x>0</x>
                           <y>0</y>
                           <width>661</width>
-                          <height>387</height>
+                          <height>492</height>
                          </rect>
                         </property>
                         <layout class="QHBoxLayout" name="horizontalLayout_18">
@@ -8062,7 +8212,7 @@ Display Table</string>
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>362</width>
+                             <width>378</width>
                              <height>523</height>
                             </rect>
                            </property>
@@ -9074,8 +9224,8 @@ padding:2px;</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1139</width>
-                <height>499</height>
+                <width>1138</width>
+                <height>568</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_54">
@@ -9780,13 +9930,13 @@ font-weight:bold;</string>
                     <property name="minimumSize">
                      <size>
                       <width>250</width>
-                      <height>335</height>
+                      <height>350</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
                       <width>250</width>
-                      <height>350</height>
+                      <height>360</height>
                      </size>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_46">
@@ -9838,27 +9988,30 @@ font-weight:bold;</string>
                       </widget>
                      </item>
                      <item>
-                      <spacer name="verticalSpacer_16">
+                      <spacer name="verticalSpacer_9">
                        <property name="orientation">
                         <enum>Qt::Vertical</enum>
-                       </property>
-                       <property name="sizeType">
-                        <enum>QSizePolicy::Fixed</enum>
                        </property>
                        <property name="sizeHint" stdset="0">
                         <size>
                          <width>20</width>
-                         <height>15</height>
+                         <height>40</height>
                         </size>
                        </property>
                       </spacer>
                      </item>
                      <item alignment="Qt::AlignTop">
                       <widget class="QGroupBox" name="groupBox_17">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>230</height>
+                        </size>
+                       </property>
                        <property name="maximumSize">
                         <size>
                          <width>16777215</width>
-                         <height>234</height>
+                         <height>250</height>
                         </size>
                        </property>
                        <property name="title">
@@ -10072,7 +10225,7 @@ font-weight:bold;</string>
                            </size>
                           </property>
                           <property name="toolTip">
-                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the super command that kick-starts the execution of the whole Timetable logic.&lt;/p&gt;&lt;p&gt;This button should only be clicked if all the appropriate Subject and Class requirements and registrations have been met and made.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the super command that kick-starts the execution of the whole Timetable logic.&lt;/p&gt;&lt;p&gt;This button should only be clicked if all the appropriate Subject and Class registrations and requirements have been made and met.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                           </property>
                           <property name="text">
                            <string>Execute Sort</string>
@@ -10107,10 +10260,10 @@ font-weight:bold;</string>
              <widget class="QGroupBox" name="groupBox_50">
               <property name="geometry">
                <rect>
-                <x>740</x>
-                <y>85</y>
-                <width>153</width>
-                <height>111</height>
+                <x>947</x>
+                <y>30</y>
+                <width>161</width>
+                <height>131</height>
                </rect>
               </property>
               <property name="font">
@@ -10127,55 +10280,26 @@ font-weight:bold;</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_39">
                <property name="spacing">
-                <number>2</number>
+                <number>6</number>
                </property>
                <property name="leftMargin">
-                <number>2</number>
+                <number>9</number>
                </property>
                <property name="topMargin">
-                <number>2</number>
+                <number>9</number>
                </property>
                <property name="rightMargin">
-                <number>2</number>
+                <number>9</number>
                </property>
                <property name="bottomMargin">
-                <number>2</number>
+                <number>9</number>
                </property>
                <item>
                 <widget class="QLabel" name="label_35">
                  <property name="text">
-                  <string>Results shown by:</string>
+                  <string>Display results by:</string>
                  </property>
                 </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="lineEdit_14">
-                 <property name="inputMask">
-                  <string/>
-                 </property>
-                 <property name="text">
-                  <string>School Class Arm</string>
-                 </property>
-                 <property name="readOnly">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <spacer name="verticalSpacer_9">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>6</height>
-                  </size>
-                 </property>
-                </spacer>
                </item>
                <item>
                 <widget class="QLabel" name="label_84">
@@ -10188,14 +10312,26 @@ font-weight:bold;</string>
                 <widget class="QComboBox" name="comboBox_18">
                  <item>
                   <property name="text">
-                   <string>School Class Arm</string>
+                   <string>Class arm</string>
                   </property>
                  </item>
                  <item>
                   <property name="text">
-                   <string>School Class Group</string>
+                   <string>Class category</string>
                   </property>
                  </item>
+                 <item>
+                  <property name="text">
+                   <string>Day</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButton">
+                 <property name="text">
+                  <string>Display</string>
+                 </property>
                 </widget>
                </item>
               </layout>
@@ -10203,10 +10339,10 @@ font-weight:bold;</string>
              <widget class="QToolBox" name="final_output_toolbox">
               <property name="geometry">
                <rect>
-                <x>100</x>
-                <y>40</y>
-                <width>561</width>
-                <height>321</height>
+                <x>10</x>
+                <y>10</y>
+                <width>926</width>
+                <height>541</height>
                </rect>
               </property>
               <property name="currentIndex">
@@ -10217,8 +10353,8 @@ font-weight:bold;</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>98</width>
-                 <height>28</height>
+                 <width>922</width>
+                 <height>510</height>
                 </rect>
                </property>
                <attribute name="label">
@@ -10238,69 +10374,6 @@ font-weight:bold;</string>
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <addaction name="actionSave"/>
-   <addaction name="actionUndo"/>
-   <addaction name="actionRedo"/>
-   <addaction name="actionCut"/>
-   <addaction name="actionCopy"/>
-   <addaction name="actionPaste"/>
-  </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1290</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionQuit"/>
-   </widget>
-   <widget class="QMenu" name="menuSettings">
-    <property name="title">
-     <string>Settings</string>
-    </property>
-    <addaction name="actionTheme"/>
-   </widget>
-   <widget class="QMenu" name="menuAbout">
-    <property name="title">
-     <string>About</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuView">
-    <property name="title">
-     <string>View</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuProject">
-    <property name="title">
-     <string>Edit</string>
-    </property>
-    <addaction name="actionUndo"/>
-    <addaction name="actionRedo"/>
-   </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuProject"/>
-   <addaction name="menuView"/>
-   <addaction name="menuSettings"/>
-   <addaction name="menuAbout"/>
-  </widget>
   <action name="actionOpen_new_file">
    <property name="text">
     <string>Open</string>

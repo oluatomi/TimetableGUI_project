@@ -76,7 +76,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.setWindowIcon(QtGui.QIcon('../Icons-mine/App_logo.png'))
 
         self.load_manual_into_toolbox()
-        self.menubar_colour()        
+        # self.menubar_colour()        
 
         # The working timetable instance
         self.Timetable = Tt_manager.TimeTableManager()
@@ -544,19 +544,19 @@ class UITimetable(QtWidgets.QMainWindow):
         tool_scroll.setWidget(tool_box)
     
 
-    def menubar_colour(self):
-        tool_bar = self.findChild(QtWidgets.QToolBar,"toolBar")
-        menu_bar = self.findChild(QtWidgets.QMenuBar,"menuBar")
+    # def menubar_colour(self):
+    #     tool_bar = self.findChild(QtWidgets.QToolBar,"toolBar")
+    #     menu_bar = self.findChild(QtWidgets.QMenuBar,"menuBar")
 
-        style = """
+    #     style = """
 
-            background:qlineargradient(spread:pad, x1:0.04, y1:0.499, x2:0.95, y2:0.501, 
-            stop:0.0568182 rgba(0, 0, 0, 255), stop:0.855114 rgba(0, 0, 0, 255), 
-            stop:0.995222 rgba(94, 94, 94, 255));
+    #         background:qlineargradient(spread:pad, x1:0.04, y1:0.499, x2:0.95, y2:0.501, 
+    #         stop:0.0568182 rgba(0, 0, 0, 255), stop:0.855114 rgba(0, 0, 0, 255), 
+    #         stop:0.995222 rgba(94, 94, 94, 255));
 
-            """
+    #         """
 
-        tool_bar.setStyleSheet(style + "height:7px;")
+    #     tool_bar.setStyleSheet(style + "height:7px;")
         # menu_bar.setStyleSheet(style + "height:20px; color: #fff;")
 
 
