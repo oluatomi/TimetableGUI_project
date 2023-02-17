@@ -7,7 +7,7 @@ def generate_key(def_length=25):
     chunk_width = 5
     key = ""
 
-    while len(key) < def_length:
+    while len(key) <= def_length:
         if len(key) % chunk_width == 0 and len(key) != 0:
             key += "-"
 

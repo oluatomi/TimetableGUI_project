@@ -1,11 +1,42 @@
 import random, inspect, time
 
-# Algorithms for putting subjects into days.
-# Each class here is prefixed with a 'D' representing Days
+def nth_suffix(num):
+    """ Function to determine the appropriate english suffix to a number as in 1st, 2nd and so on.
+    Floats will be converted to INT  """
+    
+    # Just to be super sure
+    num = int(num)
+    suffix_dict = {"0":"th", "1":"st", "2":"nd", "3":"rd"}
+    suffix_dict.update({str(n):"th" for n in range(4, 14) if n != 10})
 
+    num_str = str(num)
+    if num_str[-2:] in suffix_dict:
+        return num_str, suffix_dict[num_str[-2:]]
+    return num_str, suffix_dict[num_str[-1]]
+
+
+
+def Translate_list_items(list_arg, item=None, index=None, base_index=0):
+    """ This static function rotates the elements in a list by taking an 'item' or 'index' if provided 
+    and moving to the position 'base_index' 
+    item and index should not be provided at the same time. However, if done, the function defaults to 'item'
+    """
+
+    index_ = list_arg.index(item) if item else index
+
+    if index_ is None:
+        raise ValueError("Cannot rotate. No item selected")
+    list_len = len(list_arg)
+    list_arg_ = sorted(list_arg, key=lambda k: (list_arg.index(k) - (index_ - base_index)) % list_len)
+    return list_arg_
+
+
+
+# Algorithms for putting subjects into days.
 class PacketAlgos:
     """ This classes packets departments into days using the XLX-reflection method.
     However, no spaces between the days are required """
+    
     # @staticmethod
     def direct(num, array):
         """ returns nm number of days in the same order as that of counting numbers.
@@ -426,7 +457,7 @@ def Moveover_with_fixed(list_arg, array,fixed_item=None, fixed_index=0):
 
 
 def Moveover_fixed(list_arg_, array,fixed_item=None, fixed_index=0):
-    """This function does the work of the moveover function except for the fact that it holds an item (if given), or it's 
+    """ This function does the work of the moveover function except for the fact that it holds an item (if given), or it's 
     index (if given) fixed. It is done this way, we pop out the fixed item and moveover whats left. Then we concatenate what's left.
     Fixed_item is a list containing all the chunks (which could have lists within)
     """
@@ -557,7 +588,7 @@ def Possible_combs(listarg, array):
 
     """
     if not listarg:
-            # If the list argument passed in empty
+        # If the list argument passed in empty
         return []
     # Move list_arg if it hasn't been moved before
     # --------------------------------------------------------
@@ -637,7 +668,8 @@ def Possible_combs(listarg, array):
 
 def Possible_combs_with_fixed(list_arg, const, array):
     # Gets all the possible combinations with a fixed item inside. 
-    # const is now an iterable holding all values
+    # const is now an iterable holding all values. const is a list of constant(fixed) values. i.e. values that
+    # should stay constant in the combination finding process
     
     all_ = Possible_combs(list_arg.copy(), array)
 
@@ -699,12 +731,40 @@ def remove_all_sub_from_list(list_arg, sub_list):
 
 def casual_removeall(list_arg, elem):
     """Removes all the occurences of elem in list_arg"""
-
-    for item in list_arg.copy():
+    sec_list = list_arg.copy()
+    for item in sec_list:
         if item == elem:
             list_arg.remove(elem)
 
     # Should it return list_arg?
+
+
+def weightlist(listarg):
+    """ Returns a list of int which indicate how many times an item occurs in listarg-- in order """
+
+    # Make an ordered list of the unique items in the listarg
+    s_list = Set_with_order(listarg)
+    ans = []
+    for k in s_list:
+        ans.append(listarg.count(k))
+    return ans
+        
+
+
+def align_chunklist_to_weightlist(weightlist, chunklist):
+    """ The weightlist is the reference list here. the items in chunklist have the same len() as the integers
+    in weightlist. This function merely makes sure that those values are one-one mapped. and realigns if not """
+
+    ans = []
+    for item in weightlist:
+        chunklist_ = chunklist.copy()
+        for index, item_ in enumerate(chunklist_):
+            width = len(item_) if hasattr(item_, "__iter__") else 1
+            if width == item:
+                ans.append(item_)
+                chunklist.remove(item_)
+                break
+    return ans
 
 
 def Count_with_order(list_arg):
@@ -733,9 +793,9 @@ class SortAlgorithms:
 
     @staticmethod
     def leap_frog(array, chunk_list={2:2, 1:2}, shift_value=0):
-        """ Revised leapfrog algorithm """
+        """ Revised leapfrog algorithm. """
 
-        # sort the chunk_list itms by the chunk_number from largest to smallest
+        # sort the chunk_list items by the chunk_number from largest to smallest
         c = chunk_list.items()
         # Dummy list with order preserved
         order_preserved_dummy = [list(range(1, chunk+1)) for chunk, freq in c for _ in range(freq)]
@@ -792,6 +852,7 @@ class SortAlgorithms:
         # In case it is shifted by shift_val, refine afterward
         spit_out = Translatebyshift(semi_ans, shift_value, array)
         final_ans = refine_translate(spit_out, array)
+        final_ans = Moveover(final_ans, array)
 
         # Reconstitute, the final answer to its initial order
         # Putting the original index of the chunk_list_sort...
@@ -989,7 +1050,7 @@ class SortAlgorithms:
 
         # ----------------------------------------------------------------------------------------------
     @staticmethod
-    def r_leap_frog(array, chunk_list={1:1, 2:2}, shift_value=0):
+    def r_leapfrog(array, chunk_list={1:1, 2:2}, shift_value=0):
         """ The leap_frog algorithm, but in reverse. """
         leapfrog = SortAlgorithms.leap_frog(array, chunk_list=chunk_list, shift_value=shift_value)
         # Reverse the whole thing
@@ -1016,7 +1077,7 @@ class SortAlgorithms:
     def collapse(array, chunk_list={2:2, 1:2}, shift_value=0):
         """Spacing out chunk values that somehow collapsed during chunking with the selected algorithm"""
 
-        # The 'elem' below is the Key,value tuple in chunk_list.items()
+        # The 'elem' below is the Key,value tuple in chunk_list
         old_chunklist_elem_only = [elem for elem in chunk_list.items()]
 
         chunk_list_sorted = sorted(chunk_list.items(), key=lambda item:item[0], reverse=True)

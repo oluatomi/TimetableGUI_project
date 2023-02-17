@@ -27,7 +27,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget[objectName=&quot;Form&quot;]{
-	background:qconicalgradient(cx:0.5, cy:0.5, angle:245.9, stop:0.0511364 rgba(36, 36, 36, 255), stop:0.329545 rgba(0, 0, 0, 255), stop:0.636364 rgba(79, 79, 79, 255), stop:0.8125 rgba(54, 54, 54, 255));
+	background:qlineargradient(spread:pad, x1:0.038, y1:0.188, x2:0.968, y2:0.938, stop:0.0180822 rgba(0, 0, 0, 255), stop:0.0763469 rgba(174, 87, 0, 255), stop:0.167614 rgba(0, 0, 0, 255), stop:0.420455 rgba(0, 0, 0, 255), stop:0.670455 rgba(0, 0, 0, 255), stop:0.906246 rgba(0, 0, 0, 255), stop:0.946788 rgba(174, 87, 0, 255), stop:0.988636 rgba(0, 0, 0, 255));
 }
 
 QLabel{
@@ -89,7 +89,7 @@ QLabel{
        </rect>
       </property>
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esteemed customer/organisation, I'd love to get to know you.Would you be so kind as to let some things on about yourself? Just some basic stuff, really.&lt;br/&gt;This section is optional.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esteemed customer/organisation, we'd love to get to know you.Would you be so kind as to let some things on about yourself? Just some basic stuff, really.&lt;br/&gt;This section is optional.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>

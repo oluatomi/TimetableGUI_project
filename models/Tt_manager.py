@@ -14,10 +14,12 @@ from collections import namedtuple
 from .Tt_models import TimeTable
 from inspect import isfunction
 from .Tt_algo import TimetableSorter
-import string, re
+import string, re, pickle, math
 from . import Tt_exceptions
+from ..gui import Tt_GuiExtras
 
 
+subj_freq_chunk = namedtuple("subj_freq_chunk", "dept frequency chunk")
 
 def get_obj_from_param(g_list, attr, param):
     """ This helper function searches through a given list "g_list" and 
@@ -44,16 +46,27 @@ def get_obj_from_param(g_list, attr, param):
 class TimeTableManager:
     """ This class serves as the intermediary between the GUI and the Tt_models and Tt_algo modules """
 
-    def __init__(self, time_t_obj=None):
-        self.Timetable_obj = TimeTable() if not time_t_obj else time_t_obj
+    def __init__(self, tt_obj=None):
+        self.Timetable_obj = TimeTable() if not tt_obj else tt_obj
         self.TimetableSorter = TimetableSorter(tt_obj=self.Timetable_obj)
         self.object_getter = get_obj_from_param
-        # In the event of an update to a model, the pre_existing model to be edited
+        # In the event of an update to one of the arm or teacher, etc models, the pre_existing model to be edited
         self.pre_existing = None
         self.regex_time_pattern = "\d+:\d+:\d+"
         self.regex_position_pattern = "^(\d+,?)+$"
 
-        # The table data for the arms_feasible_table
+    
+    # ---------------------------- SAVE AND LOAD FILES ---------------------------------
+    def save(self, project_name, file_path):
+        """ Pickles the timetable object into a file """
+        self.Timetable_obj.save(project_name, file_path)
+
+
+    def load_open(file_name):
+        """ loads an existing timetable object from a .tmtb file """
+        with open(filename, 'rb') as file:
+            Timetable_obj = pickle.load(file)
+        self.__init__(tt_obj=Timetable_obj)
 
 
     def stash_general_info(self, info_dict):
@@ -102,12 +115,26 @@ class TimeTableManager:
         return ValueError(f"{object_fullname} not found in model list")
 
 
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # ---------------------------UTILITY FUNCTIONS ABOVE, MODEL FUNCTIONS BELOW -----------------------------------------------------------
+    def set_ATPG_parameters(self, analytic_tuple, theoretical_tuple, practical_tuple, grammatical_tuple):
+        """ Set the timetable object's ATPG parameters """
+
+        # unpack the arguments
+        analytic_name, analytic_val = analytic_tuple
+        theoretical_name, theoretical_val = theoretical_tuple
+        practical_name, practical_val = practical_tuple
+        grammatical_name, grammatical_val = grammatical_tuple
+
+        self.Timetable_obj.set_ATPG_parameters((analytic_name, analytic_val), (theoretical_name, theoretical_val), 
+            (practical_name,practical_val), (grammatical_name, grammatical_val))
+
+
     def create_faculty(self, faculty_name, HOD="Esteemed HOD Sir/Ma'am", description="", update=False):
         #  ...
         #  ...
         pre_existing = self.pre_existing if update else None 
         self.Timetable_obj.create_faculty(faculty_name, HOD=HOD, description=description, update=update,preexisting_obj=pre_existing)
-        # print(f"This is the fac_list{self.Timetable_obj.list_of_faculties}")
 
 
     def create_department(self, name, hos=None, faculty=None, A=1,T=1,P=1,G=1, update=False):
@@ -201,9 +228,6 @@ class TimeTableManager:
 
 
     def generate_school_class_arms(self, class_fullname, frequency=1, as_alpha=True, override=False):
-        #  ...
-        #  ...
-        #  ...
         school_class_obj = self.object_getter(self.Timetable_obj.list_of_school_classes, "full_name",class_fullname)
 
         # If we want this newly generated class to override previously generated ones
@@ -261,7 +285,7 @@ class TimeTableManager:
 
         # extract he teacher object
         teacher_obj = self.object_getter(self.Timetable_obj.list_of_all_teachers, "full_name", teacher_fullname)
-        courses = teacher_obj.teachers_department_list
+        courses = teacher_obj.teachers_dept_list
         tdays = teacher_obj.teaching_days
         designation = teacher_obj.designation
         specialty = teacher_obj.specialty
@@ -367,14 +391,13 @@ class TimeTableManager:
 
 
     def add_depts_to_selected_classarms(self, arm_objs_list=None, iterable_from_gui=None):
-        """ This method adds the courses from the iterable_from_gui into the selected arms """
-        # arm_objs = [self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", arm_fullname) 
-        # for arm_fullname in selected_arms_list]
+        """ This method adds the courses from the iterable_from_gui into the selected arms. iterable_from_gui is
+        a list of (dept, freq, chunk) tuples (namedtuples?) """
 
         for arm in arm_objs_list:
             for detail in iterable_from_gui:
-                dept, _, _ = detail
-                self.Timetable_obj.map_dept_to_arm(arm, dept)
+                dept, freq, chunk = detail
+                self.Timetable_obj.map_dept_to_arm(arm, dept, freq, chunk)
 
 
     def generate_periods_for_classarms(self, g_box_id, selected_arms_list=None, selected_days_list=None, acad_periods_dict=None, nonacad_tuple_list=None):
@@ -468,14 +491,15 @@ class TimeTableManager:
 
     def map_arms_to_chunkfreq_details(self, selected_arms_list, iterable_from_gui):
         """ This method receives the dept and chunk details (freq and chunk) along with all the arms from the GUI.
-        iterable_from_gui is a list of tuples. DEPTS HAVE BEEN ADDED TO THE CLASS ARMS """
+        iterable_from_gui is a list of tuples (dept, freq, chunk). DEPTS WILL BE ADDED TO THE CLASS ARMS IN HERE """
 
         arm_objs = [self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", arm_fullname) for arm_fullname in selected_arms_list]
-        subj_freq_chunk = namedtuple("subj_freq_chunk", "dept frequency chunk")
+        # subj_freq_chunk = namedtuple("dept_freq_chunk", "dept frequency chunk")
 
         # 1. Morphe the iterable_from_gui list of tuples into a list of namedtuples to be used in the TimetableSorter
         total_frequency = 0
         for index, details in enumerate(iterable_from_gui.copy()):
+            # dept is initially a string
             dept, freq, chunk = details
             total_frequency += freq
             # Get the real dept object for the dept variable
@@ -505,9 +529,12 @@ class TimeTableManager:
                 arm.store_arms_feasible_table_data([periods_sum, frequency_sum, feasible, feasible_colour])
 
         # Add the courses in iterable_from_gui to the class arm
-        self.add_depts_to_selected_classarms(arm_objs_list=arm_objs, iterable_from_gui=iterable_from_gui)
-            
+        self.iterable_from_gui = iterable_from_gui
+        self.add_depts_to_selected_classarms(arm_objs_list=arm_objs, iterable_from_gui=self.iterable_from_gui)
 
+
+
+   
     def get_arms_feasible_table_data(self):
         """ Returns the arms_feasible_table_data for every class arm to be used in the GUI """
         return [arm.get_arms_feasible_table_data() for arm in self.Timetable_obj.list_of_school_class_arms]
@@ -516,19 +543,22 @@ class TimeTableManager:
     # ---------------- ASSIGN TEACHERS TO TEACH SUBJECTS IN CLASS ARMS ---------------------
     def auto_assign_teachers_to_arms(self):
         """ calls the Tt_models module and automatically assigns teacher to arm """
-
-        # First loads the teachers generators to yiled teachers for assignment
+        # First loads the teachers generators to produce teachers for assignment
         self.Timetable_obj.load_teachers_from_all_depts(ascending=True)
-        self.Timetable_obj.auto_assign_teachers_to_all_arms()
+        assign_teachers = self.Timetable_obj.auto_assign_teachers_to_all_arms()
+
+        return (assign_teachers,)
 
 
     def undo_assign_teachers_to_arms(self):
         """ Calls the Tt_models module to strips each class arm of its subject teacher """
-        self.Timetable_obj.undo_assign_teachers_to_arms()
+        undo_assign = self.Timetable_obj.undo_assign_teachers_to_arms()
+        return (undo_assign,)
 
 
     def get_arm_object(self, arm_cred):
-        """ Returns tha arm object with full_name of arm_fullname """
+        """ Returns tha arm object with full_name of arm_fullname.
+        SPECIALLY FOR THE BUTTON THAT FINDS CLASS ARMS AND UPLOADS THEIR DETAILS TO THE TABLEWIDGET IN THE GUI """
         attr = "full_name" if isinstance(arm_cred, str) else "id"
         # in case the arm_cred does not match any teacher
         try:
@@ -536,3 +566,62 @@ class TimeTableManager:
         except ValueError:
             raise Tt_exceptions.SomethingWentWrong(f"No class arm with ID: {arm_cred}")
         return arm_obj
+
+
+    def packeting_repacketing(self):
+        """ handles the 'packeting' and 'repacketing' of subject teachers into days of the week """
+        packet = self.TimetableSorter.packet_depts_into_arms_per_day(self.iterable_from_gui)
+        # Repacket will be adjusted later
+        repacket = self.TimetableSorter.repacket_teachers()
+        
+        return packet, repacket
+
+
+    def undo_packeting_repacketing(self):
+        """ Handles undoing the packet_repacketing process """
+        undo_packet_operation = self.TimetableSorter.undo_packeting()
+        return (undo_packet_operation,)
+
+
+    def algosort_handle_cleanup_periodmap(self, algorithm_text, ref_day, ref_arm):
+        """ Handles the sorting, handling displaced teachers, clean up and maps the result to arms' periods """
+
+        ref_day_obj = self.object_getter(self.Timetable_obj.list_of_days, "full_name", ref_day.strip()) 
+        ref_arm_obj = self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", ref_arm.strip())
+
+        algosort = self.TimetableSorter.initial_algosort(algorithm_text, reference_day=ref_day_obj, reference_arm=ref_arm_obj)
+        handle = self.TimetableSorter.handle_displaced_teachers()
+        cleanup = self.TimetableSorter.clean_out_displaced_teachers()
+        map_to_period = self.TimetableSorter.map_chunk_to_arms_periods()
+
+        return algosort, handle, cleanup, map_to_period
+
+
+    def load_period_frames(self, frame_from_gui, details_tuple):
+        """ Loads the period frames (AFTER ALL THE SORTING IS DONE!) FOR A CHOSEN ARM OR DAY into the GUI_frame (here represented as 'frame_from_gui').
+        details_dict is a tuple that contains [0] => "arm" or "day" (raw_string) and the [1] => model_item_full_name.
+        the details_tule can only contain CLASSARM OR DAY objects. """
+
+        model_type_str, model_item = details_tuple
+        # Get the list of model_objects using the mode_type_str("days" or "class arms")
+        model_list = self.get_model_items(model_type_str)[1]
+        try:
+            model_object = self.object_getter(model_list, "full_name", model_item)
+        except ValueError:
+            raise Tt_exceptions.SomethingWentWrong(f"No such model item exists")
+        frame_class = Tt_GuiExtras.PeriodsDisplayByArmFrame if isinstance(model_obj, self.tt_obj.SchooClassArm) else Tt_GuiExtras.PeriodsDisplayByDayFrame
+        my_frame = frame_class(model_object, frame=frame_from_gui, spacing=6, padding=(2,2,2,2))
+        my_frame.run()
+
+
+    def dial_value_to_index(self, dial_value, model_length, min_=1, max_=100):
+        """ This function converts the value passed in from the QDial into the index (int) of the model_object """
+        index = math.ceil(dial_value * model_length/(max_ - min_ + 1)) - 1
+        return index
+
+    def index_to_dial_value(self, index, model_length, min_=1, max_=100):
+        """ Converts the value of the index to its QDial value on the GUI. Returns the QDial value """
+        dial_value = math.floor((index + 1)*(max_ - min_ + 1)/model_length)
+        return dial_value
+
+

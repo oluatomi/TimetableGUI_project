@@ -12,9 +12,10 @@
 
 # -----------------------------------------------------------
 class MyOwnException(Exception):
-    def __init__(self, comment):
+    def __init__(self, comment="Acting up", extra=None):
         super().__init__(comment)
         self.comment = comment
+        self.extra = extra
 
 # -----------------------------------------------------------
 class ClassAlreadyExists(MyOwnException):
