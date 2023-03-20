@@ -10,14 +10,20 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class PeriodFrame(object):
-    def setupUi(self, Frame, height=90):
+class PeriodFrame(QtWidgets.QFrame):
+    def __init__(self, height=90):
+        super().__init__()
+
+        self.setupUi(height)
+        # self.show()
+
+    def setupUi(self, height):
         self.teacher_str = None
         self.dept = None
         self.faculty = None
 
         # ----------------------------
-        # QSS stylesheet to apply to the self.subj_fr (subject frame), whether this frame has been tracked or not. 
+        # QSS stylesheet to apply to the self.subj_fr (subject self), whether this self has been tracked or not. 
         self.styles_on_track = {
         "tracked": "QWidget{\n"
             "background: #6fff93;\n"
@@ -32,12 +38,12 @@ class PeriodFrame(object):
         }
 
 
-        Frame.setObjectName("Frame")
+        self.setObjectName("self")
         self.height = height
-        Frame.resize(145, self.height)
-        Frame.setMinimumSize(QtCore.QSize(145, 90))
-        Frame.setMaximumSize(QtCore.QSize(145, 90))
-        Frame.setStyleSheet("QFrame[objectName=\"Frame\"]{\n"
+        self.resize(145, self.height)
+        self.setMinimumSize(QtCore.QSize(145, 90))
+        self.setMaximumSize(QtCore.QSize(145, 90))
+        self.setStyleSheet("QFrame[objectName=\"self\"]{\n"
 "    border-radius:5px;\n"
 "    border:2.5px solid #000059;\n"
 "}\n"
@@ -45,10 +51,10 @@ class PeriodFrame(object):
 "QFrame > QFrame{\n"
 "    border:0.7px solid #808080;    \n"
 "}")
-        self.verticalLayout = QtWidgets.QVBoxLayout(Frame)
+        self.verticalLayout = QtWidgets.QVBoxLayout(self)
         self.verticalLayout.setContentsMargins(1, 1, 1, 1)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.scrollArea = QtWidgets.QScrollArea(Frame)
+        self.scrollArea = QtWidgets.QScrollArea(self)
         self.scrollArea.setStyleSheet("QScrollBar{\n"
 "    background:#fff;\n"
 "    height:6px;\n"
@@ -114,7 +120,7 @@ class PeriodFrame(object):
         self.verticalLayout_2.addWidget(self.p_dur_fr)
         self.subj_fr = QtWidgets.QFrame(self.scrollAreaWidgetContents)
 
-        # Set the subject frame to untracked upon initialization
+        # Set the subject self to untracked upon initialization
         self.subj_fr.setStyleSheet(self.styles_on_track["untracked"])
 
         self.subj_fr.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -135,20 +141,20 @@ class PeriodFrame(object):
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout.addWidget(self.scrollArea)
 
-        self.retranslateUi(Frame)
-        QtCore.QMetaObject.connectSlotsByName(Frame)
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
 
-    def retranslateUi(self, Frame):
+    def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        Frame.setWindowTitle(_translate("Frame", "Frame"))
-        self.label.setText(_translate("Frame", "period name (Acad or No)"))
-        self.label_2.setText(_translate("Frame", "Period duration"))
-        self.textEdit.setHtml(_translate("Frame", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.setWindowTitle(_translate("self", "self"))
+        self.label.setText(_translate("self", "period name (Acad or No)"))
+        self.label_2.setText(_translate("self", "Period duration"))
+        self.textEdit.setHtml(_translate("self", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'MS Shell Dlg 2\';\"><br /></p></body></html>"))
-        self.textEdit.setPlaceholderText(_translate("Frame", "FREE"))
+        self.textEdit.setPlaceholderText(_translate("self", "FREE"))
 
 
     def add_name_duration_content(self, name_id, duration_str, dept_name):
@@ -157,8 +163,8 @@ class PeriodFrame(object):
         self.label_2.setText(duration_str)
         self.textEdit.setHtml(f"""
             <html>
-                <p style="text-align:center; color:#161616;font-size:10pt;
-                font-family: calibri;">{dept_name}</p>
+                <p style="text-align:center; color:#161616;font-size:8.5pt;
+                font-family: calibri; font-weight:bold;">{dept_name}</p>
             </html>
             """)
 
@@ -191,18 +197,24 @@ class PeriodFrame(object):
 
 # -----------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
-class ArmFrame(object):
-    def setupUi(self, Frame):
-        Frame.setObjectName("Frame")
-        Frame.resize(125, 90)
-        Frame.setMinimumSize(QtCore.QSize(125, 90))
-        Frame.setMaximumSize(QtCore.QSize(125, 90))
-        Frame.setStyleSheet("QFrame{\n"
+class ArmFrame(QtWidgets.QFrame):
+    def __init__(self, width=125, height=90):
+        super().__init__()
+
+        self.setupUi(width, height)
+        # self.show()
+
+    def setupUi(self, width, height):
+        self.setObjectName("self")
+        self.resize(width, height)
+        self.setMinimumSize(QtCore.QSize(125, 90))
+        self.setMaximumSize(QtCore.QSize(125, 90))
+        self.setStyleSheet("QFrame{\n"
 "    border:0.9px solid black;\n"
 "}\n"
 "\n"
 "\n"
-"QFrame[objectName=\"Frame\"]{\n"
+"QFrame[objectName=\"self\"]{\n"
 "    border:2.5px solid #000059;\n"
 "    border-radius:5px;\n"
 "    background:#fcfcfc;\n"
@@ -210,10 +222,10 @@ class ArmFrame(object):
 "\n"
 "\n"
 "")
-        self.verticalLayout = QtWidgets.QVBoxLayout(Frame)
+        self.verticalLayout = QtWidgets.QVBoxLayout(self)
         self.verticalLayout.setContentsMargins(1, 1, 1, 1)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.scrollArea = QtWidgets.QScrollArea(Frame)
+        self.scrollArea = QtWidgets.QScrollArea(self)
         self.scrollArea.setStyleSheet("QScrollBar{\n"
 "    width:6px;\n"
 "    height:6px;\n"
@@ -283,14 +295,14 @@ class ArmFrame(object):
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout.addWidget(self.scrollArea)
 
-        self.retranslateUi(Frame)
-        QtCore.QMetaObject.connectSlotsByName(Frame)
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
 
-    def retranslateUi(self, Frame):
+    def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        Frame.setWindowTitle(_translate("Frame", "Frame"))
-        self.label_2.setText(_translate("Frame", "Day or Class arm"))
-        self.label.setText(_translate("Frame", "arm_name or_day_name"))
+        self.setWindowTitle(_translate("self", "self"))
+        self.label_2.setText(_translate("self", "Day or Class arm"))
+        self.label.setText(_translate("self", "arm_name or_day_name"))
 
 
     def add_arm_fullname(self, fullname_str):
@@ -303,8 +315,11 @@ class ArmFrame(object):
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    Frame = QtWidgets.QFrame()
-    ui = PeriodFrame()
-    ui.setupUi(Frame)
-    Frame.show()
+    # Frame = QtWidgets.QFrame()
+    ui = ArmFrame()
+    # ui.add_teacher_dept_fac_str("teacher_str", "dept_str", "fac_str")
+    # ui.match_and_colour_based_on_track("dept_str")
+    # ui.setupUi()
+    # ui.show()
+    # Frame.show()
     sys.exit(app.exec_())

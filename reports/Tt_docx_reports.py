@@ -1,7 +1,9 @@
 import docxtpl, docx
-import math
+import math, os
 from docx.shared import Inches
 from docxcompose.composer import Composer
+from TIMETABLE.models.Tt_algo_calc import nth_suffix, unique_id_str
+from docx2pdf import convert
 
 
 class ModelReport:
@@ -111,7 +113,7 @@ class ReportBySchoolClass(ModelReport):
         super().populate_context()
         self.context["classgroup_name"] = self.classgroup.tag()
         self.context["classgroup_fullname_id"] = self.classgroup.full_name
-        self.context["classgroup_position"] = self.classgroup.id
+        self.context["classgroup_position"] = nth_suffix(self.classgroup.id)
         self.context["sch_class_list"] = [{"sch_class_name":sch_class.sch_class_alias, "sch_class_fullname":sch_class.full_name,
                 "arms_list": [{"arm_name": arm.full_name, "periods_per_day":[{"day":day.day, "periods":[period.period_name for period in periods_list]}
                 for day, periods_list in arm.periods.items()]} for arm in sch_class.school_class_arm_list]} 
@@ -130,12 +132,17 @@ class ReportByDay(ModelReport):
     def class_groups(self):
         return self.day.get_classgroups_today()
 
+    def _get_max_period_length(self):
+        """ Returns the max number of periods for all the class arms that feature today """
+        return max([len(periods_list)for arm in self.day.school_class_arms_today for periods_list in arm.periods.values()])
+
+
     def populate_context(self):
         """ populates the context dictionary which will be used on the .docx template """
         super().populate_context()
 
         self.context["day_name"] = self.day.day
-        self.context["day_position"] = self.day.id
+        self.context["day_position"] = nth_suffix(self.day.id)
         self.context["day_fullname_id"] = self.day.full_name
         self.context["class_groups"] = [{"classgroup_name":classgroup.full_name, "description":classgroup.description,
         "sch_classes_list":[{"name":sch_class.full_name,"arms_list":[{"name": arm.full_name, "periods": [period.period_name
@@ -155,6 +162,13 @@ class ReportByFaculty(ModelReport):
         self.faculty = faculty
         # self.output_filename = output_filename if output_filename.endswith((".docx",".doc")) else output_filename + ".docx"
 
+    def _get_max_period_length(self):
+        """ Returns the maximum number of periods for all the class arms of the classes that feature in this faculty """
+        # return max([len(periods_list) for subj in self.faculty.depts_list for arm in subj.teachers_for_client_class_arms
+        #     for periods_list in arm.periods.values()])
+        return 5
+
+
     def populate_context(self):
         """ populates the context dictionary so it can be rendered in the word template.
         the subjects are definitely academic periods """
@@ -163,14 +177,13 @@ class ReportByFaculty(ModelReport):
         self.context["department_fullname_id"] = self.faculty.full_name
         self.context["department_description"] = self.faculty.description
         self.context["department_hod"] = self.faculty.HOD
+
         self.context["department_subjects"] = [
         {
             "name":dept.dept_name, "hos":dept.hos,
-            "teachers":[
-            {"fullname": teacher.full_name, "is_exclusive":teacher.is_exclusive(),
-            "other_subjects": teacher.other_depts_taught_str, "classarms_taught":teacher.classarms_taught_based_on_dept_str(dept),
-            "specialization":teacher.specialization, "designation":teacher.designation} for teacher in dept.teachers_list
-        ]
+            "teachers":[{"fullname": teacher.full_name, "repertoire": "Teaches only this subject." if teacher.is_exclusive() else f"Teaches the following besides this one: {teacher.other_depts_taught_str(dept)}." \
+            "This teacher can thus also be found among the list of teachers for each of those other subjects.", 
+            "classarms_taught":teacher.classarms_taught_based_on_dept_str(dept), "specialization":teacher.specialization, "designation":teacher.designation} for teacher in dept.teachers_list]
         } for dept in self.faculty.depts_list]
 
 
@@ -181,24 +194,37 @@ class Reporter:
         self.tt_obj = tt_obj
 
 
-    def merge_into_one_file(self, files_list, file_title="Report_on_models"):
+    def merge_into_one_file(self, files_list, file_path, convert_to_pdf):
         """ Haanles merging all the files in 'files_list' into one file with filename "master_title". """
-        master_filename = file_title if file_title.endswith((".docx",".doc")) else file_title + ".docx"
+        # if convert_to_pdf:
+            # The master_filename is the docx file that will either be imported or turned into PDF
+        master_filename = os.path.splitext(file_path)[0] + f"_{unique_id_str()}.docx" if convert_to_pdf else file_path
+           
         master = docx.Document(files_list[0])
         composer = Composer(master)
         
         for file in files_list[1:]:
             doc_temp = docx.Document(file)
             composer.append(doc_temp)
+
         composer.save(master_filename)
+        # Now to convert to pdf on request
+        if convert_to_pdf:
+            master_filename_pdf = os.path.splitext(file_path)[0] + ".pdf"
+            # Edit the master filename and insert a uuid to be docx file before converting it to PDF and then deleting it
+            print(f"Old and new: {master_filename} <-----> {master_filename_pdf}")
+            convert(master_filename, master_filename_pdf)
+            os.remove(master_filename)
 
 
-    def generate_report_by_faculty(self, file_title="Report_By_Faculty"):        
+        
+
+    def generate_report_by_faculty(self, file_path, convert_to_pdf):        
         """ Handles the generation of reports for all the faculties available in the timetable """
 
         faculty_files = []
         for fac_obj in self.tt_obj.list_of_faculties:
-            report = ReportByFaculty(fac_obj, "TIMETABLE/reports/report_templates/render_models/departments_template.docx", 
+            report = ReportByFaculty(fac_obj, "TIMETABLE/reports/report_templates/Department-subject-template.docx", 
             output_filename=f"{fac_obj.full_name}.docx")
 
             report.institution = self.tt_obj.institution
@@ -211,14 +237,14 @@ class Reporter:
             faculty_files.append(f"{fac_obj.full_name}.docx")
 
         # Merge files into one
-        self.merge_into_one_file(faculty_files, file_title=file_title)
+        self.merge_into_one_file(faculty_files, file_path, convert_to_pdf)
 
 
-    def generate_report_by_day(self, file_title="Report_By_Day"):
+    def generate_report_by_day(self, file_path, convert_to_pdf):
         """ Handles the generation of reports for all the days available in the timetable. """
         days_files = []
         for day_obj in self.tt_obj.list_of_days:
-            report = ReportByDay(day_obj, "TIMETABLE/reports/report_templates/render_models/day_template.docx",
+            report = ReportByDay(day_obj, "TIMETABLE/reports/report_templates/day_template.docx",
             output_filename=f"{day_obj.full_name}.docx")
 
             report.institution = self.tt_obj.institution
@@ -226,20 +252,18 @@ class Reporter:
             report.session = self.tt_obj.session_or_year
             report.acronym = self.tt_obj.acronym
             report.extra_info = self.tt_obj.extra_info
-
             report.run()
             days_files.append(f"{day_obj.full_name}.docx")
 
         # Merge files into one
-        self.merge_into_one_file(days_files, file_title=file_title)
+        self.merge_into_one_file(days_files, file_path, convert_to_pdf)
 
 
-
-    def generate_report_by_school_class(self, file_title="Report_By_Class_categories"):
+    def generate_report_by_school_class(self, file_path, convert_to_pdf):
         """ Handles the generation of reports for all the classgroups, classes and arms available in the timetable """
         classgroup_files = []
         for classgroup in self.tt_obj.list_of_school_class_groups:
-            report = ReportBySchoolClass(classgroup, "TIMETABLE/reports/report_templates/render_models/class_template.docx",
+            report = ReportBySchoolClass(classgroup, "TIMETABLE/reports/report_templates/class_template.docx",
             output_filename=f"{classgroup.full_name}.docx")
 
             report.institution = self.tt_obj.institution
@@ -250,7 +274,18 @@ class Reporter:
 
             report.run()
             classgroup_files.append(f"{classgroup.full_name}.docx")
-
         # Merge files into one
-        self.merge_into_one_file(classgroup_files, file_title=file_title)
+        self.merge_into_one_file(classgroup_files, file_path, convert_to_pdf)
+
+
+    def runs_models_by_basis(self, basis, file_path, convert_to_pdf=False):
+        """ Generates by school class or by faculty or by day basis on the 'basis' (string) argument """
+        if "subject" in basis.lower() or "all" in basis.lower():
+            self.generate_report_by_faculty(file_path, convert_to_pdf)
+        if "class" in basis.lower() or "all" in basis.lower():
+            self.generate_report_by_school_class(file_path, convert_to_pdf)
+        if "day" in basis.lower() or "all" in basis.lower():
+            self.generate_report_by_day(file_path, convert_to_pdf)
+
+
 

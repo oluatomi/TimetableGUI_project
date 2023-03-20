@@ -11,7 +11,7 @@ from collections import Counter, namedtuple
 from .Tt_models import TimeTable
 from . import Tt_algo_calc, Tt_exceptions
 from .Tt_algo_calc import SortAlgorithms
-import itertools, time
+import itertools, time, math
 
 
 
@@ -40,12 +40,12 @@ class TimetableSorter:
 
         # A dictionary containing the string name (key) and object (value) of the sort algorithms
         self.sort_algorithms = {
-        "The Leapfrog Algorithm":SortAlgorithms.leap_frog,
-        "The Reverse-leapfrog Algorithm":SortAlgorithms.r_leapfrog,
-        "The Center-cluster Algorithm":SortAlgorithms.centercluster,
-        "The Reverse-center-cluster Algorithm":SortAlgorithms.r_centercluster,
-        "The XLX-Reflection Algorithm":SortAlgorithms.xlx_reflection,
-        "The Reverse-XLX-Reflection Algorithm":SortAlgorithms.r_xlx_reflection
+        "The Leapfrog Algorithm": SortAlgorithms.leap_frog,
+        "The Reverse-leapfrog Algorithm": SortAlgorithms.r_leapfrog,
+        "The Center-cluster Algorithm": SortAlgorithms.centercluster,
+        "The Reverse-center-cluster Algorithm": SortAlgorithms.r_centercluster,
+        "The XLX-Reflection Algorithm": SortAlgorithms.xlx_reflection,
+        "The Reverse-XLX-Reflection Algorithm": SortAlgorithms.r_xlx_reflection
         }
 
 
@@ -80,7 +80,7 @@ class TimetableSorter:
     
         
         def get_spread(self, chunk=1):
-            """Returns the number of packets the department's frequency has been chunked into"""
+            """Returns a tuple of (shredded: the list of packeted values e.g [2,2,2,1],, and packets_num: the length of 'shredded'.)"""
             spread = TimetableSorter.dept_shredder(self.frequency, chunk)
             return spread
 
@@ -354,7 +354,7 @@ class TimetableSorter:
             # by picking out the index of the arm in the list of school class arms INDEX and finding INDEX % length of the list of algos. 
             # This way, the algorithms are applied in a cycle within this class.
 
-            arm_algo_index = self.tt_obj.list_of_school_class_arms.index(class_arm) % len(algorithms_list)
+            arm_algo_index = (self.tt_obj.list_of_school_class_arms.index(class_arm) + 1) % len(algorithms_list)
 
             # Every item here is an instance of the DeptEncase class
             arm_chunk_array = self.prep_dept_freq(class_arm, iterable_from_gui)
@@ -375,15 +375,18 @@ class TimetableSorter:
                     # Legal days are the teacher's teaching days that coincide with the arms' teaching days
                     legal_days = list(teacher.teaching_days_s & set(class_arm.get_class_arm_days))
                     legal_days.sort(key=lambda day: self.tt_obj.list_of_days.index(day))
+                    chunk_limit = math.ceil(encase_item.frequency / len(legal_days))
 
-                    chunk_for_spread = encase_item.chunk if encase_item.chunk < len(legal_days) else len(legal_days)
+                    chunk_for_spread = encase_item.chunk if encase_item.chunk > chunk_limit else chunk_limit
+                    # shredded: the list of packeted values e.g [2,2,2,1] and packets_num: the length of 'shredded'.
                     shredded, packets_num = encase_item.get_spread(chunk=chunk_for_spread)
 
-                    # Feed the packets into the algorithm
+                    # ---- Feed the packets into the algorithm
                     day_packet = algorithms_list[arm_algo_index](packets_num, len(legal_days))
 
             
                     for shred_num, packet_num in zip(shredded, day_packet):
+                        print(f"legal_days_length: {legal_days} ::len {len(legal_days)} -->>packets num {packets_num} --  {packet_num} --d-packet {day_packet}")
                         curr_day = legal_days[packet_num]
                         # Length of the periods for this arm today
                         width = len(class_arm.periods[curr_day])
@@ -429,13 +432,13 @@ class TimetableSorter:
 
         for count, arm in enumerate(self.tt_obj.list_of_school_class_arms, start=1):
             # Run the packeting inner function for each class arm
-            time.sleep(0.01)
-            try:
-                _packet_depts_into_one_arm(arm, iterable_from_gui)
-            except Exception:
-                pass
-            finally:
-                beam_val = round(count*beam_max_value/len_arms)
+            # try:
+            _packet_depts_into_one_arm(arm, iterable_from_gui)
+            # except IndexError:
+                # pass
+            # finally:
+            beam_val = round(count*beam_max_value/len_arms)
+
             yield beam_val
             
 
@@ -526,11 +529,12 @@ class TimetableSorter:
         len_teachers = len(self.tt_obj.list_of_all_teachers)
 
         for count, teacher in enumerate(self.tt_obj.list_of_all_teachers, start=1):
-            time.sleep(0.01)
+            # time.sleep(0.01)
 
             _repacket_teacher(teacher)
             beam_val = round((count * beam_width / len_teachers) + beam_min_value)
             # print(f"beam repacketing: {beam_val}")
+
             yield beam_val
 
         
@@ -552,13 +556,25 @@ class TimetableSorter:
 
         len_arms = len(self.tt_obj.list_of_school_class_arms)
         for count, arm in enumerate(self.tt_obj.list_of_school_class_arms, start=1):
-            time.sleep(0.01)
+            # time.sleep(0.01)
             arm.temp_dept_holder_for_days.clear()
             beam_val = round((count*beam_max_value/len_arms))
             yield beam_val
 
 
-    # ------------------------------------------------------------
+    def print_arms_temp_holder(self):
+        """STRICTLY FOR TESTING. prints out all the arms and their arms_temp_dept_holder just after packeting repacketing to check"""
+        print()
+        print("----------------------TESTING PACKETING REPACKETING--------------------------")
+        for arm in self.tt_obj.list_of_school_class_arms:
+            print(f"--------- {arm} --------")
+            for day, depts_list in arm.temp_dept_holder_for_days.items():
+                print(f"{day} --->> {depts_list}")
+            print()
+
+
+    # --------------------------------------------------------------------------------------------------
+    # ---------------------------- THE SORTING PROPER BEGINS HERE ---------------------------------------
     def _nail_int_to_arms(self, day_obj):
         """Semi-private method. Makes (instantiates) ArmPeriodsLeft objects for all the class arms today. 
         This is to know which periods have already been nailed down to each teacher across the class arms during the chunking """
@@ -865,13 +881,13 @@ class TimetableSorter:
         """ Runs the sorting algorithm for all the days of the week (displaced_teachers are not yet considered) """
 
         # Get the working algorithm
-        algorithm = self.sort_algorithms.get(algorithm_text)
+        algorithm = self.sort_algorithms[algorithm_text]
         len_days = len(self.tt_obj.list_of_days)
 
         # Rotate this list with respect to the reference day
         days_list = self.tt_obj.list_of_days if not reference_day else self.rotate_list(self.tt_obj.list_of_days, item=reference_day)
         for count, day_obj in enumerate(self.tt_obj.list_of_days, start=1):
-            time.sleep(0.01)
+            # time.sleep(0.01)
             self.algosort_teachers_per_day(day_obj, algorithm, reference_arm=reference_arm, reference_arm_index=0)
             beam_val = round(count * beam_max_value / len_days)
             yield beam_val
@@ -996,6 +1012,7 @@ class TimetableSorter:
                         handled_list.remove(details)
                     else:
                         # restore the self.displayed_teacher
+                        # chunk_ = Tt_algo_calc.strip_list_wrapper([chunk])[-1*self.len_chunk:]
                         chunk_ = Tt_algo_calc.strip_list_wrapper([chunk])[-1*self.len_chunk:]
                         print(f"Defaulting chunk: {chunk_}")
                         chunk_ = chunk_[0] if self.len_chunk == 1 else chunk_
@@ -1008,6 +1025,7 @@ class TimetableSorter:
                                 break
                 self.displaced_teachers[teacher][day_] = handled_list
                 beam_val = round((count * beam_max_value / len_displaced_teachers) + prev_max_value)
+                
                 yield beam_val
 
 
@@ -1068,6 +1086,30 @@ class TimetableSorter:
             yield beam_val
 
 
+    def sort_thru_days(self, algorithm, reference_arm=None):
+        """ STRICTLY FOR TESTING. """
+        for day_obj in self.tt_obj.list_of_days[:]:
+            self.algosort_teachers_per_day(day_obj, algorithm, reference_arm=reference_arm, reference_arm_index=0)
+
+
+    def print_displaced(self):
+        """ STRICTLY FOR TESTING """
+        print(self.displaced_teachers)
+        print("----.....-----.....-----")
+        print(len(self.displaced_teachers))
+
+
+    def print_arms_periods(self):
+        """ STRICTLY FOR TESTING. print out all the periods of each class arm  and how much less the empty ones are"""
+        for arm in self.tt_obj.list_of_school_class_arms:
+            for day, periods_list in arm.periods.items():
+                print(f"--------------{day} ---------------")
+                per = [period.dept for period in periods_list if period.dept]
+                print(per, len(periods_list) - len(per))
+            
+            print()
+            print(f".............. {arm} ...............")
+
 
     def Sort_manager(self, algorithm, reference_arm=None, sort_beam_max=40, handle_displaced_beam_max=20,
         clean_out_beam_max=10, map_finished_beam_max=30):
@@ -1078,7 +1120,7 @@ class TimetableSorter:
             
         print()
         print(self.displaced_teachers)
-        before = len(self.displaced_teachers)
+        # before = len(self.displaced_teachers)
         # Just for testing
 
         self.before_dict = self.displaced_teachers.copy()
@@ -1086,6 +1128,9 @@ class TimetableSorter:
         # self.print_all_arms()
         self.handle_displaced_teachers()
         self.clean_out_displaced_teachers()
+
+        # map results to arm
+        self.map_chunk_to_arms_periods()
 
         # Map results to teachers
         self.map_finished_arm_chunk_dept_to_teacher()
@@ -1169,26 +1214,6 @@ class TimetableSorter:
                     print(f"{day}, {arm} --> {len(Tt_algo_calc.strip_list_wrapper([elem.chunk for elem in dict_item[arm]]))} -- {Tt_algo_calc.strip_list_wrapper([elem.chunk for elem in dict_item[arm]])} ")
     
 
-    def map_chunk_to_arms_periods(self, beam_max_value=20, prev_max_value=80):
-        """ Maps the already finished chunked values to the corresponding periods of the class arm """
-        Arms_and_chunked_val = self.Arms_and_chunked_val()
-        len_arms_and_chunked_val = len(Arms_and_chunked_val)
-
-        for count, (day, arm_dict) in enumerate(Arms_and_chunked_val.items(), start=1):
-            for arm, arm_detail_list in arm_dict.items():
-                # filter out the academic periods from list of all the periods today
-                acad_periods = [period for period in arm.periods[day] if period.is_acad]
-
-                for dept, chunk, teacher in arm_detail_list:
-                    # map each chunk value to the period of this arm with the same index number
-                    chunk_ = Tt_algo_calc.strip_list_wrapper([chunk])
-                    for k in chunk_:
-                        # Now map it to the period at position k on this day
-                        acad_periods[k].add_details_to_period(dept, teacher)
-
-            beam_val = round((count * beam_max_value / len_arms_and_chunked_val) + prev_max_value)
-            yield beam_val
-
 
     def map_finished_arm_chunk_dept_to_teacher(self):
         """ESPECIALLY FOR DETAILS OR REPORT. As soon as the sorting is all done, add this arm_chunk_dept values from All_teachers_and_chunked_val
@@ -1200,6 +1225,7 @@ class TimetableSorter:
                     teacher.add_finished_day_arm_chunk_dept_to_teacher(day, (arm, chunk, dept))
                     # Also add this details to the dept object at once
                     dept.add_finished_chunk_details_to_dept(arm, chunk, teacher, day)
+
 
 
     def render_all_arms_periods(self):

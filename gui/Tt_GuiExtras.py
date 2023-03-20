@@ -44,7 +44,6 @@ class WidgetTree(QtWidgets.QWidget):
         self.horizontalLayout.addWidget(self.full_name_label)
         self.horizontalLayout.addWidget(self.extra_text)
 
-
     def get_checkbox(self):
         """Gets the checkbox"""
         return self.checkBox
@@ -222,7 +221,7 @@ class ModelDetailWindow(QtWidgets.QDialog):
     def __init__(self, tt_obj):
         super().__init__()
         self.tt_obj = tt_obj
-        uic.loadUi("TIMETABLE/gui/info_window.ui", self)
+        uic.loadUi("TIMETABLE/gui/model_info_window.ui", self)
         self.setWindowTitle("display Information")
         self.setWindowFlags(QtCore.Qt.SplashScreen|QtCore.Qt.FramelessWindowHint)
 
@@ -373,7 +372,7 @@ class ModelDetails:
 
 class IndivPeriodDisplayFrame(QtWidgets.QFrame):
     """ FOR THE FINISHED TIMETABLE. One of the (horizontal) frames across which the period widgets will sit on the FINISHED timetable.
-    The first item in periods_list is the marker(day or arm) and the rest are the period items """
+    The first item in periods_list is the marker(day or arm) and the rest are the period items. Takes in the actual period items """
     def __init__(self, periods_list, padding=(2,2,2,2), spacing=4, period_height=90, period_width=145):
         super().__init__()
         self.periods_list = periods_list
@@ -403,28 +402,30 @@ class IndivPeriodDisplayFrame(QtWidgets.QFrame):
 
     def _frame_setup(self, fr_widget):
         """ Private method to setup the arm and period frames """
-        Frame = QtWidgets.QFrame()
-        ui = fr_widget()
-        ui.setupUi(Frame)
-        return ui, Frame
+        # Frame = QtWidgets.QFrame()
+        Frame = fr_widget()
+        # ui.setupUi(Frame)
+        return Frame
         
 
-    def return_period_frames(self):
+    def return_period_frames(self, match_item):
         """ The method that populates this frame with the mini period frames """
         if not self.periods_list:
             return
+
         marker, *periods = self.periods_list
         # make the marker frame
-        marker_frame_ui, marker_frame = self._frame_setup(Tt_period_widgets.ArmFrame)
-        marker_frame_ui.add_arm_fullname(marker.full_name)
+        marker_frame = self._frame_setup(Tt_period_widgets.ArmFrame)
+        marker_frame.add_arm_fullname(marker.full_name)
+
         # The list of widgets this function will eventually returns
         widgets_list = [marker_frame]
 
         # add in the rest of the periods
         for period in periods:
-            period_frame_ui, period_frame = self._frame_setup(Tt_period_widgets.PeriodFrame)
+            period_frame = self._frame_setup(Tt_period_widgets.PeriodFrame)
             # Customize this period by adding the time-limits and title
-            period_frame_ui.add_name_duration_content(period.period_title, 
+            period_frame.add_name_duration_content(period.period_title, 
                 f"{tt.to_time_str(period.start)} - {tt.to_time_str(period.end)}", period.dept_content)
 
             # Add the teacher's full_name str if teacher exists
@@ -432,37 +433,66 @@ class IndivPeriodDisplayFrame(QtWidgets.QFrame):
             dept_str = period.dept.full_name if period.dept else None
             faculty_str = period.dept.faculty.full_name if period.dept else None
 
-            period_frame_ui.add_teacher_dept_fac_str(teacher_str, dept_str, faculty_str)
-            # period_frame_ui.match_and_colour_based_on_track(dept_str)
+            period_frame.add_teacher_dept_fac_str(teacher_str, dept_str, faculty_str)
+            # match by an empty string if no match item is given; so no matches are found
+            period_frame.match_and_colour_based_on_track(match_item)
             widgets_list.append(period_frame)
         return widgets_list
 
 
-    def add_period_widgets_to_frame(self):
+    def add_period_widgets_to_frame(self, match_item):
         """ Method to add this widget items to the Frame (self) """
-        for frame in self.return_period_frames():
+        for frame in self.return_period_frames(match_item):
             self.hbox.addWidget(frame)
 
 
-    def run(self):
+    def run(self, match_item):
         """ Runs the entire process of calculating width, making frames and adding frames to the self """
         self.set_frame_size()
         # Below already run
         # self.return_period_frames()
-        self.add_period_widgets_to_frame()
+        self.add_period_widgets_to_frame(match_item)
 
 
 
 # ---------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------
 class PeriodsDisplayFrame:
-    """ The Mother class to generate the frame into which all the other period frames would be arranged
-    vertically """
-    def __init__(self, frame, spacing, padding):
+    """ THE BIG FRAME IN THE GUI INTO WHICH ALL THE HORIZONTAL PERIOD FRAMES WILL BE DYNAMICALLY PUT IN .
+    PRO-TIP:
+    1. add periods_list_data()
+    2.set_width_height()
+    3.add_widget_to_frames_vbox()
+
+    """
+    def __init__(self, frame=None, spacing=6, padding=(2,2,2,2)):
         self.frame = frame if frame else QtWidgets.QFrame()
         self.spacing = spacing
         self.padding = padding
-        self.vbox = QtWidgets.QVBoxLayout(self.frame)
+        self.child_frames = []
+
+        if self.frame.layout():
+            # if there is a layout already, clear it
+            self.clear_vert_layout()
+        else:
+            # if not, make one
+            self.vbox = QtWidgets.QVBoxLayout(self.frame)
+
+        
+    
+    def clear_vert_layout(self):
+        """ clears the vertical layout on the self.frame widget so that new stuff can come in """
+        for k in reversed(range(self.frame.layout().count())):
+            self.frame.layout().itemAt(k).widget().setParent(None)
+
+
+    def add_childframe_data(self, match_item, periods_data_list=None, padding=(2,2,2,2), spacing=4, period_height=90, period_width=145):
+        """ takes in the periods_list data (identifier (day or arm:first mini-frame) and then the periods for the day od arm) to make an individual childframe and appends said frame to the list of child frames """
+        if periods_data_list:
+            child_frame = IndivPeriodDisplayFrame(periods_data_list, padding=(2,2,2,2), spacing=4, period_height=90, period_width=145)
+            child_frame.run(match_item)
+            self.child_frames.append(child_frame)
+            # self.vbox.addWidget(child_frame)
 
 
     @property
@@ -478,17 +508,6 @@ class PeriodsDisplayFrame:
         return widest_frame.width_height[0]
 
 
-    @property
-    def child_frames(self):
-        """ generates frmaes from the list returned from the self.get_periods_list (method to be defined in the subclasses) """
-        child_frames = []
-        for elem_list in self.get_periods_list():
-            child_frame = IndivPeriodDisplayFrame(elem_list)
-            child_frame.run()
-            child_frames.append(child_frame)
-        return child_frames
-
-
     def set_width_height(self):
         """ This methods sets the width (and height) of the frame. max_child_width (and num_children) is an INT which stands for the 
         largest width of the inside frames embedded within this frame (and the total number of these inner frames), 
@@ -497,55 +516,178 @@ class PeriodsDisplayFrame:
         height = (len(self.child_frames) * self.child_height) + (v_spacing_count * self.spacing) + self.padding[0] + self.padding[2]
         width = self.max_child_width + self.padding[1] + self.padding[3]
         self.frame.resize(width, height)
+            # yield beam_val
 
 
-    def add_childframes_to_frame(self):
-        """ Adds all the child frames into the vertical box layout of self.frame """
+    def add_widget_to_frames_vbox(self):
+        """ Adds any child_frame that hasn't been previously added to the v-box """
         for child_frame in self.child_frames:
-            self.vbox.addWidget(child_frame)
+            if child_frame not in self.frame.layout().children():
+                self.frame.layout().addWidget(child_frame)
 
 
-    def run(self):
-        """ Runs all the afore-defined functions accordingly. """
-        self.set_width_height()
-        self.add_childframes_to_frame()
-        self.frame.show()
+
+
+
+
+
+# class PeriodsDisplayFrame:
+#     """ The Mother class to generate the frame into which all the other period frames would be arranged
+#     vertically """
+#     def __init__(self, frame, spacing, padding):
+#         self.frame = frame if frame else QtWidgets.QFrame()
+#         self.spacing = spacing
+#         self.padding = padding
+#         self.vbox = QtWidgets.QVBoxLayout(self.frame)
+
+
+#     def add_periods_list_and_iden(self):
+#         """ Method to add a periods_list_and_its marker to the  """
+
+
+#     @property
+#     def child_height(self):
+#         """ Returns the height of the first child item in the child_frames list """
+#         return self.child_frames[0].width_height[1] if self.child_frames else 90
+
+
+#     @property
+#     def max_child_width(self):
+#         """ Returns the value of the widest frame in self.child_frames """
+#         widest_frame = max(self.child_frames, key=lambda frame: frame.width_height[0])
+#         return widest_frame.width_height[0]
+
+
+#     @property
+#     def child_frames(self):
+#         """ generates frmaes from the list returned from the self.get_periods_list (method to be defined in the subclasses) """
+#         child_frames = []
+#         for elem_list in self.get_periods_list():
+#             child_frame = IndivPeriodDisplayFrame(elem_list)
+#             child_frame.run()
+#             child_frames.append(child_frame)
+#             # print("HELLO, FRAME STILL BUILDING!")
+#         return child_frames
+
+
+#     def set_width_height(self, beam_val=10):
+#         """ This methods sets the width (and height) of the frame. max_child_width (and num_children) is an INT which stands for the 
+#         largest width of the inside frames embedded within this frame (and the total number of these inner frames), 
+#         so we can wrap the frame around the whole thing. """
+#         v_spacing_count = 0 if not self.child_frames else len(self.child_frames) - 1
+#         height = (len(self.child_frames) * self.child_height) + (v_spacing_count * self.spacing) + self.padding[0] + self.padding[2]
+#         width = self.max_child_width + self.padding[1] + self.padding[3]
+#         self.frame.resize(width, height)
+#         yield beam_val
+
+
+#     def add_childframes_to_frame(self, prev_beam=0, beam_max_val=100):
+#         """ Adds all the child frames into the vertical box layout of self.frame """
+#         len_child_frames = len(self.child_frames)
+
+#         for count, child_frame in enumerate(self.child_frames, start=1):
+#             self.vbox.addWidget(child_frame)
+#             print("The generator yields here")
+#             # yield round((count * beam_max_val / len_child_frames) + prev_beam)
+
+#         self.show_mother_frame()
+
+
+#     def show_mother_frame(self, beam_val=100):
+#         """ Shows the big frame widget"""
+#         self.frame.show()
+#         # yield beam_val
+
+
+#     def run(self):
+#         """ Runs all the afore-defined functions accordingly. Returns all as a list """
+#         self.set_width_height()
+#         return self.add_childframes_to_frame()
+ 
 
 
 # --------------------------------------------------------------------------------
-class PeriodsDisplayByDayFrame(PeriodsDisplayFrame):
-    """ class to handle putting """
-    def __init__(self, day, frame=None, spacing=6, padding=(2,2,2,2)):
-        super().__init__(frame, spacing, padding)
-        self.day = day
+# class PeriodsDisplayByDayFrame(PeriodsDisplayFrame):
+#     """ class to handle putting """
+#     def __init__(self, day, frame=None, spacing=6, padding=(2,2,2,2)):
+#         super().__init__(frame, spacing, padding)
+#         self.day = day
         
-    def get_periods_list(self):
-        """ extracts the period_list (that is, the list of all the class arms for today) from the self.day object in a list of lists
-        it extracts it in the format that the IndivPeriodDisplayFrame class can use to generate the child frames"""
-        arms_periods_today_list = []
-        for class_arm in self.day.school_class_arms_today:
-            arm_periods_list = [class_arm] + class_arm.periods[self.day]
-            arms_periods_today_list.append(arm_periods_list)
-        return arms_periods_today_list
+#     def get_periods_list(self):
+#         """ extracts the period_list (that is, the list of all the class arms for today) from the self.day object in a list of lists
+#         it extracts it in the format that the IndivPeriodDisplayFrame class can use to generate the child frames"""
+#         arms_periods_today_list = []
+#         for class_arm in self.day.school_class_arms_today:
+#             arm_periods_list = [class_arm] + class_arm.periods[self.day]
+#             arms_periods_today_list.append(arm_periods_list)
+#         return arms_periods_today_list
 
 
-# ----------------------------------------------------------------------------------
-class PeriodsDisplayByArmFrame(PeriodsDisplayFrame):
-    def __init__(self, class_arm, frame=None, spacing=6, padding=(2,2,2,2)):
-        super().__init__(frame, spacing, padding)
-        self.class_arm = class_arm
+# # ----------------------------------------------------------------------------------
+# class PeriodsDisplayByArmFrame(PeriodsDisplayFrame):
+#     def __init__(self, class_arm, frame=None, spacing=6, padding=(2,2,2,2)):
+#         super().__init__(frame, spacing, padding)
+#         self.class_arm = class_arm
 
-    def get_periods_list(self):
-        """ extracts the period_list (that is, the list of the school days for this class arm) from the self.class_arm object in a list of lists
-        it extracts it in the format that the IndivPeriodDisplayFrame class can use to generate the child frames"""
-        days_periods_for_arm = []
-        for day, periods_list in self.class_arm.periods.items():
-            day_periods = [day] + periods_list
-            days_periods_for_arm.append(day_periods)
-        return days_periods_for_arm
+#     def get_periods_list(self):
+#         """ extracts the period_list (that is, the list of the school days for this class arm) from the self.class_arm object in a list of lists
+#         it extracts it in the format that the IndivPeriodDisplayFrame class can use to generate the child frames"""
+#         days_periods_for_arm = []
+#         for day, periods_list in self.class_arm.periods.items():
+#             day_periods = [day] + periods_list
+#             days_periods_for_arm.append(day_periods)
+#         return days_periods_for_arm
 
 
 # ----------------------------------------------------------------------------------------------------
+def sort_packet_stylesheet(topic_colour="#f4f4f4"):
+    """ Returns styles to be used in the textEdit widgets for the packeting and sorting operations """         
+    style = f""" 
+            p, li {{\n 
+            white-space: pre-wrap;\n
+            }}\n
+            p{{\n
+            color:#272727;\n
+            font-size:8pt;\n
+            font-family:calibri;\n
+            }}\n
+            body{{\n
+            font-family:calibri;\n
+            padding:3px;\n
+            margin-top:0px;\n
+            margin-bottom:0px;\n
+            margin-left:0px;\n
+            margin-right:0px;\n
+            padding:0px;\n
+            }}\n
+            #topic{{\n
+            color:{topic_colour};\n
+            font-weight:bold;\n
+            text-align:center;\n
+            font-size: 10pt;\n
+            margin-top:0px;\n
+            }}\n
+            .item{{\n
+                font-weight:bold;\n
+                color:#2d2dff;\n
+            }}\n
+            .emphasis{{\n
+                color:#2828ff;\n
+            }}\n
+            hr{{\n
+                border:0.9px solid #3c3c3c;\n
+            }}\n
+            li hr{{\n
+                margin-left:40px;\n
+                border:0.8px solid #4a4aff;\n
+                }}\n
+            .indent-hr{{\n
+                margin-left: 30px;
+                padding-left:30px;
+            }}
+            """
+    return style
+
 
 def load_packeting_details_html_into_textedit(details_list, textEdit_widget, len_all_subjs, len_all_days=5, beam_max_val=100):
     """ This function generates the details to be shown (especially for the errors!) on the textEdit for the packeting operation in HTML.
@@ -556,18 +698,19 @@ def load_packeting_details_html_into_textedit(details_list, textEdit_widget, len
         topic_colour = "#ea0000"
 
         comment = f"""\n
-        <p id="topic">PACKETING UNSUCCESSFUL!</p>\n
-        <p>Due to an insufficiency in the number of teachers/handlers/tutors handling the following subject{'' if len(details_list) == 1 else 's'} across\n
-         all of its offering class arms, the packeting operation has proven unsuccessful.</p>\n
-        <p>Helpful details on the defaulting subjects read below.</p><hr>\n
-        <p>Packeting success: <span class="emphasis">{(len_all_subjs - len(details_list)) * 100 / len_all_subjs:.2f}%</span></p>\n
+        <p id="topic">PACKETING NOT (COMPLETELY) SUCCESSFUL!</p>\n
+        <p>Due to an insufficiency in the number of teachers/handlers/tutors handling the following subject{'' if len(details_list) == 1 else 's'} across all of its offering class arms, the packeting operation has proven unsuccessful.</p>\n
+        <p>Defaulting subjects: <span class="emphasis">{len(details_list)}</span></p>
+        <p>Helpful details on the defaulting subjects read below.</p>\n
+        <p>Packeting success: <span class="emphasis">{((len_all_subjs - len(details_list)) * 100 / len_all_subjs):.2f}%</span></p>\n
+        <hr>\n
         <ol>\n
         """
         # current_beam = round(0.15 * beam_max_val)
         # yield current_beam
 
         len_details_list = len(details_list)
-        width = round(0.75 * beam_max_val) - current_beam
+        # width = round(0.75 * beam_max_val) - current_beam
 
         # ----- loop over all the subjects details to the comment string ----------
         for count, dept in enumerate(details_list, start=1):
@@ -576,9 +719,9 @@ def load_packeting_details_html_into_textedit(details_list, textEdit_widget, len
             # print("FAILED! RUNNING DEPT AND DEFICIENCIES")
             # print(dept_full_name, dept_min_teachers, dept_teachers_more)
 
-            comment += f'<li><p class="sub-topic">{dept_full_name}</p>'
+            comment += f'<li><p class="item">{dept_full_name}</p>'
             comment += f"""<p>A minimum of <span class="emphasis">{dept_min_teachers}</span> teacher{'' if dept_min_teachers == 1 else 's'} required;"""
-            comment += "based on the typical number of subjects handled by the existing number of teachers (if they handle more than one).</p>"
+            comment += "based on the typical number of subjects handled by the existing number of teachers.</p>"
             comment += f"""<p>At least, <span class="emphasis">{dept_teachers_more}</span> more teacher{'' if dept_teachers_more == 1 else 's'} needed.</p>"""
             comment += "<hr></li>"
 
@@ -590,7 +733,6 @@ def load_packeting_details_html_into_textedit(details_list, textEdit_widget, len
     # if packeting ran successfully
     else:
         topic_colour = "#007100"
-        print("ran successfully")
 
         comment = '<p id="topic">PACKETING SUCCESSFUL!</p>' "<p>The teachers created for each subject are (up till this point) sufficient for each of the "\
         "offering class arms.</p> <p>Congratulations! On with the sorting.</p>"
@@ -604,39 +746,7 @@ def load_packeting_details_html_into_textedit(details_list, textEdit_widget, len
         <head>\n
             <meta name="qrichtext" content="1" />\n
             <style type="text/css">\n
-                p, li {{\n 
-                white-space: pre-wrap;\n
-                }}\n
-                p{{\n
-                color:#272727;\n
-                font-size:8pt;\n
-                font-family:calibri;\n
-                }}\n
-                body{{\n
-                    font-family:calibri;\n
-                    padding:3px;\n
-                    margin-top:0px;\n
-                    margin-bottom:0px;\n
-                    margin-left:0px;\n
-                    margin-right:0px;\n
-                    padding:0px;\n
-                }}\n
-                #topic{{\n
-                    color:{topic_colour};\n
-                    font-weight:bold;\n
-                    text-align:center;\n
-                    font-size: 10pt;\n
-                }}\n
-                .sub-topic{{\n
-                    font-weight:bold;\n
-                    color:#2d2dff;\n
-                .sub-topic hr{{\n
-                    margin-left:15px;\n
-                }}\n
-                }}\n
-                .emphasis{{\n
-                    color:#2828ff;\n
-                }}\n
+               {sort_packet_stylesheet(topic_colour)}
             </style>\n
         </head>\n
         <body>\n
@@ -646,15 +756,81 @@ def load_packeting_details_html_into_textedit(details_list, textEdit_widget, len
 
     # Now load this html_body variable into the textEdit widget
     textEdit_widget.setHtml(html_body)
-    # yield beam_max_val
-    # print("---THIS IS COMMENT -----")
-    # print(comment)
 
 
+def load_sort_details_html_into_textedit(sort_details_dict, textEdit_widget, 
+    num_all_teachers, num_all_subjects, num_all_arms):
+    """ Generates the HTML content to be displayed on the textEdit_widget. Content on the displaced teachers
+    and what subjects they must have taught """
 
-def load_sort_details_html_into_textedit(displ_teachers_dict, textEdit):
-    """ Generates and loads the html rendering of the displaced teachers dictionary into the textedit to see where sorting failed. """
-    pass
+    # -----------------------------------------------------------------------------------
+    # If there were issues with the sorting and not all teachers were satisfied
+    if sort_details_dict:
+        topic_colour = "#d50000"
+        len_displaced_teachers = len(sort_details_dict)
+
+        print()
+        print(sort_details_dict)
+        print()
+
+        comment = '<p id="topic">SORT OPERATION NOT (COMPLETELY) SUCCESSFUL</p>' "<p>Despite the robust (and rather lenient) sorting operation, the following "\
+        f"teacher{' has' if len_displaced_teachers == 1 else 's have'} been all but stranded; their subjects/courses defying insertion into the periods of "\
+        "their offering class arms enough to fulfill their weekly frequencies without breaking the timetable.</p>" '<p>Number of stranded teachers: '\
+        f'<span class="emphasis">{len_displaced_teachers}</span></p>' 
+        comment += "<ol>"
+
+
+        erring_subjs_set, erring_arms_set = set(), set()
+
+        for teacher, dict_of_days in sort_details_dict.items():
+            teacher_full_name = teacher.full_name
+
+            # dict_of_days is {day_obj: arm_dept_chunklist}
+            arms_depts_set = set()
+            for arm_dept_chunklist in dict_of_days.values():
+                for arm, _, dept in arm_dept_chunklist:
+                    arm_full_name, subj_full_name = arm.full_name, dept.full_name
+
+                    # Add this subj and arm to the set defined up top for percentage calculations to be made
+                    erring_subjs_set.add(subj_full_name)
+                    erring_arms_set.add(arm_full_name)
+
+                    if (arm_full_name, subj_full_name) not in arms_depts_set:
+                        comment += f'<li><p>Teacher ID: <span class="item">{teacher_full_name}</span></p>'
+                        comment += f'<p>Default info: <span class="emphasis">{subj_full_name}</span> for class arm <span class="emphasis">{arm_full_name}</span><hr class="indent-hr">'
+                        arms_depts_set.add((arm_full_name, subj_full_name))
+
+        comment += "</ol>"
+        comment += "<hr>"
+        comment += "<ul>"
+        comment += f"""<li>Teachers' percentage sort success: <span class="emphasis">{(len_displaced_teachers*100/num_all_teachers):.2f}%</span></li>"""
+        comment += f"""<li>Sort errors occurred across <span class="emphasis">{(len(erring_arms_set)*100/num_all_arms):2f}%</span> of the available class """\
+            f"""arms for <span class="emphasis">{(len(erring_subjs_set)*100/num_all_subjects):2f}%</span> of the available subjects</li>"""
+        comment += "</ul>"
+
+    # The sort operation was successful!
+    else:
+        topic_colour = "#00793d"
+
+        comment = '<p id="topic">SORT OPERATION SUCCESSFUL!</p>' "<p>All the requirements for the teachers, class arms and subjects in all the"\
+            "periods for every day have been completely met.</p>" "<p>Congratulations! On with the display and tracking.</p>"
+
+
+    html_body = f"""\n
+        <html>\n
+        <head>\n
+            <meta name="qrichtext" content="1" />\n
+            <style type="text/css">\n
+               {sort_packet_stylesheet(topic_colour)}
+            </style>\n
+        </head>\n
+        <body>\n
+            {comment}\n
+        </body>\n
+        </html>"""
+
+    # Now load this html_body variable into the textEdit widget
+    textEdit_widget.setHtml(html_body)
 
 
 
@@ -667,5 +843,4 @@ def main():
     model_win = TimetableDisplayFrame()
     model_win.show()
     
-
     sys.exit(app.exec_())

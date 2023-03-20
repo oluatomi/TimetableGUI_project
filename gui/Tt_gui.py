@@ -24,11 +24,14 @@ from TIMETABLE.models import Tt_manager, Tt_exceptions
 from TIMETABLE.models.Tt_manager import get_obj_from_param as object_getter
 from . import Tt_threads
 from .Tt_gui_handler import load_manual
-from .Tt_GuiExtras import (WidgetTree, MySpinBox, PeriodsContainer, 
-    ModelDetailWindow, load_packeting_details_html_into_textedit)
+from .Tt_GuiExtras import (WidgetTree, MySpinBox, PeriodsContainer, ModelDetailWindow, load_packeting_details_html_into_textedit,
+    load_sort_details_html_into_textedit, PeriodsDisplayFrame)
 from collections import namedtuple
 from PyQt5.QtCore import Qt
 
+
+Author = "Owoeye, Oluwatomilayo Inioluwa"
+app = None
 
 class TtSplashScreen(QtWidgets.QMainWindow):
     def __init__(self):
@@ -45,8 +48,8 @@ class TtSplashScreen(QtWidgets.QMainWindow):
 
 
     def load_progressbar(self):
+        """ Fills up the progressbar on the splashscreen """
         progress_bar = self.findChild(QtWidgets.QProgressBar, "progressBar")
-
         progress_bar.setValue(self.counter)
 
         if self.counter > 100:
@@ -68,19 +71,19 @@ class TtSplashScreen(QtWidgets.QMainWindow):
 class UITimetable(QtWidgets.QMainWindow):
     # The regular expression pattern for the inputs in to the nonacad tables
 
-    def __init__(self):
+    def __init__(self, tt_obj=None):
         super(UITimetable, self).__init__()
 
     # Load the ui file
         uic.loadUi("TIMETABLE/gui/Timetable_GUI.ui", self)
-        self.setWindowTitle("Olutomi's Timetable")
+        self.setWindowTitle("Timetable file (UNSAVED)")
         self.setWindowIcon(QtGui.QIcon('TIMETABLE/Icons-mine/App_logo.png'))
 
         self.load_manual_into_toolbox()
         # self.menubar_colour()        
 
         # The working timetable instance
-        self.Timetable = Tt_manager.TimeTableManager()
+        self.Timetable = Tt_manager.TimeTableManager(tt_obj=tt_obj)
 
     # ------------------------ NAV-BAR ARCHIVE BUTTONS --------------------------------------------------
         self.class_cat_nav = self.findChild(QtWidgets.QPushButton, "class_cat_nav")
@@ -100,7 +103,6 @@ class UITimetable(QtWidgets.QMainWindow):
         self.faculties_nav.clicked.connect(lambda :self.load_nav_dialog_with_details("faculties"))
         self.teachers_nav.clicked.connect(lambda :self.load_nav_dialog_with_details("teachers"))
 
-    
 
     # --------------- PREVIOUS AND NEXT BUTTONS -------------------------------------------------------------------------
         # The previous and next arrow btns for flipping through the main stacked widget box
@@ -133,6 +135,47 @@ class UITimetable(QtWidgets.QMainWindow):
         self.atpg_btn.clicked.connect(self.set_atpg)
 
 
+    # ------------------------- FILE NEW, SAVE, SAVE AS, OPEN, RESET, AND QUIT FUNCTIONALITY -----------------------------------
+        # --------- file new -------------------
+        self.shortcut_new = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+N'), self)
+        self.new_btn = self.findChild(QtWidgets.QPushButton, "new_btn")
+
+        # ----- file save --------
+        self.shortcut_save = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+S'), self)
+        self.save_btn = self.findChild(QtWidgets.QPushButton, "save_btn")
+
+        # ----- file save as ------------
+        self.shortcut_save_as = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Shift+S'), self)
+        self.save_as_btn = self.findChild(QtWidgets.QPushButton, "save_as_btn")
+
+        # ----- file open --------------
+        self.shortcut_open = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+O'), self)
+        self.open_btn = self.findChild(QtWidgets.QPushButton, "open_btn")
+
+        # ---------- file reset ----------------
+        self.shortcut_reset = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Shift+R'), self)
+        self.reset_btn = self.findChild(QtWidgets.QPushButton, "reset_btn")
+
+        # ------ file quit ------------
+        self.shortcut_quit = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
+        self.shortcut_alt_quit = QtWidgets.QShortcut(QtGui.QKeySequence('Alt+F4'), self)
+        self.exit_btn = self.findChild(QtWidgets.QPushButton, "exit_btn")
+        
+        # ------------------ connect these shortcuts and buttons to slots --------------
+        self.shortcut_save.activated.connect(self.save_file)
+        self.save_btn.clicked.connect(self.save_file)
+
+        self.shortcut_open.activated.connect(self.open_file)
+        self.open_btn.clicked.connect(self.open_file)
+
+        self.shortcut_new.activated.connect(self.new_file)
+        self.new_btn.clicked.connect(self.new_file)
+
+        self.exit_btn.clicked.connect(lambda :app.quit())
+        self.shortcut_quit.activated.connect(lambda : app.quit())
+        self.shortcut_alt_quit.activated.connect(lambda : app.quit())
+
+
     # --------------- GENERAL INFORMATION PAGE ------------------------
         self.institution = self.findChild(QtWidgets.QLineEdit, "institution_lineedit")
         self.director = self.findChild(QtWidgets.QLineEdit, "director_lineedit")
@@ -163,14 +206,6 @@ class UITimetable(QtWidgets.QMainWindow):
     # ------------------- REGISTER FACULTY ----------------------------------
         self.reg_dept = self.findChild(QtWidgets.QPushButton, "reg_deptfac_btn")
         self.reg_dept.clicked.connect(self.register_deptfac)
-
-    # ----------------------------------------------------------------------------------------
-    # Tab design buttons
-        # self.font_colour_btn = self.findChild(QtWidgets.QPushButton, "font_colour_btn")
-        # self.font_colour_btn.clicked.connect(self.colourDialog)
-
-        # self.font_design_btn = self.findChild(QtWidgets.QPushButton, "font_design_btn")
-        # self.font_design_btn.clicked.connect(self.fontDialog)
 
 # ----------------------------------------------------------------------------
         self.faculty_list_combobox = self.findChild(QtWidgets.QComboBox, "department_combobox")
@@ -213,7 +248,6 @@ class UITimetable(QtWidgets.QMainWindow):
         self.fac_courses_treewidget = self.findChild(QtWidgets.QTreeWidget, "depts_subject_tree")
         self.board = self.findChild(QtWidgets.QTextEdit, "blackboard_textedit")
         self.fac_courses_treewidget.itemClicked.connect(self.fac_courses_tree_clicked)
-
 
     #------------------------------------------------------------------------------------------------
     # --------------- THE CLASS GROUP(category) and class and class arm tree widget
@@ -294,7 +328,6 @@ class UITimetable(QtWidgets.QMainWindow):
 
     # ----------------------------------------------------------------------------------------------
     # ----------------------- THE DEPARTMENT (FACULTY), SUBJECT AND GENERATED TEACHERS ----------------------
-
         self.dept_and_teachers_tree = self.findChild(QtWidgets.QTreeWidget, "faculty_course_teacher_tree")
         self.gen_teachers_btn = self.findChild(QtWidgets.QPushButton, "gen_teachers_btn")
 
@@ -479,7 +512,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.assign_subj_teacher_table = self.findChild(QtWidgets.QTableWidget, "assign_subj_teacher_table")
 
         # Adjust the columns of the tablewidget
-        self.adjust_table_columns(self.assign_subj_teacher_table, [(0, 160), (1, 160)])
+        self.adjust_table_columns(self.assign_subj_teacher_table, [(0, 120), (1, 120), (2, 80)])
         self.arm_not_found_label.hide()
 
         # ------------- Add signals and stuff ----------
@@ -502,7 +535,6 @@ class UITimetable(QtWidgets.QMainWindow):
         self.ref_arm_combobox = self.findChild(QtWidgets.QComboBox, "ref_arm_combobox")
         self.refresh_ref_day_arm_btn = self.findChild(QtWidgets.QPushButton, "refresh_ref_day_arm_btn")
 
-        self.test_packet_btn = self.findChild(QtWidgets.QPushButton, "test_packet_btn")
 
         # The sorting frame with the progressbars that come alive when an operation is loading
         self.load_sorting_frame = self.findChild(QtWidgets.QFrame, "load_sorting_fr")
@@ -514,21 +546,126 @@ class UITimetable(QtWidgets.QMainWindow):
         self.packet_btn.clicked.connect(self.packet)
         self.undo_packet_btn.clicked.connect(self.undo_packet)
         self.refresh_ref_day_arm_btn.clicked.connect(self.refresh_day_arm)
-
-        self.test_packet_btn.clicked.connect(self.test_packet)
-
         # ------ The sort operation -------
         self.sort_btn.clicked.connect(self.full_sort)
 
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # .................. DIALS AND FRAMES, AND TRACKING: SEMI-FINISH: DISPLAY SORT RESULTS IN FRAME WITH THE DIALS AND STUFF ------------------
+        # Get the frame with containing the radiobuttons for displaying content b arm or day
+        # NOT ALL WIDGETS DEFINED HERE, SOME DEFINED IN THE METHODS TO BE RUN AS SLOTS
+        self.match_item = "Nil"
 
+        self.display_by_frame = self.findChild(QtWidgets.QFrame, "display_by_fr")
+        self.track_models_by_frame = self.findChild(QtWidgets.QFrame, "track_models_by_fr")
+        self.display_by_btn = self.findChild(QtWidgets.QPushButton, "display_by_btn")
+        self.track_by_btn = self.findChild(QtWidgets.QPushButton, "track_by_btn")
+        self.untrack_by_btn = self.findChild(QtWidgets.QPushButton, "untrack_by_btn")
         
+        self.track_btn = self.findChild(QtWidgets.QPushButton, "track_btn")
+
+        # The frames housing dials and scroll btns both for periods display and tracking
+        self.display_dial_and_btns_frame = self.findChild(QtWidgets.QFrame, "display_dial_and_btns_frame")
+        self.track_dial_and_btns_frame = self.findChild(QtWidgets.QFrame, "track_dial_and_btns_frame")
+        # -------------
+        # frames for the progressbars for display and track
+        self.load_track_frame = self.findChild(QtWidgets.QFrame, "load_track_fr")
+        self.load_display_frame = self.findChild(QtWidgets.QFrame, "load_display_fr")
+        # ------------------------
+        self.model_type_label = self.findChild(QtWidgets.QLabel, "model_type_label")
+        self.model_item_label = self.findChild(QtWidgets.QLabel, "model_item_label")
+        self.track_item_label = self.findChild(QtWidgets.QLabel, "track_item_label")
+        self.track_model_type_label = self.findChild(QtWidgets.QLabel, "track_model_type_label")
+        self.timetable_title_label = self.findChild(QtWidgets.QLabel, "timetable_title_label")
+
+        self.periods_display_frame = self.findChild(QtWidgets.QFrame, "periods_display_frame")
+        self.display_in_frame_btn = self.findChild(QtWidgets.QPushButton, "display_in_frame_btn")
+
+        self.items_dial = self.findChild(QtWidgets.QDial, "items_dial")
+        self.next_item_btn = self.findChild(QtWidgets.QPushButton, "next_item_btn")
+        self.prev_item_btn = self.findChild(QtWidgets.QPushButton, "prev_item_btn")
+
+        self.track_dial = self.findChild(QtWidgets.QDial, "track_dial")
+        self.track_next_item_btn = self.findChild(QtWidgets.QPushButton, "track_next_item_btn")
+        self.track_prev_item_btn = self.findChild(QtWidgets.QPushButton, "track_prev_item_btn")
+
+        # ---------- connect the signals to slots --------------
+        self.display_dial_and_btns_frame.setEnabled(False)
+        self.track_dial_and_btns_frame.setEnabled(False)
+
+        self.load_display_frame.hide()
+        self.load_track_frame.hide()
+
+
+        self.display_by_btn.clicked.connect(self.display_by_arm_or_day)
+        self.items_dial.valueChanged.connect(lambda :self.get_item_from_dial_value(self.items_dial, self.model_item_label, self.model_type_label))
+        # display periods in the frame
+        self.display_in_frame_btn.clicked.connect(self.show_finished_periods_in_frame)
+        # self.display_in_frame_btn.clicked.connect(self.test_func)
+        self.next_item_btn.clicked.connect(lambda : self.scroll_model_item_by_btn(self.items_dial, self.model_item_label, self.model_type_label, 1))
+        self.prev_item_btn.clicked.connect(lambda :self.scroll_model_item_by_btn(self.items_dial, self.model_item_label, self.model_type_label, -1))
+
+        # -------------- slots for tracking ----------------
+        self.track_dial.valueChanged.connect(lambda :self.get_item_from_dial_value(self.track_dial, self.track_item_label, self.track_model_type_label))
+        self.track_next_item_btn.clicked.connect(lambda : self.scroll_model_item_by_btn(self.track_dial, self.track_item_label, self.track_model_type_label, 1))
+        self.track_prev_item_btn.clicked.connect(lambda : self.scroll_model_item_by_btn(self.track_dial, self.track_item_label, self.track_model_type_label, -1))
+
+        self.track_by_btn.clicked.connect(self.retrieve_track_model)
+        self.untrack_by_btn.clicked.connect(self.deselect_track_models)
+        self.track_btn.clicked.connect(self.track_model_item)
+
+
+    # ------------------------------------------------------------------------------------------------------------------------
+    # ------------------------------- FINISHED REPORT AND DIAGNNOSTICS REPORT GENERATION -------------------------------------
+        self.get_dir_btn = self.findChild(QtWidgets.QPushButton, "get_dir_btn")
+        self.report_basis_combobox = self.findChild(QtWidgets.QComboBox, "report_basis_combobox")
+        self.report_format_combobox = self.findChild(QtWidgets.QComboBox, "report_format_combobox")
+
+        # Add slots to buttons
+        self.get_dir_btn.clicked.connect(self.generate_finished_report)
+    # ------------------------------------------------------------------------------------------------------------------
     # ------------------ LOADS ALLTHE TREES especially for when app is starting from an existing file ------------------
         # Loads the faculty/department-courses tree widget
         self.load_all_models()
 
-    # -------------------------------------------------------------------------------------------------------------
-    # -------------------------------- PRIMARILY THE GUI OPERATION FUNCTIONS --------------------------------------
+
+    # ------------------------------------------------------------------------------------------------------------------------
+    # ------------------ PRIMARILY THE GUI OPERATION FUNCTIONS (SAVE, SAVEAS, OPEN, NEW and other settings ) -----------------
+    def new_file(self):
+        """ handles the creation of a new timetable file """
+        run_app_anew()
+
+
+    def save_file(self):
+        """ Handles saving the timetable file (NOT THE GENERATED REPORTS!) """
+
+        # Check to see if this file has not been saved before, by checking the Timetable objects project_file_path attribute
+        if self.Timetable.Timetable_obj.project_file_path == '':
+            file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save your timetable file", "", "Shelva timetable file(*tmtb)")       
+            if file_path:
+                file_path = QtCore.QDir.toNativeSeparators(file_path)
+        else:
+            file_path = self.Timetable.Timetable_obj.project_file_path
+        self.Timetable.save(file_path)
+        # Reset the window title to the files name
+        self.setWindowTitle(self.Timetable.Timetable_obj.project_file_name)
+
+
+
+    def open_file(self):
+        """ Opens a previously created file and loads its contents on the GUI screen """
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open a timetable file.", "", "Shelva timetable file(*tmtb)")
+
+        if file_path:
+            file_path = QtCore.QDir.toNativeSeparators(file_path)
+            tt_obj = self.Timetable.load_from_file(file_path)
+
+            # if the timetable retrieved exists
+            if tt_obj is not None:
+                run_app_anew(tt_obj)
+
+
+
     def set_atpg(self):
         """ This slot fires in order to set atpg values and parameter names """
         # Get the inputs of the widgets
@@ -653,7 +790,6 @@ class UITimetable(QtWidgets.QMainWindow):
         """Colours the font of the highlighted part of the text edit in the finished version"""
         colour_dialog = QtWidgets.QColorDialog()
         colour = colour_dialog.getColor()
-
         self.template.setTextColor(colour)
 
 
@@ -708,7 +844,7 @@ class UITimetable(QtWidgets.QMainWindow):
         institution = self.institution.text().strip()
         director = self.director.text().strip()
         session = self.session_or_year.text().strip()
-        acronym = self.acronym.text().strip()
+        acronym = self.acronym.text().strip() if self.acronym.text() else "PROJECT-SHELVA"
         extra_info = self.extra_info.toPlainText().strip()
 
         # Something interesting happens with self.logo_path; a dialog box is opened.
@@ -813,7 +949,8 @@ class UITimetable(QtWidgets.QMainWindow):
 
 
     def register_course(self):
-        """Registers a subject/course (a dept) in the code """
+        """Registers a subject/course (a dept) in the code. Suitable for both parallel(concurrent) and non-parallel
+        dept objects """
 
         # Enable all the widgets in the reg_subject groupbox
         update = True if "update" in self.dept_create_update_label.text().lower() else False
@@ -822,9 +959,12 @@ class UITimetable(QtWidgets.QMainWindow):
         course_name = self.findChild(QtWidgets.QLineEdit, "course_name_lineedit")
         head_subject = self.findChild(QtWidgets.QLineEdit, "hos_lineedit")
 
+        parallel_checkbox = self.findChild(QtWidgets.QCheckBox, "parallel_checkbox")
+
         # Now get the values from these QObjects
         course_name_text = course_name.text().strip()
         acad_or_not_text = self.acad_or_not.currentText().strip()
+        parallel_or_no = parallel_checkbox.isChecked()
 
         head_subject_text = head_subject.text().strip()
         department_text = self.faculty_list_combobox.currentText().strip()
@@ -840,8 +980,8 @@ class UITimetable(QtWidgets.QMainWindow):
                 if UITimetable.check_fields_or_error(fields_values_list=[department_text]):
                     
                     # Create a department under that faculty
-                    self.Timetable.create_department(course_name_text,faculty=department_text, hos=head_subject_text,
-                        A=analytic_slider_val, T=theoreticai_slider_val, P=practical_slider_val, G=grammatical_slider_val, update=update)
+                    self.Timetable.create_department(course_name_text,faculty=department_text, hos=head_subject_text, A=analytic_slider_val, 
+                        T=theoreticai_slider_val, P=practical_slider_val, G=grammatical_slider_val, is_parallel= parallel_or_no, update=update)
 
                     # Return the sliders to 1,1,1,1
                     self.analytic_slider.setValue(1)
@@ -854,7 +994,7 @@ class UITimetable(QtWidgets.QMainWindow):
                     # one of the fields have not been filled. display error message
                     UITimetable.messagebox(title="Fields error",icon="critical",text="No Department under which to create subject/course")
             
-            # -------------------------- BELOW IS FOR NON-ACAD REG -------------------------------------
+            # -------------------------- BELOW IS FOR NON-ACAD REGISTRATION -------------------------------------
             else:
                 # If it is a non-academic department
                 self.Timetable.create_special_department(course_name_text, update=update)
@@ -1750,7 +1890,7 @@ class UITimetable(QtWidgets.QMainWindow):
 # ------------------------------------------------------------------------------------------
     # ----------------- GENERATE TEACHERS FOR ONE OR MULTIPLE DEPARTMENTS ---------------------
     def _load_specialty_combobox(self):
-        """ This inner function loads the class_cat span (specialty) of the teacher """
+        """ This private function loads the class_cat span (specialty) of the teacher """
         checked_courses = self.checked_widgtree_in_listwidget(self.gen_teachers_courselist)
 
         # Get the live course objects.
@@ -2507,12 +2647,14 @@ class UITimetable(QtWidgets.QMainWindow):
         self.threadpool = QtCore.QThreadPool()
         working_object = self.Timetable.auto_assign_teachers_to_arms
         assign_worker = Tt_threads.TtWorker(working_object, finished_string="Assignment operation completed successfully", 
-            error_string="Error occurred during assignment operation")
+            error_string="Error occurred during assignment operation", nil_error_string="Sorry, assignment not permitted.", 
+            aux_function=self.load_assignment_frame.hide)
 
         # connect slots to the progressbars
         assign_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
         assign_worker.signals.finished.connect(lambda msg: _finished(msg))
         assign_worker.signals.error.connect(lambda err_msg: _error(err_msg))
+        assign_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation Error", icon="Critical", text=nil_msg))
         self.threadpool.start(assign_worker)
 
 
@@ -2529,18 +2671,22 @@ class UITimetable(QtWidgets.QMainWindow):
         # ----------------------------------------------------------------
 
         self.load_assignment_frame.show()
+        # Store function to hide without running it in the variable below
+
         progbar_left = self.findChild(QtWidgets.QProgressBar, "assign_progbar_left")
         progbar_right = self.findChild(QtWidgets.QProgressBar, "assign_progbar_right")
 
         self.threadpool = QtCore.QThreadPool()
         working_object = self.Timetable.undo_assign_teachers_to_arms
         assign_worker = Tt_threads.TtWorker(working_object, finished_string="Assignment successfully undone!", 
-            error_string="Error occurred during undoing assignment operation")
+            error_string="Error occurred during undoing assignment operation", nil_error_string="Sorry, undoing assignment not permitted.", 
+            aux_function=self.load_assignment_frame.hide)
 
         # connect slots to the progressbars
         assign_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
         assign_worker.signals.finished.connect(lambda msg: _finished(msg))
         assign_worker.signals.error.connect(lambda err_msg: _error(err_msg))
+        assign_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation Error", icon="Critical", text=nil_msg))
         self.threadpool.start(assign_worker)
 
 
@@ -2586,17 +2732,16 @@ class UITimetable(QtWidgets.QMainWindow):
 
 
     def packet(self):
-        """ This function instructs the manager to packet all the subjects into class arms and report any errors """
-
+        """ This function instructs the manager to packet (and repacket) all the subjects into class arms and report any errors """
         # ------------------------------------------------------------------------------------------------------------
         def _finished(msg): 
             self.messagebox(title="Packet status", icon="Information", text=msg)
-            self.load_packeting_frame.hide()
+            # self.load_packeting_frame.hide()
             
 
         def _error(err_msg):
             self.messagebox(title="Packeting error", icon="Critical", text=err_msg)
-            self.load_packeting_frame.hide()
+            # self.load_packeting_frame.hide()
             
 
         def _finally():
@@ -2604,7 +2749,8 @@ class UITimetable(QtWidgets.QMainWindow):
             # print(list(range(1000)))
             load_packeting_details_html_into_textedit(packet_worker.comment, 
                 packet_textedit, len_all_subjects, len_all_days=len_all_days)
-            
+            self.load_packeting_frame.hide()
+                
         # -----------------------------------------------------------------------------------------------------------
         
         self.load_packeting_frame.show()
@@ -2623,12 +2769,14 @@ class UITimetable(QtWidgets.QMainWindow):
         self.threadpool = QtCore.QThreadPool()
         working_object = self.Timetable.packeting_repacketing
         packet_worker = Tt_threads.TtWorker(working_object, finished_string="Successful. Packeting operation complete",
-            error_string="Packeting operation unsuccessful!")
+            error_string="Packeting operation unsuccessful!", nil_error_string="Sorry, packeting not permitted.", 
+            aux_function=self.load_packeting_frame.hide)
 
         # connect slots to the progressbars
         packet_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
         packet_worker.signals.finished.connect(lambda msg: _finished(msg))
         packet_worker.signals.error.connect(lambda err_msg: _error(err_msg))
+        packet_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation error", icon="Critical", text=nil_msg))
         packet_worker.signals.deadend.connect(lambda: _finally())
         self.threadpool.start(packet_worker)
 
@@ -2639,11 +2787,11 @@ class UITimetable(QtWidgets.QMainWindow):
 
         def _finished(msg): 
             self.messagebox(title="Packet status", icon="Information", text=msg)
-            self.load_packeting_frame.hide()
+            # self.load_packeting_frame.hide()
 
         def _error(err_msg):
             self.messagebox(title="Packeting error", icon="Critical", text=err_msg)
-            self.load_packeting_frame.hide()
+            # self.load_packeting_frame.hide()
         # ----------------------------------------------------------------
 
         self.load_packeting_frame.show()
@@ -2654,31 +2802,17 @@ class UITimetable(QtWidgets.QMainWindow):
         self.threadpool = QtCore.QThreadPool()
         working_object = self.Timetable.undo_packeting_repacketing
         packet_worker = Tt_threads.TtWorker(working_object, finished_string="Packeting successfully undone!", 
-            error_string="Error occured in undoing the packeting operation")
+            error_string="Error occured in undoing the packeting operation", nil_error_string="Sorry, undoing packeting not permitted.", 
+            aux_function=self.load_packeting_frame.hide)
 
         # connect slots to the progressbars
         packet_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
         packet_worker.signals.finished.connect(lambda msg: _finished(msg))
         packet_worker.signals.error.connect(lambda err_msg: _error(err_msg))
+        packet_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation error", icon="Critical", text=nil_msg))
+        packet_worker.signals.deadend.connect(lambda :self.load_packeting_frame.hide())
         self.threadpool.start(packet_worker)
 
-
-    def test_packet(self):
-        """ TESTING!!! """
-
-        packet_textedit = self.findChild(QtWidgets.QTextEdit, "packet_textedit")
-        details_list = self.Timetable.TimetableSorter.packet_repacket_defaulters
-        len_all_subjects = len(self.Timetable.get_model_items("depts")[0])
-        len_all_days = len(self.Timetable.get_model_items("days")[0])
-
-        # load_packeting_details_html_into_textedit(details_list, 
-                # packet_textedit, len_all_subjects, len_all_days=len_all_days)
-
-        for dept in details_list:
-            print(f"DEFFICIENT: {dept, dept.teachers_plenty_enough_report(all_days_len=len_all_days)}")
-
-        for _ in range(30):
-            print("WHADUP SUCKERS!")
 
 
     # ------------------------ THE SORTING OPERATION PROPER!!! -------------------------------
@@ -2694,24 +2828,31 @@ class UITimetable(QtWidgets.QMainWindow):
         self.ref_arm_combobox.addItems(all_arms)
 
 
-
+    # ...............................THE SORTING METHOS ITSELF ..................................................
+    
     def full_sort(self):
         """ THE BIG-BOY FUNCTION. Handles the entire sorting process and the progressbars to show the progress """
 
         def _finished(msg): 
             self.messagebox(title="Packet status", icon="Information", text=msg)
-            self.load_sorting_frame.hide()
 
         def _error(err_msg):
             self.messagebox(title="Packeting error", icon="Critical", text=err_msg)
+            
+        def _finally():
             self.load_sorting_frame.hide()
+            load_sort_details_html_into_textedit(sort_worker.comment, sort_textEdit, num_all_teachers, num_all_subjects, num_all_arms)
         # ----------------------------------------------------------------
 
-        # Get the reference_day, reference_arm values
+        # Get the reference_day, reference_arm values and the sort algorithm
         ref_day_text, ref_arm_text = self.ref_day_combobox.currentText(), self.ref_arm_combobox.currentText()
-        
-        # The algorithm does not necessarily need to be defined up-top
         algorithm_text = self.findChild(QtWidgets.QComboBox, "sort_algo_combobox").currentText()
+
+        # get the arguments for the function to load sort details onto the GUI
+        num_all_teachers = len(self.Timetable.get_model_items("teachers")[0])
+        num_all_arms = len(self.Timetable.get_model_items("arms")[0])
+        num_all_subjects = len(self.Timetable.get_model_items("depts")[0])
+
 
         # check to see if ref_day_text and ref_arm_text are not empty
         if not self.check_fields_or_error(fields_values_list=[ref_day_text, ref_arm_text]):
@@ -2724,25 +2865,221 @@ class UITimetable(QtWidgets.QMainWindow):
 
 
         self.load_sorting_frame.show()
-        # ---  get the progressbar widgets
+        # ---  get the progressbar and sort textEdit widgets
         progbar_left = self.findChild(QtWidgets.QProgressBar, "sort_progbar_left")
         progbar_right = self.findChild(QtWidgets.QProgressBar, "sort_progbar_right")
+        sort_textEdit = self.findChild(QtWidgets.QTextEdit, "sort_textedit")
         
         self.threadpool = QtCore.QThreadPool()
         working_object = self.Timetable.algosort_handle_cleanup_periodmap
         sort_worker = Tt_threads.TtWorker(working_object, finished_string="Sorting successful!", 
-            error_string="Error occured in the sorting operation")
+            error_string="Error occured in the sorting operation", nil_error_string="Sorry, Sorting operation not permitted.", 
+            aux_function=self.load_sorting_frame.hide)
 
         # ---- Run with whatever arguments are necessary
         sort_worker.run_working_object(algorithm_text, ref_day_text, ref_arm_text)
-
         # connect slots to the progressbars
         sort_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
         sort_worker.signals.finished.connect(lambda msg: _finished(msg))
         sort_worker.signals.error.connect(lambda err_msg: _error(err_msg))
+        sort_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation error", icon="Critical", text=nil_msg))
+        sort_worker.signals.deadend.connect(_finally)
         self.threadpool.start(sort_worker)
-        
 
+
+    def undo_full_sort(self):
+        """ Undoes the full sort method """
+        pass
+
+# -------------------------------------------------------------------------------------------------------------
+# ----------------------------- SEMI-FINISH: DISPLAY SORTED RESULTS INTO FRAME: DIALS AND STUFF TOO ---------------------------------
+    def display_by_arm_or_day(self):
+        """ This method fires when the display_by_btn is clicked and extracts the radiobutton that is checked from the frame """
+        # Extract clicked radiobutton from the frame
+        for child in self.display_by_frame.children():
+            if isinstance(child, QtWidgets.QRadioButton) and child.isChecked():
+                self.model_type_label.setText(child.text().strip())
+                break
+        # enable the frame containing the dials and buttons
+        self.display_dial_and_btns_frame.setEnabled(True)
+        # set the dial to 1, the min value
+        dial_value = 1
+        self.items_dial.setValue(dial_value)
+        model_item_for_display = self.Timetable.return_item_from_dial_value(self.model_type_label.text(), dial_value)
+        self.model_item_label.setText(model_item_for_display)
+
+
+    def get_item_from_dial_value(self, dial_widget, display_mod_item_label, display_mod_type_label):
+        """ This method retrieves the value from the dial (between 1 and 100) and transmits that to the manager to get the model item
+        and then displays the item in the 'model_item_label' label """
+
+        dial_value = dial_widget.value()
+        # send the dial value to the manager for processing
+        model_item_for_display = self.Timetable.return_item_from_dial_value(display_mod_type_label.text(), dial_value)
+        display_mod_item_label.setText(model_item_for_display)
+
+
+    def scroll_model_item_by_btn(self, dial_widget, display_mod_item_label, display_mod_type_label, k):
+        """ this function fires when either the up or down buttons are pressed, it takes us to the next item on the list
+        'k' is the integer to go up or down by """
+    
+        # Returns a tuple of the kth_item and the dial value
+        kth_item_dial_value = self.Timetable.get_kth_item_and_dial_value(display_mod_type_label.text(), display_mod_item_label.text(), k)
+        # If the model item was not found, simply do nothing
+        if kth_item_dial_value is None:
+            return
+
+        kth_item, dial_value = kth_item_dial_value
+        dial_widget.setValue(dial_value)
+        display_mod_item_label.setText(kth_item)
+
+
+    # def test_func(self):
+    def show_finished_periods_in_frame(self):
+        """ This method displays all the periods of each arm in frames on the GUI """
+
+        def _make_frame(periods_data_list):
+             # frame = PeriodsDisplayFrame(frame=self.periods_display_frame, spacing=6, padding=(2,2,2,2))
+             frame.add_childframe_data(self.match_item, periods_data_list=periods_data_list)
+             frame.set_width_height()
+             frame.add_widget_to_frames_vbox()
+        # --------------------------------------------------------------------
+        # -------------------------------------------------------------------
+
+        model_type_str = self.model_type_label.text()
+        model_item_str = self.model_item_label.text()
+
+        self.timetable_title_label.setText(model_item_str)
+
+        # Get the progressbars
+        progbar_left = self.findChild(QtWidgets.QProgressBar, "display_progbar_left")
+        progbar_right = self.findChild(QtWidgets.QProgressBar, "display_progbar_right")
+
+        # The frame object on the gui
+        frame = PeriodsDisplayFrame(frame=self.periods_display_frame, spacing=6, padding=(2,2,2,2))
+
+        self.threadpool = QtCore.QThreadPool()
+        working_object = self.Timetable.yield_arm_or_days_period_data
+
+        display_fin_periods_worker = Tt_threads.WorkerForFrames(working_object, finished_string="Finished periods display successful!", 
+            error_string="Error occured in periods display", nil_error_string="Sorry, Not permitted.", 
+            aux_function=None)
+        # ---- supply arguments for the working objects to run
+        display_fin_periods_worker.run_working_object(model_type_str, model_item_str)
+        # connect slots to the progressbars
+        display_fin_periods_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
+        # display_fin_periods_worker.signals.finished.connect(lambda msg: _finished(msg))
+        display_fin_periods_worker.signals.error.connect(lambda err_msg: self.messagebox(title="Operation error", icon="Critical", text=err_msg))
+        display_fin_periods_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation error", icon="Critical", text=nil_msg))
+        # display_fin_periods_worker.signals.deadend.connect(_finally)
+        display_fin_periods_worker.signals.progress_with_info.connect(_make_frame)
+
+        self.threadpool.start(display_fin_periods_worker)
+
+
+    def retrieve_track_model(self):
+        """ This signal fires when the track_by button is clicked in the tabwidget up-top in the app. It goes through all the radiobuttons
+        in the track_models_by _frame widget to see which one has been clicked """
+
+        for widget in self.track_models_by_frame.children():
+            if isinstance(widget, QtWidgets.QRadioButton) and widget.isChecked():
+                # enable the frame that holds the track dials and btns
+                self.track_dial_and_btns_frame.setEnabled(True)
+                # set the track_model_type label to the text of the radiobutton
+                self.track_model_type_label.setText(widget.text().strip())
+                return
+    
+        # if no breaking, i.e. no checked radiobuttons found
+        self.messagebox(title="Empty fields", icon="Critical", text="No model type selected yet to track.", 
+            extratext="Do select a model type so that tracking can be performed.")
+
+
+    def deselect_track_models(self):
+        """ This method deselects the items checked in the track_model_frame """
+        for widget in self.track_models_by_frame.children():
+            if isinstance(widget, QtWidgets.QRadioButton):
+                widget.setChecked(False)
+        self.match_item = "Nil"
+
+
+    def track_model_item(self):
+        """ This method calls the manager to track the item as given on the track frame on all the period widgets available on screen.
+        the tracking and display on the screen is done here """
+
+        def _make_frame(periods_data_list):
+             # frame = PeriodsDisplayFrame(frame=self.periods_display_frame, spacing=6, padding=(2,2,2,2))
+             frame.add_childframe_data(self.match_item, periods_data_list=periods_data_list)
+             frame.set_width_height()
+             frame.add_widget_to_frames_vbox()
+
+
+        # model_type = self.track_model_type_label.text()
+        self.match_item = self.track_item_label.text()
+
+        model_type_str = self.model_type_label.text()
+        model_item_str = self.model_item_label.text()
+
+        self.timetable_title_label.setText(model_item_str)
+
+        # Send these values to the manager and have it glow up every search with a packet_worker
+        # ------------------
+        progbar_left = self.findChild(QtWidgets.QProgressBar, "track_progbar_left")
+        progbar_right = self.findChild(QtWidgets.QProgressBar, "track_progbar_right")
+
+        self.load_track_frame.show()
+
+
+        # The frame object on the gui
+        frame = PeriodsDisplayFrame(frame=self.periods_display_frame, spacing=6, padding=(2,2,2,2))
+
+        self.threadpool = QtCore.QThreadPool()
+        working_object = self.Timetable.yield_arm_or_days_period_data
+
+        track_worker = Tt_threads.WorkerForFrames(working_object, finished_string="Tracking successful! your selection appears in distinctive colouring.", 
+            error_string="Error occured in the tracking operation", nil_error_string="Sorry, tracking operation not permitted.", 
+            aux_function=self.load_track_frame.hide)
+
+        # ---- supply arguments for the working objects to run
+        track_worker.run_working_object(model_type_str, model_item_str)
+        # connect slots to the progressbars
+        track_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
+        track_worker.signals.finished.connect(lambda msg: self.messagebox(title="Tracking successful", icon="Information", text=msg))
+        track_worker.signals.error.connect(lambda err_msg: self.messagebox(title="Operation error", icon="Critical", text=err_msg))
+        track_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation error", icon="Critical", text=nil_msg))
+        # track_worker.signals.deadend.connect(_finally)
+        track_worker.signals.progress_with_info.connect(_make_frame)
+        self.threadpool.start(track_worker)
+
+
+    # --------------------------------------------------------------------------------------------------------------
+    # ------------------------ FINISHED REPORT AND DIAGNOSTICS REPORT GENERATION SECTION ---------------------------
+    def generate_finished_report(self):
+        """ This method serves as a slot for the gen_report_btn. It facilitates the generation of the finished
+        timetable either into docx, PDF or HTML formats. """
+
+        # basis is whether it is based on department or class arm
+        basis = self.report_basis_combobox.currentText()
+        format_ = self.report_format_combobox.currentText()
+
+        if "docx" in format_.lower():
+            file_ext = ".docx"
+        elif "pdf" in format_.lower():
+            file_ext = ".pdf"
+        else:
+            file_ext = ".html"
+
+
+        # Open a dialog box and chose directory to work in
+        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, f"Export file by {basis}", "", f"{format_}(*{file_ext})")
+        
+        if file_path:
+            file_path = QtCore.QDir.toNativeSeparators(file_path)
+            self.Timetable.generate_timetable_file(file_path, format_, basis)
+
+
+
+
+# ---------------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------------------
 # ----------------------------------  HELPER FUNCTIONS ---------------------------------
     def checked_widgtree_in_listwidget(self, listwidget):
@@ -2821,8 +3158,14 @@ class UITimetable(QtWidgets.QMainWindow):
 # if __name__ == "__main__":
 
 # ---------------------------------------------------------------------------------------
+def run_app_anew(tt_obj=None):
+    Timetable_mainwindow = UITimetable(tt_obj=tt_obj)
+    Timetable_mainwindow.show()
+
+
 def run_main():
     import sys
+    global app
     app = QtWidgets.QApplication(sys.argv)
     Splash_and_mainwindow = TtSplashScreen()
     Splash_and_mainwindow.show()

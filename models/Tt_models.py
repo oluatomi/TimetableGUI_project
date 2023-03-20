@@ -49,8 +49,16 @@ class TimeTable:
         self.list_of_school_class_arms = []
         self.list_of_faculties = []
         self.list_of_days = []
-        self.fac_id, self.dept_id, self.nonacad_id,self.teacher_id, self.clsgroup_id,self.cls_id,self.self,self.clsarm_id,self.day_id = 0,0,0,0,0,0,0,0,0
-    
+
+        self.fac_id, self.dept_id, self.nonacad_id, self.teacher_id = 0,0,0,0
+        self.clsgroup_id, self.cls_id, self.self = 0,0,0
+        self.clsarm_id, self.day_id = 0, 0
+        
+        # --- initialize the file path to which this timetable file will be saved
+        self.project_file_path = ""
+
+        # the actual file name of the project
+        self.project_file_name = "Timetable_file (UNSAVED)"
 # ----------------------------------------------------------------------------------------------
 # ------------ METHODS FOR CREATING AND DELETING THE MODEL CONTAINERS
 # ----------------------------------------------------------------------------------------------
@@ -59,7 +67,7 @@ class TimeTable:
         the info_dict has the same keys as the attributes of this timetable. """
 
         for info, val in info_dict.items():
-            attr = setattr(self, info, val)
+            setattr(self, info, val)
 
 
     def get_general_info(self):
@@ -98,11 +106,12 @@ class TimeTable:
             self.del_department(dept)
 
 
-    def create_department(self, name, faculty=None, hos=None, is_special=False,A=1,T=1,P=1,G=1,update=False,preexisting_obj=None):
-        '''A function to instantiate the department object'''
+    def create_department(self, name, faculty=None, hos=None, is_special=False, A=1, T=1, P=1, G=1, 
+        update=False,is_parallel=False, preexisting_obj=None):
+        '''A method to instantiate the department object'''
         if not update:
             if not is_special:
-                department = self.Department(name,faculty=faculty, hos=hos, is_special=is_special, A=A,P=P,T=T,G=G)
+                department = self.Department(name,faculty=faculty, hos=hos, is_special=is_special, A=A,P=P,T=T,G=G, is_parallel=is_parallel)
                 self.list_of_departments.append(department)
                 # Set this department's id
                 self.dept_id += 1
@@ -217,16 +226,14 @@ class TimeTable:
 
             # Also clear this arm from the list of arms taught by the teacher
             teacher = dept.teachers_for_client_class_arms[arm]
-            teacher.classes_taught.remove(arm)    
+            teacher.classes_taught.remove(arm)
 
 
-    def create_teacher(self, dept_objs_list=None, teaching_days=None, specialty=None, designation=None, update=False, preexisting_obj=None):
+
+    def create_teacher(self, frequency=0, dept_objs_list=None, teaching_days=None, specialty=None, designation=None, update=False, preexisting_obj=None):
         """Hangles the creation of a teacher object under a department dept_obj (Under a course, not faculty)"""
-
-        #--- WHEN CREATING TEACHER
-        if not update:
-            # dept_objs (in the args) is now a list of all the depts(subjects) the teacher teaches
-            # Teacher is first of all instantiated under a dept object. NEVER DIRECTLY!
+        # -------------------------------------------------------------------------
+        def _create_single_teacher():
             teacher = self.Teacher()   
             #-- Add teacher to the list of all teachers
             self.list_of_all_teachers.append(teacher)
@@ -237,13 +244,36 @@ class TimeTable:
             # Add teachers days to  the teacher
             for day_obj in teaching_days:
                 teacher.add_day_to_teacher(day_obj)
-            # Now add the rest of the dept_objs to the teacher (obviously apart from the first one)
-            for dept in dept_objs_list:
-                # Add this departments to the teacher
-                self.map_teacher_to_dept(teacher, dept)
 
             teacher.specialty = specialty
             teacher.designation = designation
+            return teacher
+        # -----------------------------------------------------------------------------
+        # -------------- OUTSIDE THE INNER FUNCTION ----------------------
+        #--- WHEN CREATING TEACHER
+
+        if not update:
+            # dept_objs (in the args) is now a list of all the depts(subjects) the teacher teaches
+            
+            teachers_by_freq = [_create_single_teacher() for _ in range(frequency)]
+            for dept in dept_objs_list:
+                # Add this departments to the teacher if this
+                if not dept.is_parallel:
+                    # for _ in range(frequency):
+                    for teacher_obj in teachers_by_freq:
+                        # teacher = _create_single_teacher()
+                        self.map_teacher_to_dept(teacher_obj, dept)
+
+                else:
+                    # if dept.is_parallel is set to True
+                    for split_name in dept.parallel_names:
+                        parallel_teachers_tuple = [_create_single_teacher() for _ in range(frequency)]
+                        dept.add_teachers_tuple_to_parallel_dept(split_name, parallel_teachers_tuple)
+                        for _teacher_ in parallel_teachers_tuple:
+                            self.map_teacher_to_dept(_teacher_, dept)
+
+                    # Reset the dept.teachers_list based on the teachers generated for the parallel dept
+                    dept.adapt_teachers_list_for_parallel()
             return
 
         # -------- TO UPDATE TEACHER ----------
@@ -315,19 +345,22 @@ class TimeTable:
         del period_list[index]
 
 
-    def save(self, project_name, path):
-        """ This big-boy function will handle storing all the important info to a database.
-        More on that later.
-        Maybe a pickle file, really.
+    def save(self, project_file_path):
+        """ This big-boy function will handle storing all the important info to a file.
+        More on that later. Maybe a pickle file, really.
         """
-        self.path = path
-        self.project_name = project_name + ".tmtb"
+        import os
+
+        self.project_file_path = project_file_path + ".tmtb" if not project_file_path.endswith(".tmtb") else project_file_path
         self.todays_date = datetime.date.today()
 
-        with open(self.path + self.project_name, "wb") as file:
+        with open(self.project_file_path, "wb") as file:
             # dump this timetable object into the file
             pickle.dump(self, file)
-                
+
+        self.project_file_name = os.path.basename(self.project_file_path)
+    
+
 
     # --------------------------------------------------------------------------------------------------
     # ----------- METHODs TO CARRY OUT OPERATIONS BETWEEN THE AFOREMENTIONED CONTAINERS -----------------
@@ -386,6 +419,7 @@ class TimeTable:
         teacher.add_dept_to_teacher(dept)
         # To add this teacher to the list of teachers of the department that was added
         dept.add_ready_made_teacher(teacher)
+        # in case dept has is_parallel set to True
 
 
     def unmap_teacher_from_dept(self, teacher, dept):
@@ -463,6 +497,7 @@ class TimeTable:
                         self.map_teacher_from_dept_to_arm(dept, arm, ascending=ascending)
                     except Exception:
                         pass
+            # Only yield if it is intended as a generator
             beamed_val = round(count * beam_val_max / len_arms)
             yield beamed_val
 
@@ -519,7 +554,8 @@ class TimeTable:
         This is referenced as "SUBJECT/COURSE" in the GUI
         '''  
     
-        def __init__(self, name, faculty=None, hos=None, is_special=False, A=None, T=None, P=None,G=None):
+        def __init__(self, name, faculty=None, hos=None, is_special=False, A=None, T=None, P=None,G=None, 
+            is_parallel=False, delimiter_if_parallel="/"):
             """This is the department class. It is the SCHOOL SUBJECT to be 
             handled. However, it might not be an academic_class. It just 
             could be recess or what we call a special class.
@@ -576,9 +612,93 @@ class TimeTable:
                 self.theoretical = T
                 self.practical = P
                 self.grammatical = G
-            # -- This is_para attr is to test whether this department should always feature 
-            # in the timetable alongside another department during the same period.
-                self.is_para = False
+
+                # A tuple of seven prime numbers
+                self.ATPG_primes = (2,3,5,7,11,13,17)
+                # --------------------------------------------------------------------------------------------------
+                # -- This is_para attr is to test whether this department should always feature in the timetable alongside another
+                # department during the same period.
+                self.is_parallel = is_parallel
+                if self.is_parallel:
+                    # A dictionary of "arm":list of teachers, these teachers are the remaining teachers for when first teacher has been chosen
+                    # to be represented in the up-top self.teacher_for_client_class_arms
+                    self.parallel_names = self.dept_name.split(delimiter_if_parallel)
+                    self.parallel_names = [name.strip() for name in self.parallel_names]
+                    # receives tuples of teacher objects before assignment into key=split_name, value=tuple of teachers
+                    self.parallel_teachers_dict = {}
+                    
+                    # THE LOGIC IS QUITE SIMPLE:
+                    # EVEN IF IS_PARALLEL == True, self.teachers_for_client_class_arms still yields a teacher object... the first teacher
+                    # the remaining teachers for the parallel are mapped to that first teacher in a tuple. that first teacher serves as our marker and goes through
+                    # all the chunk process for us. we only record values for the other teachers as soon as the chunking process is done
+
+
+        # ...................................................................................................................................
+        # ----------------------------- PARALLEL METHODS ()METHODS WHEN THE DEPT HAS IS_PARALLEL SET TO TRUE -----------------------------
+        def add_teachers_tuple_to_parallel_dept(self, split_name, teacher_list):
+            """ this adds a teacher_tuple to the self.parallel_teachers_list if of course, is_parallel is true """
+            if self.is_parallel:
+                if not split_name in self.parallel_teachers_dict:
+                    self.parallel_teachers_dict[split_name] = []
+
+                self.parallel_teachers_dict[split_name] += teacher_list
+                
+
+        def remove_teachers_tuple_from_parallel_dept(self, split_name):
+            """ this adds a teacher_tuple to the self.parallel_teachers_list if of course, is_parallel is true """
+            if self.is_parallel and split_name in self.parallel_teachers_dict:
+                del self.parallel_teachers_dict[split_name]
+
+
+        def adapt_teachers_list_for_parallel(self):
+            """ SHOULD BE RUN ONLY WHEN ALL THE PARALLEL TEACHER TUPLES HAVE BEEN ADDED (OR REMOVED).
+            This method repopulates the self.teachers_list list with a single teacher chosen specially to represent
+            all the parallel teachers. Order important! """
+
+            if self.is_parallel:
+                # Overrides self.teachers_list with thises new values
+                self.teachers_list = list(self.parallel_teachers_dict.values())[0]
+
+
+        def return_teacher_pairs_for_parallel(self):
+            """ This method returns a list of tuples of all the teacher objects (teaching each different split name) but taking the same class arm
+            Would probably be useful for mapping periods back to teachers """
+            if self.is_parallel:
+                overall_list = []
+                for index, teacher in enumerate(self.teachers_list):
+                    sub_list = []
+                    for teacher_tuple in self.parallel_teachers_dict.values():
+                        teacher = teacher_tuple[index]
+                        if not teacher in sub_list:
+                            sub_list.append(teacher)
+                    overall_list.append(tuple(sub_list))
+                return overall_list
+
+
+        def remove_teacher_pair_for_parallel(self, teacher_pair):
+            """ This method removes this pair of teachers from the parallel_teachers_dict."""
+            if self.is_parallel:
+                for teacher, teacher_list in zip(teacher_pair, self.parallel_teachers_dict.values()):
+                    if teacher in teacher_list:
+                        teacher_list.remove(teacher)
+
+
+        def get_parallel_dept_given_teacher(self, teacher):
+            """ Returns the para-dept name that a teacher object is allowed to teach, given the teacher, e.g. for
+            Yoruba/Igbo teacher teaches Yoruba """
+            for para_split_name, teacher_list in self.parallel_teachers_dict.items():
+                if teacher in teacher_list:
+                    return para_split_name, f"C-ID {self.id}: {para_split_name}{' -P' if self.is_parallel else ''}"
+
+
+        def get_teacher_pair_given_teacher(self, teacher):
+            """ Returns a teacher_pair if 'teacher' object is found there """
+            for teacher_pair_tuple in self.return_teacher_pairs_for_parallel():
+                if teacher in teacher_pair_tuple:
+                    return teacher_pair_tuple
+
+        # ----------------------------------------------------------------------------------------------------------------------------------
+        # ......................................................................................................................................
 
         @property
         def class_group_span(self):
@@ -620,10 +740,16 @@ class TimeTable:
             if teacher_obj in self.teachers_list:
                 self.teachers_list.remove(teacher_obj)
 
+            # Completely remove teacher's posse if this dept is parallel
+            if self.is_parallel:
+                for teacher_tuple in self.return_teacher_pairs_for_parallel():
+                    if teacher_obj in teacher_tuple:
+                        self.remove_teacher_pair_for_parallel(teacher_tuple)
+
 
         def add_ready_made_teacher(self, teacher_obj):
             """This methods adds an ALREADY-MADE teacher object to the teachers_list.
-            This really is adding a teacher from another department, e.g a futher maths teacher to teach math"""
+            This really is adding a teacher from another department, e.g a further maths teacher to teach math"""
             if teacher_obj not in self.teachers_list:
                 self.teachers_list.append(teacher_obj)
 
@@ -677,9 +803,7 @@ class TimeTable:
             # For the number of extra teachers to be idealy added "K"
             K = math.ceil(summation_teaching_days * (num_arms - summation_ideal)/(all_days_len * num_arms))
             total_min_teachers = len(self.teachers_list) + K
-
             return total_min_teachers, K
-
 
 
         def teachers_plenty_enough_report(self, all_days_len=5):
@@ -692,7 +816,8 @@ class TimeTable:
 
 
         def teachers_regularity_ratio(self):
-            """ DICTIONARY_OF_FLOATS. FOR REPORT (MOST_LIKELY) Returns the ratio of teachers who are not regular to teachers who are regular (to 2 decimal places) """
+            """ DICTIONARY_OF_FLOATS. FOR REPORT (MOST_LIKELY) Returns the ratio of teachers who are not 
+            regular to teachers who are regular (to 2 decimal places) """
             num_teachers = len(self.teachers_list)
             num_reg_teachers = len([teacher for teacher in self.teachers_list if teacher.regularity])
             num_nonreg = num_teachers - num_reg_teachers
@@ -700,13 +825,12 @@ class TimeTable:
             reg_ratio = 0 if num_teachers == 0 else round(num_reg_teachers / num_teachers, 2)
             non_reg_ratio = 1 - reg_ratio
             nonreg_to_reg_ratio_str = f"{num_nonreg}:{num_reg_teachers}"
-
             return {"reg_ratio": reg_ratio, "non_reg_ratio":non_reg_ratio, "nonreg_to_reg_ratio_str": nonreg_to_reg_ratio_str}
 
 
         @property
         def full_name(self):
-            return f"COURSE ID:{self.id}: {self.dept_name}"
+            return f"C-ID {self.id}: {self.dept_name}{' -P' if self.is_parallel else ''}"
         # ---------------------------------------------------------
         # Pro-Tip: first add a classarm using the function below before assigning a teacher
         # using the function below below
@@ -727,7 +851,7 @@ class TimeTable:
 
             def _sort_teacher_by_weight(teacher):
                 """ Sorts a teacher by weight """
-                weight = math.ceil(len(teacher.teaching_days)*len(self.teachers_for_client_class_arms)/teachers_days_sum)
+                weight = round(len(teacher.teaching_days)*len(self.teachers_for_client_class_arms)/teachers_days_sum)
                 # Add this weight and the counter to the apprpriate dictionary
                 self.teachers_count[teacher] = [0, weight]
                 # ------------------------------------------------------------------------
@@ -760,16 +884,9 @@ class TimeTable:
             for classgroup in self.class_group_span:
                 # In the event that teachers have NOT been generated to teach the course, which in turn affects the self.teachers_for_classgroup dict
                 
-
                 sorted_list = sorted(self.teachers_for_classgroup[classgroup], key=lambda teacher: len(teacher.specialty), reverse=not(ascending))
-                # turn this sorted list (of teacher objects) into a generator object that cycles through all the teacher items inside
-                # sorted_list_gen = (
-                #     elem for elem in itertools.cycle(sorted_list)
-                #     if self.teachers_count[elem][0] <= self.teachers_count[elem][1]
-                #     )
                 sorted_list_gen = [teacher for teacher in sorted_list if self.teachers_count[teacher][0] <= self.teachers_count[teacher][1]]
 
-                # Generators cannot be pickled, so a list is used instead wth a counter to know which is next
                 self.teachers_for_classgroup[classgroup] = sorted_list_gen
 
                 # except KeyError:
@@ -792,10 +909,8 @@ class TimeTable:
                     raise Tt_exceptions.SomethingWentWrong(f"""Teacher: {teacher.full_name} does not teach {class_arm.full_name}'s
                          class category and so does not qualify to handle {self.full_name} for this class arm.""")
 
-
                 # When teacher is programmatically assigned
                 # yield the teacher from the self.teacher_for_classgroup dict which houses classgroup:teacher_generator
-
                 teacher = self.teachers_for_classgroup[classgroup][self.classgroups_with_count[classgroup]]
                 # increment the classgroups_with_count so we begin from the next teacher on the list
                 self.classgroups_with_count[classgroup] = (self.classgroups_with_count[classgroup] + 1) % len(self.teachers_for_classgroup[classgroup])
@@ -830,19 +945,18 @@ class TimeTable:
             </html>
             """
 
-        def __getstate__(self):
-            new_state = self.__dict__.copy()
-            if "load_teachers_for_classgroup" in new_state:
-                del new_state["load_teachers_for_classgroup"]
-            if "assign_teacher" in new_state:
-                del new_state["assign_teacher"]
-            return new_state
+        # def __getstate__(self):
+        #     new_state = self.__dict__.copy()
+        #     if "load_teachers_for_classgroup" in new_state:
+        #         del new_state["load_teachers_for_classgroup"]
+        #     if "assign_teacher" in new_state:
+        #         del new_state["assign_teacher"]
+        #     return new_states
 
 
     class Teacher:
-        '''The teacher object which is in composition
-        with the department object, i.e, "teacher has a department"
-        he is from'''
+        '''The teacher object which is in composition with the department object, i.e, "teacher has a department"
+        he teaches'''
         def __init__(self):
 
             self.id = 0
@@ -876,7 +990,23 @@ class TimeTable:
         def str_teacher_depts(self):
             """For GUI. This property method renders all the depts offered by the teacher as a comma-delimited
             string (for the GUI or for report)"""
-            return ", ".join([dept.full_name for dept in self.teachers_depts_list])
+            return ", ".join([dept.full_name if not dept.is_parallel else dept.get_parallel_dept_given_teacher(self)[1] for dept in self.teachers_depts_list])
+
+
+        @property
+        def record_teachers_parallel_depts(self):
+            """ If any of the depts taught by the teacher has is_parallel as True, record which of nthe parallel depts
+            exactly that this teacher teaches """
+
+            # dictionary to hold dept_obj: dept_para_split_name
+            parallel_depts_dict = {}
+            for dept in self.teachers_depts_list:
+                if dept.is_parallel:
+                    # dept.get_parallel_dept_given_teacher(self) returns a tuple of the (dept_para_split_name
+                    # and, the dept_para_split_name with ID and stuff).
+                    parallel_depts_dict[dept] = dept.get_parallel_dept_given_teacher(self)
+
+            return parallel_depts_dict if parallel_depts_dict else None
 
 
         def str_teaching_days(self, tt_obj):
@@ -898,7 +1028,7 @@ class TimeTable:
         def regular_or_no(self, tt_obj):
             """Returns 'Regular' or 'Special' based on how many days taught."""
             reg_or_no = self.str_teaching_days(tt_obj)
-            return "Regular" if reg_or_no == "All" else "Selective"
+            return "Full-time" if reg_or_no == "All" else "Part-time"
 
 
         @property
@@ -923,7 +1053,7 @@ class TimeTable:
             This function adds a new unique department object to the list of departments owned by the teacher"""
 
             # -- To check to make sure no duplicates exist
-            if dept_obj not in self.teachers_depts_list:
+            if not dept_obj in self.teachers_depts_list:
                 self.teachers_depts_list.append(dept_obj)
 
 
@@ -985,7 +1115,7 @@ class TimeTable:
 
 
         def is_exclusive(self):
-            """ BOOL. Returns True if teacher only teaches from one department, and false if not """
+            """ BOOL. Returns True if teacher only teaches from one subject, and false if not """
             return len(self.teachers_depts_list) <= 1
 
 
@@ -995,8 +1125,8 @@ class TimeTable:
 
 
         def other_depts_taught_str(self, dept):
-            """ FOR REPORT. Returns the list of strings of other depts taught (if they exist) """
-            return [dept_.dept_name for dept in self.other_depts_taught(dept)]
+            """ FOR THE REPORT. Returns the list of strings of other depts taught aside dept """
+            return ", ".join([dept_.dept_name for dept_ in self.other_depts_taught(dept)])
 
 
         @property
@@ -1443,7 +1573,6 @@ class TimeTable:
             """ TENTATIVE """
             return f"{self.period_title} - {self.dept_content}"
         
-
 
         def __repr__(self):
             return self.period_title

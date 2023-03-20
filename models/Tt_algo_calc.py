@@ -1,5 +1,13 @@
 import random, inspect, time
 
+def unique_id_str(translate_by=97):
+    """ Returns a unique string based on the number of seconds since the epoch """
+    unique_num = str(time.time())
+    # remove whatever decimal points are there
+    unique_num = unique_num.replace(".", "")
+    return "".join([chr(int(k) + translate_by) for k in unique_num])
+
+
 def nth_suffix(num):
     """ Function to determine the appropriate english suffix to a number as in 1st, 2nd and so on.
     Floats will be converted to INT  """
@@ -10,9 +18,12 @@ def nth_suffix(num):
     suffix_dict.update({str(n):"th" for n in range(4, 14) if n != 10})
 
     num_str = str(num)
+
     if num_str[-2:] in suffix_dict:
-        return num_str, suffix_dict[num_str[-2:]]
-    return num_str, suffix_dict[num_str[-1]]
+        suffix_ = suffix_dict[num_str[-2:]]
+    else:    
+        suffix_ = suffix_dict[num_str[-1]]
+    return num_str + suffix_
 
 
 
@@ -1208,5 +1219,8 @@ if __name__ == "__main__":
     # movedover_fixed error handled
     # print(Moveover_fixed([7, 8, [0, 1], [2, 3], [4, 5], [6, 7]], 10, fixed_item=[7,8]))
 
-    print(SortAlgorithms.xlx_reflection(10, chunk_list={2:5}, shift_value=5))
+    # print(SortAlgorithms.xlx_reflection(10, chunk_list={2:5}, shift_value=5))
+
+    for k in range(101):
+        print(nth_suffix(k))
     
