@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>Frame</class>
  <widget class="QFrame" name="Frame">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -26,12 +29,17 @@
    <string>Frame</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QFrame[objectName=&quot;Frame&quot;]{
+   <string notr="true">QFrame{
+	background:transparent;
+}
+
+QFrame[objectName=&quot;Frame&quot;]{
 	border:1px solid #000059;
 	border-right:4px solid #404040;
 	border-radius:2px;
-	background:#dddddd;
+	background:qconicalgradient(cx:0.5, cy:0.5, angle:0, stop:0.142045 rgba(238, 235, 241, 255), stop:0.48 rgba(152, 150, 154, 255), stop:0.948864 rgba(27, 27, 27, 255));
 }
+
 
 
 </string>
@@ -52,7 +60,11 @@
    <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="styleSheet">
-      <string notr="true">QScrollBar{
+      <string notr="true">QScrollArea QWidget{
+	background:transparent;
+}
+
+QScrollBar{
 	width:6px;
 	height:6px;
 	background:transparent;
@@ -95,7 +107,7 @@ QScrollBar::handle{
         <widget class="QFrame" name="title_frame">
          <property name="styleSheet">
           <string notr="true">QLabel{
-	color:#000062;
+	color:#000;
 	font-weight:bold;
 }
 
@@ -123,7 +135,7 @@ QWidget{
            <number>1</number>
           </property>
           <item>
-           <widget class="QLabel" name="day_or_class_label">
+           <widget class="QLabel" name="day_or_arm_label">
             <property name="styleSheet">
              <string notr="true">padding:2px;</string>
             </property>
@@ -150,7 +162,7 @@ QWidget{
 }
 
 QLabel{
-	color:#824100;
+	color:#f8f8f8;
 	font-weight:bold;
 	font-size:8pt;
 }
@@ -176,9 +188,12 @@ QLabel{
            <number>1</number>
           </property>
           <item>
-           <widget class="QLabel" name="arm_or_day_name_label">
+           <widget class="QLabel" name="day_or_arm_name_label">
             <property name="text">
              <string>arm_name or_day_name</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
             <property name="wordWrap">
              <bool>true</bool>

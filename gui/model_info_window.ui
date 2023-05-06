@@ -15,8 +15,8 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QDialog{
-	border:1.3px solid #4e4e4e;
 	border-radius:4px;
+	background:#fff
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -38,7 +38,19 @@
    <item>
     <widget class="QTextEdit" name="textEdit">
      <property name="styleSheet">
-      <string notr="true">border:0.7px solid #7f7f7f;</string>
+      <string notr="true">QTextEdit{
+border:0.5px solid #c9c9c9;
+}
+
+h4{
+	font-weight:bold;
+	color: #2f2fff;
+	font-family: tahoma, sans-serif;
+}
+
+p{
+	color:#ff0000;
+}</string>
      </property>
      <property name="readOnly">
       <bool>true</bool>

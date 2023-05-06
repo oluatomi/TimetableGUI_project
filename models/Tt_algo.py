@@ -51,57 +51,22 @@ class TimetableSorter:
 
     # ----------------------------------------------------------------------------------
     # -------------------------------- STATIC METHODS ----------------------------------
-    def department_shredder(frequency, recur=1):
+    @staticmethod
+    def shredder(frequency, bit=1):
         """
             This function "shreds" or "chunks" the frequency of the subject upon which it is used into 
             packets that can be inserted into different days of the week. i.e. this function helps to 
             split the total frequency per week of a subject into the days within the week.
 
             the frequency, often chunked into 1s (single periods) can also be chunked into 2s (double periods)
-            or "n"s. The "recurr" parameter handles that. recurr is 1 for singles and so on.
+            or "n"s. The "bit" parameter handles that. recurr is 1 for singles and so on.
         """
-        a,b = divmod(frequency, recur)
-        val = [recur for _ in range(a)] + [b] if b else [recur for _ in range(a)]
+        a,b = divmod(frequency, bit)
+        val = [bit for _ in range(a)] + [b] if b else [bit for _ in range(a)]
 
-        # a+b (below) could also be written as len(val)
-        # a+b is the total number of packets
+        # a+b (below) could also be written as len(val)    a+b is the total number of packets
         # val is the list containing all the chunk values to make up freq
         return val, a+b
-
-
-    class DeptPeriodEncase:
-        """ A very simple class to hold each class arm, department, its frequency and its "chunk" value
-        for ease of sorting """
-        def __init__(self, class_arm, dept, frequency, chunk):
-            self.dept_obj = dept
-            self.frequency = frequency
-            self.class_arm = class_arm
-            self.chunk = chunk
-    
-        
-        def get_spread(self, chunk=1):
-            """Returns a tuple of (shredded: the list of packeted values e.g [2,2,2,1],, and packets_num: the length of 'shredded'.)"""
-            spread = TimetableSorter.dept_shredder(self.frequency, chunk)
-            return spread
-
-
-        def teacher(self):
-            return self.dept_obj.teachers_for_client_class_arms[self.class_arm]
-
-        @property
-        def is_single(self):
-            return self.chunk == 1
-
-        def reg_with_teacher(self):
-         # register the freq, dept, arm to the teacher
-            if self.teacher():
-                self.teacher().add_dept_arm_freq_to_teacher(self.dept_obj, self.class_arm, frequency=self.frequency)
-            
-        def __str__(self):
-            return self.dept_obj
-
-        def __repr__(self):
-            return self.dept_obj.dept_name
 
 
     # ---------------------------------------------------------------------------------------
@@ -169,22 +134,6 @@ class TimetableSorter:
             """ Reset by running the init method all over again """
             self.__init__()
         # ------------------------------------------------------------------------------------------
-
-        # Onward, the self.periodintlist variable can be edited according to what is required of the chunking
-
-
-    def prep_dept_freq(self, class_arm, iterable_from_gui):
-        """ This method accepts the 'dept', 'frequency' and 'chunk' values from the GUI controller and makes each item an instance
-        of the DeptPeriodEncase class. The iterable_from_gui is a list of namedtuples. """
-
-        container_list = []
-
-        for item in iterable_from_gui: 
-            cont = self.DeptPeriodEncase(class_arm, item.dept, item.frequency, item.chunk)
-            container_list.append(cont)
-
-        # --Sort the items in the container_list based on how many packets it has been chunked into
-        return container_list
 
 
 # ------------------- GENERATED PERIODS ----------------------------------------
@@ -337,14 +286,14 @@ class TimetableSorter:
         return academic_periods
 
 
-    def packet_depts_into_arms_per_day(self, iterable_from_gui, beam_max_value=50):
+    def packet_depts_into_arms_per_day(self, beam_max_value=50):
         """ Places the depts for each class arm into days of the week. This function is a more robust form of the "chunk_x_into_y" function 
         defined above. It tries to chunk x into y, but if it can't, because the day is already full, it just moves to the next day. This
         function is specifically for chunking packets into days, not sorting teachers into periods.
         "beam_max_value" is the maximum amount method will emit to the GUI to be displayed on the progressbar """
 
 
-        def _packet_depts_into_one_arm(class_arm, iterable_from_gui):
+        def _packet_depts_into_one_arm(class_arm):
             """ packets subjects/depts into one arm on all of its days. """
 
             # 1. ---- The sorted list of the departments and their spreads (frequencies and all). ----
@@ -355,41 +304,41 @@ class TimetableSorter:
             # This way, the algorithms are applied in a cycle within this class.
 
             arm_algo_index = (self.tt_obj.list_of_school_class_arms.index(class_arm) + 1) % len(algorithms_list)
-
+            
             # Every item here is an instance of the DeptEncase class
-            arm_chunk_array = self.prep_dept_freq(class_arm, iterable_from_gui)
+            # arm_chunk_array = self.prep_dept_freq(class_arm, class_arm.get_iterable_from_gui())
+            arm_chunk_array = class_arm.get_dept_teacher_freq_chunk_list()
             
             # Sort the arm_chunk_array such that teachers with less teaching days come first
-            arm_chunk_array.sort(key=lambda deptEncaseItem: len(deptEncaseItem.teacher().teaching_days_s) if deptEncaseItem.teacher() else 0)
+            arm_chunk_array.sort(key=lambda dept_tuple: len(dept_tuple[1].teaching_days) if dept_tuple[1] else 1000)
             displaced_depts = []
             arms_day_container = {day:[] for day in class_arm.get_class_arm_days}
 
-
-            # 1. --- Loop through all the DeptEncase objects in arm_chunk_array and packet them
-            for encase_item in arm_chunk_array:
-                dept, teacher = encase_item.dept_obj, encase_item.teacher()
-                encase_item.reg_with_teacher()
+            # 1. --- Loop through all the tuples in arm_chunk_array and packet them
+            for dept,teacher,freq,chunk in arm_chunk_array:
+                # Register this class arm with the teacher
+                teacher.add_dept_arm_freq_to_teacher(dept, class_arm, frequency=freq)
 
                 # Teacher might not be assigned yet, but if he has been, run the entire process...
                 if teacher:
                     # Legal days are the teacher's teaching days that coincide with the arms' teaching days
                     legal_days = list(teacher.teaching_days_s & set(class_arm.get_class_arm_days))
                     legal_days.sort(key=lambda day: self.tt_obj.list_of_days.index(day))
-                    chunk_limit = math.ceil(encase_item.frequency / len(legal_days))
+                    chunk_limit = math.ceil(freq / len(legal_days))
 
-                    chunk_for_spread = encase_item.chunk if encase_item.chunk > chunk_limit else chunk_limit
+                    # the chunk for spread (just in case the chunk from the user in the GUI is too small)
+                    chunk_for_spread = max((chunk, chunk_limit))
+
                     # shredded: the list of packeted values e.g [2,2,2,1] and packets_num: the length of 'shredded'.
-                    shredded, packets_num = encase_item.get_spread(chunk=chunk_for_spread)
-
+                    shredded, packets_num = self.shredder(freq, bit=chunk_for_spread)
                     # ---- Feed the packets into the algorithm
                     day_packet = algorithms_list[arm_algo_index](packets_num, len(legal_days))
 
-            
                     for shred_num, packet_num in zip(shredded, day_packet):
                         print(f"legal_days_length: {legal_days} ::len {len(legal_days)} -->>packets num {packets_num} --  {packet_num} --d-packet {day_packet}")
                         curr_day = legal_days[packet_num]
                         # Length of the periods for this arm today
-                        width = len(class_arm.periods[curr_day])
+                        width = class_arm.period_count_per_day(curr_day, include_nonacads=False)
                         for _ in range(shred_num):
                             if len(arms_day_container[curr_day]) < width:
                                 # if there is room in the arms_day_container today, add this dept
@@ -433,12 +382,11 @@ class TimetableSorter:
         for count, arm in enumerate(self.tt_obj.list_of_school_class_arms, start=1):
             # Run the packeting inner function for each class arm
             # try:
-            _packet_depts_into_one_arm(arm, iterable_from_gui)
+            _packet_depts_into_one_arm(arm)
             # except IndexError:
                 # pass
             # finally:
             beam_val = round(count*beam_max_value/len_arms)
-
             yield beam_val
             
 
@@ -513,8 +461,6 @@ class TimetableSorter:
                                 break
 
                         else:
-                            # print(f"REPACKETING ERROR, COULDN'T REPACKET {arm, dept, teacher}.")
-                            # raise Tt_exceptions.SomethingWentWrong(f"ERROR IN PACKETING: {dept} might need more teachers", extra=dept)
                             repacket_defaulters.add(dept)
 
 
@@ -528,49 +474,37 @@ class TimetableSorter:
         beam_width = beam_max_value - beam_min_value
         len_teachers = len(self.tt_obj.list_of_all_teachers)
 
-        for count, teacher in enumerate(self.tt_obj.list_of_all_teachers, start=1):
-            # time.sleep(0.01)
+        # -------- TO BE REMOVED ------------        
 
+        for count, teacher in enumerate(self.tt_obj.list_of_all_teachers, start=1):
             _repacket_teacher(teacher)
             beam_val = round((count * beam_width / len_teachers) + beam_min_value)
-            # print(f"beam repacketing: {beam_val}")
-
             yield beam_val
 
-        
+
+        for arm in self.tt_obj.list_of_school_class_arms:
+            # copy the packeted depts into the arm permanently for use in the 'advanced' section
+            for day, depts_list in arm.temp_dept_holder_for_days.items():
+                arm.perm_dept_holder_for_days[day] = depts_list.copy()
+
+
         # After the packeting operation, if the set of repacket_defaulters is not empty, an exception is raised
-        self.packet_repacket_defaulters = None    # TO BE CLEANED OFF SOON!!!!
+        self.packet_repacket_defaulters = None
         if repacket_defaulters:
             # instance variable to be used outside this module
             self.packet_repacket_defaulters = repacket_defaulters
             raise Tt_exceptions.SomethingWentWrong(repacket_defaulters)
 
-        # ------------ To be removed later ------------------
-        for teacher in self.tt_obj.list_of_all_teachers:
-            print(teacher, [len(day.teachers_depts_today(teacher)) for day in self.tt_obj.list_of_days], 
-                teacher.teachers_freq_average, teacher.str_teacher_depts)
-
 
     def undo_packeting(self, beam_max_value=100):
         """ Handles removing all the subjects packeted(and repacketed) to all the days of the week """
-
         len_arms = len(self.tt_obj.list_of_school_class_arms)
         for count, arm in enumerate(self.tt_obj.list_of_school_class_arms, start=1):
             # time.sleep(0.01)
             arm.temp_dept_holder_for_days.clear()
+            arm.perm_dept_holder_for_days.clear()
             beam_val = round((count*beam_max_value/len_arms))
             yield beam_val
-
-
-    def print_arms_temp_holder(self):
-        """STRICTLY FOR TESTING. prints out all the arms and their arms_temp_dept_holder just after packeting repacketing to check"""
-        print()
-        print("----------------------TESTING PACKETING REPACKETING--------------------------")
-        for arm in self.tt_obj.list_of_school_class_arms:
-            print(f"--------- {arm} --------")
-            for day, depts_list in arm.temp_dept_holder_for_days.items():
-                print(f"{day} --->> {depts_list}")
-            print()
 
 
     # --------------------------------------------------------------------------------------------------
@@ -580,16 +514,7 @@ class TimetableSorter:
         This is to know which periods have already been nailed down to each teacher across the class arms during the chunking """
 
         # make instances of the ArmsPeriodsLeft or whatever class
-        return {arm: self.ArmPeriodsLeft(arm, day_obj) for arm in self.tt_obj.list_of_school_class_arms}
-
-
-    def check_arms(self):
-        """FOR TESTING."""
-        for arm in self.tt_obj.list_of_school_class_arms:
-            print("-"*40)
-            for day, depts in arm.temp_dept_holder_for_days.items():
-                print(f"{day} --> {len(depts)}")
-
+        return {arm: self.ArmPeriodsLeft(arm, day_obj) for arm in day_obj.school_class_arms_today}
 
 
     def algosort_teachers_per_day(self, day_obj, algorithm, reference_arm=None,reference_arm_index=0):
@@ -639,9 +564,7 @@ class TimetableSorter:
 
                 # It teacher has already been chunked with all the arms he's teaching, kindly exclude him
                 if teacher in touched_teachers:
-                    # ref_arm.remove_dept_from_arm_temp_holder_for_days(dept, day_obj)
                     continue
-
                 touched_teachers.append(teacher)
                 # -----------------------------------------------------------------------
                 # The inner Counter is for counting the occurences of depts in the teacher key-val pair
@@ -653,8 +576,6 @@ class TimetableSorter:
                 # The Count_with_order function is used instead of counter, to preserve the order of the items
                 # -----------------------------------------------------------------------------------
                 chunk_sequence = Tt_algo_calc.Count_with_order(list(Tt_algo_calc.Count_with_order(day_obj.teachers_depts_today(teacher)).values()))
-                # chunk_sequence = Tt_algo_calc.Count_with_order(list((Tt_algo_calc.Count_with_order(day_obj.teachers_depts_today(teacher)))))
-                # print(f"chunk sequence: {chunk_sequence}")
                 # -------------------------------------------------------------------------------------------------
                 # --------------------------- FEED INTO THE CHUNKING ALGORITHM ------------------------------------
                 # -------------------------------------------------------------------------------------------------
@@ -665,48 +586,13 @@ class TimetableSorter:
                 teacher_chunk_numbers = Tt_algo_calc.Moveover(teacher_chunk_numbers, array)
                 teacher_chunk_numbers = Tt_algo_calc.align_chunklist_to_weightlist(teacher_depts_weight, teacher_chunk_numbers)
 
-                # Just in the case the 'teacher_chunk_numbers' overlaps in places, move it over. However in moving it over,
-                # sometimes we might move backward if we can no longer move forward, backward would imply that the teachers lowest value is
-                # not in the list of the chunk numbers of the ref_arm. we cannot allow that, so we popout the last item and move it over afresh till
-                # we exhaust the list (if we have to)
-
-                # chunk_number_popouts = []
-
-                # for _ in teacher_chunk_numbers.copy():
-                #     print(f"Teacher chunk numbers: {teacher_chunk_numbers} -- Arms periods left: {ArmsPeriodsLeft_objs[ref_arm].periodsint_list}")
-                #     teacher_chunk_numbers = Tt_algo_calc.Moveover(teacher_chunk_numbers, array)
-
-                #     if min(Tt_algo_calc.strip_list_wrapper(teacher_chunk_numbers)) in ArmsPeriodsLeft_objs[ref_arm].periodsint_list:
-                #         break
-                #     chunk_number_popouts.insert(0, teacher_chunk_numbers.pop())
-
-
-                # # if chunk_number_poputs is not empty
-                # if chunk_number_popouts:
-                #     popout_depts = Tt_algo_calc.Set_with_order(day_obj.teachers_depts_today(teacher)[-1*len(chunk_number_popouts):])
-                #     joint_depts_chunk = zip(popout_depts, chunk_number_popouts)
-
-
-                #     for (arm, dept), chunk in joint_depts_chunk:
-                #         arm.remove_dept_from_arm_temp_holder_for_days(dept, day_obj)
-                #         # --- Add this teacher to the self.displaced_teachers dictionary
-                #         if teacher not in self.displaced_teachers:
-                #             self.displaced_teachers[teacher] = {}
-                #         if day_obj not in self.displaced_teachers[teacher]:
-                #             self.displaced_teachers[teacher][day_obj] = []
-                #         self.displaced_teachers[teacher][day_obj] += [self.teacher_n_chunk(arm, chunk, dept)]
         
-
-                # print(f"PROFILE: {day_obj.teachers_depts_today(teacher)}")
-                # print(f"Teacher: {teacher} -- chunk profile: {teacher_chunk_numbers} -- {day_obj}")
-
                 ref_arm_details = []
                 for (arm, dept), chunk in zip(Tt_algo_calc.Set_with_order(day_obj.teachers_depts_today(teacher)), teacher_chunk_numbers):
 
                     if arm == ref_arm:
                         holder = self.arm_n_chunk(dept, chunk, teacher)
                         ref_arm_details.append(holder)
-
                     t_holder = self.teacher_n_chunk(arm, chunk, dept)
 
                     if not teacher in Teachers_and_chunked_val:
@@ -718,7 +604,6 @@ class TimetableSorter:
                 translate = [detail.chunk for detail in ref_arm_details]
                 # Get the absolute highest value in the list for the chunked values for this arm so we can shift by that
                 shift_val = max(Tt_algo_calc.strip_list_wrapper(translate)) if translate else 0
-                # shift_val = min(ArmsPeriodsLeft_objs[ref_arm].periodsint_list)
 
                 # ------------------------------------------------------------------------------------------------------------------
                 # 1. Go through all the periods in the ref_arm and "Moveover" the periods chunk values for good measure
@@ -841,10 +726,7 @@ class TimetableSorter:
 
         # the below returns a dictionary with the number of periods as value and the arm as the key
         all_armsperiods_today_dict = day_obj.all_classarm_periods_for_today()
-        # Find the average of the length of the periods of all the classes for today
-         # to get the average period length for chunking
-        avg_period_len = sum([len(all_armsperiods_today_dict[arm]) for arm in all_armsperiods_today_dict]) // len(all_armsperiods_today_dict)
-    
+        avg_period_len = day_obj.get_average_period_length_today()
         # A refence class arm is needed to help be the anchor for our chunking.
         ref_arm = reference_arm if reference_arm else day_obj.arms_today_list[reference_arm_index]
 
@@ -868,7 +750,7 @@ class TimetableSorter:
         touched_teachers = []
         # Below.. Stored in the variable self.sort_algorithm to be called from the details module
         self.sort_algorithm = algorithm
-        for arm in self.list_from_reference_arm[:]:
+        for arm in self.list_from_reference_arm:
             arms_teachers_sort(arm, array=avg_period_len)
 
         # Also add all the teachers who have had no problems so far -- ready teachers
@@ -878,7 +760,8 @@ class TimetableSorter:
 
 
     def initial_algosort(self, algorithm_text, reference_day=None, reference_arm=None, beam_max_value=40):
-        """ Runs the sorting algorithm for all the days of the week (displaced_teachers are not yet considered) """
+        """ Runs the sorting algorithm for all the days of the week (displaced_teachers are not yet considered).
+        reference day and reference arm are the actual objects """
 
         # Get the working algorithm
         algorithm = self.sort_algorithms[algorithm_text]
@@ -886,7 +769,7 @@ class TimetableSorter:
 
         # Rotate this list with respect to the reference day
         days_list = self.tt_obj.list_of_days if not reference_day else self.rotate_list(self.tt_obj.list_of_days, item=reference_day)
-        for count, day_obj in enumerate(self.tt_obj.list_of_days, start=1):
+        for count, day_obj in enumerate(days_list, start=1):
             # time.sleep(0.01)
             self.algosort_teachers_per_day(day_obj, algorithm, reference_arm=reference_arm, reference_arm_index=0)
             beam_val = round(count * beam_max_value / len_days)
@@ -899,9 +782,17 @@ class TimetableSorter:
         the beam value in this method """
 
         # ---------------------------------------------------------------------------------------------
+        def algo_teachers_teaching_days(teacher):
+            """ returns the days in which a teacher teaches after his periods have been sorted by the algorithm """
+            algo_teaching_days = []
+            for day, teachers_dict in self.All_Teachers_and_chunked_val.items():
+                if teacher in teachers_dict:
+                    algo_teaching_days.append(day)
+            return algo_teaching_days
+
+
         # ---------------------------------------------------------------------------------------------
         # Inner class to update Teacher_and_chunked_val as well as Arm_and_chunked_val
-
         def update_teacher_and_arm(day, dept, new_chunk, teacher=None, arm=None):
             """ Inner function to put new chunk values into the teacher_and _chunked_val and Arm_and_chunked_val
             on a particular day. new_chunk from the arg is cast into a list that encloses the new chunk value, even if it was a list before.
@@ -919,12 +810,10 @@ class TimetableSorter:
                         if _arm_ == arm and _dept_ == dept:
                             new_list = [_chunk_] + [new_chunk_val]
                             # Replace the whole named_tuple at this position "index"
-                            # print(f"INNING: {self.All_Armperiodsleft[day][arm].periodsint_list} __ chunk_val: {new_list}")
                             self.All_Teachers_and_chunked_val[day][teacher][index] = self.teacher_n_chunk(arm, new_list, dept)
                             break
                     else:
                         # If this arm does not already exist in the dictionary today
-                        # print(f"OUTING: {self.All_Armperiodsleft[day][arm].periodsint_list} __ chunk_val: {new_chunk_val}")
                         self.All_Teachers_and_chunked_val[day][teacher].append(self.teacher_n_chunk(arm, new_chunk_val, dept))
                     
                 self.All_Armperiodsleft[day][arm].pop_out_period_val(new_chunk_val)
@@ -985,11 +874,15 @@ class TimetableSorter:
             # List to determine whether all details in chunk_list are have been handled
 
             # Days among teacher's teaching days in which he actually teaches
-            work_day= [day for day in teacher.teaching_days if teacher in day.get_all_teachers_today_from_depts_assgn()]
+            work_day= [day for day in teacher.teaching_days if day in algo_teachers_teaching_days(teacher)]
             # Days among teachers teaching days in which he does not teach
-            free_day = [day for day in teacher.teaching_days if teacher not in day.get_all_teachers_today_from_depts_assgn()]
+            free_day = [day for day in teacher.teaching_days if not day in algo_teachers_teaching_days(teacher)]
             # days in which teacher may not come to work. He (ideally) shouldnt teach on this days
-            over_day = [day for day in self.tt_obj.list_of_days if day not in teacher.teaching_days]
+            # over_day = [day for day in self.tt_obj.list_of_days if day not in teacher.teaching_days]
+
+            print()
+            print(f"This is WORK DAY: {work_day}")
+            print(f"This is FREE DAY: {free_day}")
 
             # for index, dict_item in enumerate(teacher_chunk):
                 # print(f"This is day_chunk: {day_chunk}")
@@ -1005,8 +898,8 @@ class TimetableSorter:
                     
                     self.handled = False
                     patch_teachers(free_day, x_info="On free day.")
-                    patch_teachers(work_day, x_info="On my works days")
-                    patch_teachers(over_day, x_info="Overtime days")
+                    patch_teachers(work_day, x_info="On work days")
+                    # patch_teachers(over_day, x_info="Overtime days")
                     
                     if self.handled:
                         handled_list.remove(details)
@@ -1086,6 +979,178 @@ class TimetableSorter:
             yield beam_val
 
 
+
+
+    def Sort_manager(self, algorithm, reference_arm=None, sort_beam_max=40, handle_displaced_beam_max=20,
+        clean_out_beam_max=10, map_finished_beam_max=30):
+        """This method handles the operation of the algo_sort for every day and handles displaced teachers by seeking to reassign them """
+
+        for day_obj in self.tt_obj.list_of_days[:]:
+            self.algosort_teachers_per_day(day_obj, algorithm, reference_arm=reference_arm, reference_arm_index=0)
+            
+
+        self.before_dict = self.displaced_teachers.copy()
+
+        # self.print_all_arms()
+        self.handle_displaced_teachers()
+        self.clean_out_displaced_teachers()
+
+        # map results to arm
+        self.map_chunk_to_arms_periods()
+
+        # Map results to teachers
+        self.map_finished_arm_chunk_dept_to_teacher()
+
+    
+
+
+    def Arms_and_chunked_val(self):
+        """ Make a dictionary of all the chunks per day based on the arm, and not the teacher this time """
+        container = {}
+        for day, t_dict_item in self.All_Teachers_and_chunked_val.items():
+            container[day] = {}
+            for teacher, t_details_list in t_dict_item.items():
+                for arm, chunk, dept in t_details_list:
+                    if arm not in container[day]:
+                        container[day][arm] = []
+                    container[day][arm].append(self.arm_n_chunk(dept, chunk, teacher))
+        return container
+
+
+    def map_finished_arm_chunk_dept_to_teacher(self):
+        """FINAL PROCESS OF THE SORTING OPERATION. As soon as the sorting is all done, add this arm_chunk_dept values from All_teachers_and_chunked_val
+        to each of the teacher objects in the All_teachers_and_chunked_val dictionary """
+        for day, teacher_dict in self.All_Teachers_and_chunked_val.items():
+            for teacher, chunk_list in teacher_dict.items():
+                # teacher.add_finished_day_arm_chunk_dept_to_teacher(day, chunk_list)
+                for arm, chunk, dept in chunk_list:
+                    # Also add this details to the dept object at once
+                    dept.add_finished_chunk_details_to_dept(arm, chunk, teacher, day)
+                    teacher.add_finished_day_arm_chunk_dept_to_teacher(day, (arm, chunk, dept))
+                    if dept.is_parallel:
+                        for _teacher_ in dept.get_teacher_pair_given_teacher(teacher):
+                            _teacher_.add_dept_to_teacher(dept)
+                            _teacher_.add_finished_day_arm_chunk_dept_to_teacher(day, (arm, chunk, dept))
+
+
+    def how_many_more_teachers_for_sort(self):
+        """ Method that calculates the number of teachers needed for the defaulting subjects after the sorting """
+
+        # Get the max number of teachers ever possible as an upper bound (This is the total number of periods for all tha arms)
+        if self.displaced_teachers:
+            max_number_of_teachers = sum([arm.period_count_total(include_nonacads=False) for arm in self.tt_obj.list_of_school_class_arms])              
+            # Get all the defaulting depts
+
+
+
+
+
+    # ---------------------------------------------------------------------------------------------------------------
+    # --------------------- METHODS TO HANDLE THE "ADVANCED SETTINGS" -----------------------------------
+
+    def calc_teachers_spacing_per_algorithm(self, reference_arm_obj=None, reference_day_obj=None):
+        """ calculates the spacing of the teachers with all the algorithms in turn """
+
+        # --------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------
+        def calc_spacing_function(space, denominator):
+                """ Inner function to calculate the spacing of an item based on the sine curve """
+                return round(4*space*(1 - (space/denominator))/denominator, 3)
+
+        def calc_spacing(list_argument, periods_range_num):
+            """ Handles the teaching efficiency calculation for the items in a list (list of integers).
+            'periods_range_num' (INT) represents the total number of room available over which the spacing can be calculated. """
+            list_arg = Tt_algo_calc.strip_list_wrapper(list_argument)
+            list_arg_length = len(list_arg)
+            if list_arg_length <= 1:
+                return 0
+         
+            eff_list = []
+            for k in range(list_arg_length):
+                if k != 0:
+                    eff_list.append(list_arg[k] - list_arg[k - 1] - 1)
+            return sum([calc_spacing_function(m, periods_range_num) for m in eff_list])
+        # -----------------------------------------------------------------------------------
+        # -----------------------------------------------------------------------------------
+
+        # The dictionary to hold the hold the key(alg_name_str) and ineer dictionaries of each teacher and its spacing values
+        teacher_space_dict_by_algo = {}
+        days_list = self.tt_obj.list_of_days if not reference_day_obj else self.rotate_list(self.tt_obj.list_of_days, item=reference_day_obj)
+            
+        # Now run all the algorithms in tow
+        for algorithm in self.sort_algorithms.values():
+            # Clear the dictionary to hold the contents of the teachers
+            self.All_Teachers_and_chunked_val.clear()
+
+            for arm in self.tt_obj.list_of_school_class_arms:
+                # restore the packeted depts into temp_dept_holder_for_days
+                arm.temp_dept_holder_for_days.clear()
+
+                for day, depts_list in arm.perm_dept_holder_for_days.items():
+                    arm.temp_dept_holder_for_days[day] = depts_list.copy()
+
+
+            for day_obj in days_list:
+                self.algosort_teachers_per_day(day_obj, algorithm, reference_arm=reference_arm_obj, reference_arm_index=0)
+            
+            handle_and_clean_out_teachers = self.handle_displaced_teachers(), self.clean_out_displaced_teachers()
+
+            for operation in handle_and_clean_out_teachers:
+                loop = True
+                while loop:
+                    try:
+                        next(operation)
+                    except Tt_exceptions.SomethingWentWrong:
+                        print(f"Algorithm {algorithm.__name__} errored out!!")
+                    except StopIteration:
+                        loop = False
+            
+            # dict to hold teacher:[spacing value (number), amount_of days] for this algorithm
+            teacher_spacing_dict = {}
+            # Now check the teachers and chunked val dictionary for each of the algorithms
+            for day, teachers_dict in self.All_Teachers_and_chunked_val.items():
+                for teacher, chunk_details in teachers_dict.items():
+                    # Get all the chunk values
+                    chunk_list = map(lambda detail: detail.chunk, chunk_details)
+                    chunk_list = sorted(Tt_algo_calc.strip_list_wrapper(chunk_list))
+                    # get the average length of a period today
+                    avg_period_length = day.get_average_period_length_today()
+                    spacing = calc_spacing(chunk_list, avg_period_length)
+
+                    if not teacher in teacher_spacing_dict:
+                        teacher_spacing_dict[teacher] = [0,0]
+                    teacher_spacing_dict[teacher][0] += spacing
+                    teacher_spacing_dict[teacher][1] += 1
+
+            # Now feed the details of the teacher_spacing_dict into the teacher_space_dict_by_algo
+            # Morphe the details of the teacher_spacing_dict
+            for teacher, (spacing, recurrence) in teacher_spacing_dict.copy().items():
+                # Put the  spacing divided by the number of days to a deci,al place of 4
+                teacher_spacing_dict[teacher] = round(spacing / recurrence, 4)
+
+            # Add this dictionary into the teacher_space_dict_by_algo as the value to the algorithm_name (the key)
+            teacher_space_dict_by_algo[algorithm.__name__] = teacher_spacing_dict
+
+
+        # JUST TO TEST WITH
+        print("--------    --------   ------- SPACING -------   --------   ---")
+        print(teacher_space_dict_by_algo)
+
+        return teacher_space_dict_by_algo
+
+
+
+    # ------------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------- METHODS SOLELY FOR TESTING -----------------------------
+
+    def check_arms(self):
+        """FOR TESTING."""
+        for arm in self.tt_obj.list_of_school_class_arms:
+            print("-"*40)
+            for day, depts in arm.temp_dept_holder_for_days.items():
+                print(f"{day} --> {len(depts)}")
+
+
     def sort_thru_days(self, algorithm, reference_arm=None):
         """ STRICTLY FOR TESTING. """
         for day_obj in self.tt_obj.list_of_days[:]:
@@ -1109,38 +1174,6 @@ class TimetableSorter:
             
             print()
             print(f".............. {arm} ...............")
-
-
-    def Sort_manager(self, algorithm, reference_arm=None, sort_beam_max=40, handle_displaced_beam_max=20,
-        clean_out_beam_max=10, map_finished_beam_max=30):
-        """This method handles the operation of the algo_sort for every day and handles displaced teachers by seeking to reassign them """
-
-        for day_obj in self.tt_obj.list_of_days[:]:
-            self.algosort_teachers_per_day(day_obj, algorithm, reference_arm=reference_arm, reference_arm_index=0)
-            
-        print()
-        print(self.displaced_teachers)
-        # before = len(self.displaced_teachers)
-        # Just for testing
-
-        self.before_dict = self.displaced_teachers.copy()
-
-        # self.print_all_arms()
-        self.handle_displaced_teachers()
-        self.clean_out_displaced_teachers()
-
-        # map results to arm
-        self.map_chunk_to_arms_periods()
-
-        # Map results to teachers
-        self.map_finished_arm_chunk_dept_to_teacher()
-
-        print()
-        # print("DISPLACED TEACHERS")
-        print(self.displaced_teachers)
-        
-        print()
-        print(before, len(self.displaced_teachers))
 
 
     def check_arms_temp_dept_holder(self):
@@ -1182,7 +1215,6 @@ class TimetableSorter:
 
     def check_armperiods_left(self):
         """FOR TESTING. returns the number of periods left for every class arm for every day """
-
         for arm in self.tt_obj.list_of_school_class_arms:
             sum_ = 0
             for day, left_dict in self.All_Armperiodsleft.items():
@@ -1190,18 +1222,20 @@ class TimetableSorter:
             print(f"{arm.full_name} ---> {sum_}")
 
 
-    def Arms_and_chunked_val(self):
-        """ Make a dictionary of all the chunks per day based on the arm, and not the teacher this time """
-        container = {}
-        for day, t_dict_item in self.All_Teachers_and_chunked_val.items():
-            container[day] = {}
-            for teacher, t_details_list in t_dict_item.items():
-                for arm, chunk, dept in t_details_list:
-                    if arm not in container[day]:
-                        container[day][arm] = []
-                    container[day][arm].append(self.arm_n_chunk(dept, chunk, teacher))
-        return container
-
+    def render_all_arms_periods(self):
+        """ FOR TESTING? This method renders all the arms with their periods after the chunking process has been carried out """
+        for arm in self.tt_obj.list_of_school_class_arms:
+            print(f"-------------- {arm} ----------------")
+            for day, arm_dict in self.Arms_and_chunked_val().items():
+                arm_list, chunk_list = [], []
+                for arm_details in arm_dict.setdefault(arm, []):
+                    dept, chunk, _ = arm_details
+                    count = 1 if isinstance(chunk, int) else len(Tt_algo_calc.strip_list_wrapper(chunk))
+                    chunk_list.append(chunk)
+                    for _ in range(count):
+                        arm_list.append(dept)
+                print(f"{day} ===> == {chunk_list}")
+            print()
 
     def inspect_arms_and_teachers(self):
         """ FOR TESTING. """
@@ -1212,52 +1246,9 @@ class TimetableSorter:
             for day, dict_item in self.Arms_and_chunked_val().items():
                 if arm in dict_item:
                     print(f"{day}, {arm} --> {len(Tt_algo_calc.strip_list_wrapper([elem.chunk for elem in dict_item[arm]]))} -- {Tt_algo_calc.strip_list_wrapper([elem.chunk for elem in dict_item[arm]])} ")
-    
-
-
-    def map_finished_arm_chunk_dept_to_teacher(self):
-        """ESPECIALLY FOR DETAILS OR REPORT. As soon as the sorting is all done, add this arm_chunk_dept values from All_teachers_and_chunked_val
-        to each of the teacher objects in the All_teachers_and_chunked_val dictionary """
-        for day, teacher_dict in self.All_Teachers_and_chunked_val.items():
-            for teacher, chunk_list in teacher_dict.items():
-                # teacher.add_finished_day_arm_chunk_dept_to_teacher(day, chunk_list)
-                for arm, chunk, dept in chunk_list:
-                    teacher.add_finished_day_arm_chunk_dept_to_teacher(day, (arm, chunk, dept))
-                    # Also add this details to the dept object at once
-                    dept.add_finished_chunk_details_to_dept(arm, chunk, teacher, day)
-
-
-
-    def render_all_arms_periods(self):
-        """ FOR TESTING? This method renders all the arms with their periods after the chunking process has been carried out """
-        # for arm in self.tt_obj.list_of_school_class_arms:
-        #     print(f"--------------- {arm} --------------")
-        #     for day, periods_list in arm.periods.items():
-        #         print(f"{day} ==> {'| '.join([period.period_name for period in periods_list])}")
-        #     print()
-
-        for arm in self.tt_obj.list_of_school_class_arms:
-            print(f"-------------- {arm} ----------------")
-            for day, arm_dict in self.Arms_and_chunked_val().items():
-                arm_list, chunk_list = [], []
-                for arm_details in arm_dict.setdefault(arm, []):
-                    dept, chunk, _ = arm_details
-                    count = 1 if isinstance(chunk, int) else len(Tt_algo_calc.strip_list_wrapper(chunk))
-                    chunk_list.append(chunk)
-                    
-                    for _ in range(count):
-                        arm_list.append(dept)
-                print(f"{day} ===> == {chunk_list}")
-            print()
 
 
     # ------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------
     # STATIC METHODS BELOW
-    dept_shredder = staticmethod(department_shredder)
     rotate_list = staticmethod(Tt_algo_calc.Translate_list_items)
-
-
-
-if __name__ == "__main__":
-    print(TimetableSorter.rotate_list(list(range(1,16)), item=9, base_index=0))

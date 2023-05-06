@@ -1,17 +1,61 @@
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from ..models import Tt_manager, Tt_algo
 from ..models.Tt_models import TimeTable as tt
-from . import Tt_period_widgets
 
 
 # def widget_for_tree(icon_path="../Icons-mine/teacher.png",label_text="", with_checkbox=False):
     # """Function to generate the widgets which would go into the trees in the gui, rather than mere text"""
 
+class LoadingFrame(QtWidgets.QWidget):
+    """ class that handles the mini frame that shows up when stuff is loading """
+    def __init__(self):
+        super().__init__()
+        # Load the ui file
+        uic.loadUi("TIMETABLE/gui/load_screen.ui", self)
+        self.setWindowFlags(QtCore.Qt.SplashScreen|QtCore.Qt.FramelessWindowHint)
+        self.show()
+
+
+def get_detailed_info_from_fac_or_dept(model_obj, identifier):
+    """ STR. Returns an HTML string of detailed info from 'model_obj' depending on whether it is a department (faculty) object
+    or a dept (subject) """
+
+    # If it is a faculty object
+    style = """
+        font-family:arial;
+    """
+    if 'fac' in identifier:
+        return f"""
+            <html>
+            <style>{style}</style>
+            <p style="font: 10pt arial">Department name: {model_obj.full_name}. </p>
+            <p>Head of department: <strong>{model_obj.HOD}</strong></p>
+            <p>Number of constituent subjects: {len(model_obj.depts_list)}.</p>
+            <p>Description: {model_obj.description} </p>
+            </html>
+            """
+    # Else, if it is a subject
+    return f"""
+            <html>
+            <style>{style}</style>
+            <p style="font: 10pt arial;">Subject/course ID and full name: <strong>{model_obj.full_name}</strong></p>
+            <p>Headed by: <strong>{model_obj.hos}</strong>
+            <p>Mother Department: <strong>{model_obj.faculty.full_name}</strong></p>
+            <p>This subject, based on its structural attributes, weighs <strong>{model_obj.dept_ATPG()}</strong> on the ATPG-
+            course structure scale.
+            <br>
+            <p style="font: 8pt arial;">N.B: The ATPG scale is not by any means a measure of the importance of a subject/course. Such judgement is within the descretion
+            of the school or Ministry of Education or the presiding institution(s) involved. This rating simply helps sort the subjects.</p>
+            <p>Number of resident teachers: {len(model_obj.teachers_list)}</p>
+            </html>
+            """
+
 
 # ------------------------------------------------------------------------------------------------------------------
 class WidgetTree(QtWidgets.QWidget):
     """Class to generate the widgets which would go into the trees in the gui, rather than mere text"""
-    def __init__(self,icon_path="../Icons-mine/teacher.png",icon_width=14, icon_height=16, label_text="",extra_text="",with_checkbox=False):
+    def __init__(self,icon_path="TIMETABLE/Icons-mine/teacher.png",icon_width=14, icon_height=16,
+        label_text="", extra_text="", with_checkbox=False):
         super().__init__()
         self.setGeometry(QtCore.QRect(20, 20, 194, 51))
         self.resize(31, 191)
@@ -83,6 +127,321 @@ class MySpinBox(QtWidgets.QSpinBox):
 
 
 
+class ModelDetailWindow(QtWidgets.QDialog):
+    """This class handles the small window that would show details for arm, teachers, subjects etc on click"""
+    def __init__(self, tt_obj):
+        super().__init__()
+        self.tt_obj = tt_obj
+        uic.loadUi("TIMETABLE/gui/model_info_window.ui", self)
+        self.setWindowTitle("display Information")
+        self.setWindowFlags(QtCore.Qt.SplashScreen|QtCore.Qt.FramelessWindowHint)
+
+        self.cancel_btn = self.findChild(QtWidgets.QPushButton, "cancel_btn")
+        self.textEdit = self.findChild(QtWidgets.QTextEdit, "textEdit")
+
+        self.cancel_btn.clicked.connect(lambda :self.close())
+        self.show()
+
+    def get_details_load_on_dialog(self, str_arg):
+        """ Loads the model_details from the ModelDetails class """
+        model_detail = ModelDetails(self.tt_obj)
+        self.textEdit.setHtml(model_detail.get_model_details_by_key(str_arg))
+
+
+class ModelDetails:
+    """ Handles the generating the details of models (in HTML) to be shown on the gui with the appropriate QSS styling"""
+    def __init__(self, tt_obj):
+        self.tt_obj = tt_obj
+
+
+    def _bulleted_items_from_list(self, iterable, ordered=False):
+        """ Takes each item in a list (or an iterable, really) and makes them into HTML list items """
+        ordered_tag_open = "<ol>" if ordered else "<ul>"
+        ordered_tag_close = "</ol>" if ordered else "</ul>"
+
+        bulleted_list = f"""{ordered_tag_open}"""
+        
+        for elem in iterable:
+            bulleted_list += f"""<li>{elem}</li>""" 
+        bulleted_list += f"""{ordered_tag_close}"""
+        return bulleted_list
+
+
+    def _css_style(self):
+        """ Returns a string of the css styles needed to make the text presentable """
+        return """
+        h4{color: #373737; font-size: 11pt; font-weight:bold; font-family: cambria, sans-serif;}
+        h5{color: #373737; font-size: 9pt; font-weight:bold; font-family: cambria, sans-serif;}
+        p{color:#242424; font-size:8pt; font-family: calibri, tahoma;}
+        .emphasis{color: #4848ff; font-weight:normal; font-size:8pt;}
+        .mid-emphasis{color:#5c5c5c; font-size:6pt; font-weight:normal; font-family: calibri, tahoma;}
+        .soft-emphasis{color:#5b5bff; font-size:5pt; font-weight:normal; font-family: calibri, tahoma;}
+        """
+
+
+    def get_class_categories_details(self):
+        """ Returns details about all class_categories created to be displayed on the GUI """
+        class_groups = self.tt_obj.list_of_school_class_groups
+        class_group_classes = {class_group:[clss.full_name for clss in class_group.school_class_list]
+                            for class_group in class_groups}
+        class_group_names = [class_group.full_name for class_group in class_group_classes]
+
+        class_count = 0
+        class_group_classes_str = ""
+        for class_group, classes_list in class_group_classes.items():
+            class_count += len(classes_list)
+            class_group_classes_str += f"""
+            {class_group.class_group_name}
+            {self._bulleted_items_from_list(classes_list, ordered=False)}
+            <hr>
+            """
+
+        detail_text = f"""
+        <style>{self._css_style()}</style>
+        <h4>CLASS CATEGORY DETAILS</h4>
+        <p>Typically, Class categories (or Class groups) house school classes and in the turn the class arms underneath each of its resident school classes.
+         The already created class categories are as follows:</p> 
+        {self._bulleted_items_from_list(class_group_names, ordered=True)}
+        <p>Total class categories in all: {len(class_group_classes)}</p>
+        <hr>
+        <h5>The resident classes under each of these class categories (groups) are listed below</h5>
+        {class_group_classes_str}
+        <br>
+        <p class="emphasis">Total number of classes: <strong>{class_count}</strong></p>
+         """
+        return detail_text
+
+
+    def get_school_classes_details(self):
+        """ Returns details about all the school classes created """
+        all_classes = self.tt_obj.list_of_school_classes
+        classes_and_arms = {clss:[arm.full_name for arm in clss.school_class_arm_list]
+                        for clss in all_classes}
+        classes_names = [clss.full_name for clss in classes_and_arms]
+
+        arms_count = 0
+        classes_arms_str = ""
+        for clss, arms_list in classes_and_arms.items():
+            arms_count += len(arms_list)
+            classes_arms_str += f"""
+            {clss.full_name}
+            {self._bulleted_items_from_list(arms_list, ordered=False)}
+            <hr>
+            """
+
+        detail_text = f"""
+        <style>{self._css_style()}</style>
+        <h4>CLASS/GRADE/LEVEL DETAILS</h4>
+        <p>Typically, the school class houses class arms.The already created classes are as follows:</p>
+        {self._bulleted_items_from_list(classes_names, ordered=True)}
+        <p>Total: {len(classes_names)} classes in all.</p>
+        <hr>
+        <h5>The resident class arms under each of the classes are listed below</h5>
+        {classes_arms_str}
+        <br>
+        <p class="emphasis">Total number of class arms: <strong>{arms_count}</strong></p>
+
+        """
+        return detail_text
+
+
+    def get_school_class_arms_details(self):
+        """ Returns the details of all the school class arms created """
+        all_arms = [arm.full_name for arm in self.tt_obj.list_of_school_class_arms]
+
+        detail_text = f"""
+        <style>{self._css_style()}</style>
+        <h4>CLASS ARM DETAILS</h4>
+        <p>The class arms created so fart are listed below:</p>
+        {self._bulleted_items_from_list(all_arms, ordered=True)}
+        <p class="emphasis">Total: <strong>{len(all_arms)}</strong> in all.</p>
+        """
+        return detail_text
+
+
+    def get_days_details(self):
+        all_days = [day.full_name for day in self.tt_obj.list_of_days]
+        len_all_days = len(all_days)
+
+        detail_text = f"""
+        <style>{self._css_style()}</style>
+        <h4>SCHOOL WEEK DETAILS</h4>
+        <p>The school week so far created consists of the following days listed in chronological order:</p>
+        {self._bulleted_items_from_list(all_days, ordered=True)}
+        <p class="emphasis">Total: <strong>{len_all_days}</strong> in all.</p>
+        """
+        return detail_text
+
+
+
+    def get_teachers_details(self):
+        """ Returns a string of details for all the teachers so far created """
+        all_teachers = self.tt_obj.list_of_all_teachers
+        full_time_teachers = [teacher.full_name for teacher in all_teachers if teacher.regularity]
+        part_time_teachers = [teacher.full_name for teacher in all_teachers if not teacher.regularity]
+
+        detail_text = f"""
+        <style>{self._css_style()}</style>
+        <h4>STAFF DETAILS</h4>
+        <p>Below is the list of all the teachers created so far, categorized by their regularity (consistency).</p>
+        <hr>
+        <h5>FULL-TIME STAFF</h5>
+        {self._bulleted_items_from_list(full_time_teachers, ordered=True)}
+        <p>Total of full-time staff: {len(full_time_teachers)}</p>
+        <hr>
+        <h5>PART-TIME STAFF</h5>
+        {self._bulleted_items_from_list(part_time_teachers, ordered=True)}
+        <p>Total of part-time staff: {len(part_time_teachers)}</p>
+        <br>
+        <p class="emphasis">Total number of staff (full-time and part-time): <strong>{len(all_teachers)}</strong></p>
+        """
+        return detail_text
+
+
+    def get_depts_details(self):
+        """ Returns HTML details for all the subjects created """
+        all_subjs = self.tt_obj.list_of_departments
+        subjs_non_para = [f'{subj.full_name}<p class="mid-emphasis">Sporting an ATPG rating of: <strong>{subj.dept_ATPG()}</strong></p>' for subj in all_subjs if not subj.is_parallel]
+        subjs_para = [f'{subj.full_name}<p class="mid-emphasis">Sporting an ATPG value of: <strong>{subj.dept_ATPG}</strong></p><p>Constituent subjects: {len(subj.parallel_names)}</p>'
+        for subj in all_subjs if subj.is_parallel]
+
+        detail_text = f"""
+        <style>{self._css_style()}</style>
+        <h4>SUBJECTS/COURSES DETAILS</h4>
+        <p>The subjects/courses created so far for this timetable are listed below; the non-parallel subjects first then the parallel subjects.</p>
+        <h5>NORMAL (NON-PARALLEL) SUBJECTS/COURSES</h5>
+        {self._bulleted_items_from_list(subjs_non_para, ordered=True)}
+        <hr>
+        <h5>PARALLEL SUBJECTS/COURSES</h5>
+        {self._bulleted_items_from_list(subjs_para, ordered=True)}
+        <hr>
+        <p class="emphasis">Total number of subjects/courses created: <strong>{len(all_subjs)}</strong></p>
+        """
+        return detail_text
+
+
+    def get_faculty_details(self):
+        all_faculties = [fac.full_name for fac in self.tt_obj.list_of_faculties]
+
+        detail_text = f"""
+        <style>{self._css_style()}</style>
+        <h4>DEPARTMENTS DETAILS</h4>
+        <p>The following are the departments created so far</p>
+        {self._bulleted_items_from_list(all_faculties, ordered=True)}
+        <hr>
+        <p class="emphasis">Departments created so far: {len(all_faculties)}</p>
+        """
+        return detail_text
+
+
+    def make_details_into_dict(self):
+        """ stores the details of the above function into a dictionary """
+        return {
+        "class_cats":self.get_class_categories_details(),
+        "classes": self.get_school_classes_details(),
+        "class_arms":self.get_school_class_arms_details(),
+        "days": self.get_days_details(),
+        "teachers": self.get_teachers_details(),
+        "subjects":self.get_depts_details(),
+        "faculties": self.get_faculty_details()
+        }
+
+
+    def get_model_details_by_key(self, str_arg):
+        """ Returns details to be displayed on the GUI screen according to the string_argument sent from
+        the button """
+        return self.make_details_into_dict().get(str_arg)
+
+
+
+# ------------------------------------------------------------------------------------------------------------------
+# ---------------------- RENDERING THE WIDGETS IN THE GUI WITH TIMETABLE DETAILS -----------------------------------
+# The period frames class
+
+class PeriodFrame(QtWidgets.QFrame):
+    def __init__(self, height=0):
+        super().__init__()
+        uic.loadUi("TIMETABLE/gui/Tt_UI_files/period_indiv_frame.ui", self)
+
+        self.height = height
+        self.teacher_str = None
+        self.dept = None
+        self.faculty = None
+        # ----------------------------
+        # QSS stylesheet to apply to the self.subj_fr (subject self), whether this self has been tracked or not. 
+        self.styles_on_track = {
+        "tracked": "QWidget{\n"
+            "background: #6fff93;\n"
+            "border:none; \n"
+            "border-top:1.5px solid #004a13;\n"
+            "color:#004a13;"
+            "}",
+        "untracked": "QWidget{\n"
+            "border:none;\n"
+            "border-top: 1.5px solid #000059;\n"
+            "}"
+        }
+
+        # get the labels and textedit and all
+        self.period_title_label = self.findChild(QtWidgets.QLabel, "period_title_label")
+        self.period_duration_label = self.findChild(QtWidgets.QLabel, "period_duration_label")
+        self.period_textedit = self.findChild(QtWidgets.QTextEdit, "period_textedit")
+
+    def add_name_duration_content(self, name_id, duration_str, dept_name):
+        """ Method to add name, duration and name of subject to the period_frame widget """
+        self.period_title_label.setText(name_id)
+        self.period_duration_label.setText(duration_str)
+        self.period_textedit.setHtml(f"""
+            <html>
+                <p style="text-align:center; color:#161616;font-size:10pt;
+                font-family: tahoma; font-weight:bold;">{dept_name}</p>
+            </html>
+            """)
+
+    def add_teacher_dept_fac_str(self, teacher_str, dept_str, fac_str):
+        """ sets the self.teacher variable to the full name (str) of the teacher object.
+        Purposefully put here for tracking or None if the teacher does not exist """
+        self.teacher = teacher_str
+        self.dept = dept_str
+        self.faculty = fac_str
+
+    def _colour_based_on_track(self, tracked=False):
+        """ Method to change the design of this frame if it happens to carry a tracked item """
+        tracked_key = "tracked" if tracked else "untracked"
+        self.subj_fr.setStyleSheet(self.styles_on_track[tracked_key])
+
+
+    def _string_matches(self, match_str):
+        """ BOOL. Returns whether or not 'match_str' matches any of this instance's dept, teacher, or faculty values """
+        return match_str in [self.teacher]+[self.dept, self.faculty]
+
+    def match_and_colour_based_on_track(self, match_str):
+        """ Matches 'match_str' with the dept, teacher, faculty parameters and colours the subj_fr if there is 
+        a match """
+        match = self._string_matches(match_str)
+        self._colour_based_on_track(tracked=match)
+
+
+
+class ArmFrame(QtWidgets.QFrame):
+    """ class that designs each of the individual arm or day period widgets, when the timetable is fully rendered """
+    def __init__(self, height=90):
+        super().__init__()
+        uic.loadUi("TIMETABLE/gui/Tt_UI_files/day_arm_frame.ui", self)
+        self.height = height
+        self.day_or_arm_label = self.findChild(QtWidgets.QLabel, "day_or_arm_label")
+        self.day_or_arm_name_label = self.findChild(QtWidgets.QLabel, "day_or_arm_name_label")
+
+
+    def add_arm_fullname(self, title_str, fullname_str):
+        """ Changes the label title into the name of the arm """
+        self.day_or_arm_label.setText(title_str)
+        self.day_or_arm_name_label.setText(fullname_str)
+
+
+
+
+# ---------------------------------------------------------------------------------------------------------
 class PeriodsContainer(QtWidgets.QFrame):
     count = 0
     def __init__(self, class_arm_fullname, day_fullname, width=122, height=42):
@@ -217,159 +576,6 @@ class IndivPeriodsWidget(QtWidgets.QFrame):
                     """)
 
 
-class ModelDetailWindow(QtWidgets.QDialog):
-    def __init__(self, tt_obj):
-        super().__init__()
-        self.tt_obj = tt_obj
-        uic.loadUi("TIMETABLE/gui/model_info_window.ui", self)
-        self.setWindowTitle("display Information")
-        self.setWindowFlags(QtCore.Qt.SplashScreen|QtCore.Qt.FramelessWindowHint)
-
-        self.cancel_btn = self.findChild(QtWidgets.QPushButton, "cancel_btn")
-        self.textEdit = self.findChild(QtWidgets.QTextEdit, "textEdit")
-
-        self.cancel_btn.clicked.connect(lambda :self.close())
-        self.show()
-
-    def get_details_load_on_dialog(self, str_arg):
-        """ Loads the model_details from the ModelDetails class """
-        model_detail = ModelDetails(self.tt_obj)
-        self.textEdit.setHtml(model_detail.get_model_details_by_key(str_arg))
-
-
-class ModelDetails:
-    """ Handles the generating the details of models (in HTML) to be shown on the gui with the appropriate QSS styling"""
-    def __init__(self, tt_obj):
-        self.tt_obj = tt_obj
-
-
-    def _bulleted_items_from_list(self, iterable, ordered=False):
-        """ Takes each item in a list (or an iterable, really) and makes them into HTML list items """
-        ordered_tag_open = "<ol>" if ordered else "<ul>"
-        ordered_tag_close = "</ol>" if ordered else "</ul>"
-
-        bulleted_list = f"""{ordered_tag_open}"""
-        
-        for elem in iterable:
-            bulleted_list += f"""<li>{elem}</li>"""
-        
-        bulleted_list += f"""{ordered_tag_close}"""
-        return bulleted_list
-
-
-    def get_class_categories_details(self):
-        """ Returns details about all class_categories created to be displayed on the GUI """
-        class_groups = self.tt_obj.list_of_school_class_groups
-        
-        class_group_classes = {class_group:[clss.get_school_class_name for clss in class_group.school_class_list]
-                            for class_group in class_groups}
-        class_group_names = [class_group.class_group_name for class_group in class_group_classes]
-
-        class_count = 0
-        class_group_classes_str = ""
-        for class_group, classes_list in class_group_classes.items():
-            class_count += len(classes_list)
-            class_group_classes_str += f"""
-            {class_group.class_group_name}
-            {self._bulleted_items_from_list(classes_list, ordered=False)}
-            <hr>
-            """
-
-        detail_text = f"""
-        <h4>CLASS CATEGORY DETAILS</h4>
-        <p>Typically, Class categories (or Class groups) house school classes and in the turn the class arms underneath each of its resident school classes.
-         The already created class categories are as follows:</p> 
-        {self._bulleted_items_from_list(class_group_names, ordered=True)}
-        <p>Total: {len(class_group_classes)} class categories in all.</p>
-        <hr>
-        <h5>The resident classes under each of these class categories (groups) are listed below</h5>
-        {class_group_classes_str}
-        <br>
-        <p>Total number of classes: {class_count}.</p>
-         """
-        return detail_text
-
-
-    def get_school_classes_details(self):
-        """ Returns details about all the school classes created """
-        all_classes = self.tt_obj.list_of_school_classes
-        classes_and_arms = {clss:[arm.__repr__() for arm in clss.school_class_arm_list]
-                        for clss in all_classes}
-        classes_names = [clss.get_school_class_name for clss in classes_and_arms]
-
-        arms_count = 0
-        classes_arms_str = ""
-        for clss, arms_list in classes_and_arms.items():
-            arms_count += len(arms_list)
-            classes_arms_str += f"""
-            {clss.get_school_class_name}
-            {self._bulleted_items_from_list(arms_list, ordered=False)}
-            <hr>
-            """
-
-        detail_text = f"""
-        <h4>CLASS/GRADE/LEVEL DETAILS</h4>
-        <p>Typically, the school classes houses class arms.The already created classes are as follows:</p>
-        {self._bulleted_items_from_list(classes_names, ordered=True)}
-        <p>Total: {len(classes_names)} classes in all.</p>
-        <hr>
-        <h5>The resident class arms under each of the classes are listed below</h5>
-        {classes_arms_str}
-        <br>
-        <p>Total number of class arms: {arms_count}</p>
-
-        """
-        return detail_text
-
-
-    def get_school_class_arms_details(self):
-        """ Returns the details of all the school class arms created """
-        all_arms = self.tt_obj.list_of_school_class_arms
-
-        detail_text = f"""
-        <h4>CLASS ARM DETAILS</h4>
-        <p>The class arms represents the literal classroom in which students take lessons handled by the teachers.
-        The class arms created up to this point are listed below:</p>
-        {self._bulleted_items_from_list([arm.__repr__() for arm in all_arms], ordered=True)}
-        <p>Total: {len(all_arms)} in all.</p>
-        """
-        return detail_text
-
-
-    def get_days_details(self):
-        pass
-
-
-    def get_teachers_details(self):
-        pass
-
-
-    def get_depts_details(self):
-        pass
-
-    def get_faculty_details(self):
-        pass
-
-    def make_details_into_dict(self):
-        """ stores the details of the above function into a dictionary """
-        return {
-        "class_cats":self.get_class_categories_details(),
-        "classes": self.get_school_classes_details(),
-        "class_arms":self.get_school_class_arms_details(),
-        "days": self.get_days_details(),
-        "teachers": self.get_teachers_details(),
-        "subjects":self.get_depts_details(),
-        "faculties": self.get_faculty_details()
-        }
-
-    def get_model_details_by_key(self, str_arg):
-        """ Returns details to be displayed on the GUI screen according to the string_argument sent from
-        the button """
-        return self.make_details_into_dict().get(str_arg)
-
-
-
-
 class IndivPeriodDisplayFrame(QtWidgets.QFrame):
     """ FOR THE FINISHED TIMETABLE. One of the (horizontal) frames across which the period widgets will sit on the FINISHED timetable.
     The first item in periods_list is the marker(day or arm) and the rest are the period items. Takes in the actual period items """
@@ -408,28 +614,27 @@ class IndivPeriodDisplayFrame(QtWidgets.QFrame):
         return Frame
         
 
-    def return_period_frames(self, match_item):
+    def return_period_frames(self, model_type_str, match_item):
         """ The method that populates this frame with the mini period frames """
         if not self.periods_list:
             return
 
         marker, *periods = self.periods_list
         # make the marker frame
-        marker_frame = self._frame_setup(Tt_period_widgets.ArmFrame)
-        marker_frame.add_arm_fullname(marker.full_name)
+        marker_frame = self._frame_setup(ArmFrame)
+        marker_frame.add_arm_fullname(model_type_str, marker.full_name)
 
         # The list of widgets this function will eventually returns
         widgets_list = [marker_frame]
 
         # add in the rest of the periods
         for period in periods:
-            period_frame = self._frame_setup(Tt_period_widgets.PeriodFrame)
+            period_frame = self._frame_setup(PeriodFrame)
             # Customize this period by adding the time-limits and title
-            period_frame.add_name_duration_content(period.period_title, 
-                f"{tt.to_time_str(period.start)} - {tt.to_time_str(period.end)}", period.dept_content)
+            period_frame.add_name_duration_content(period.period_title, period.period_boundary_time_str, period.dept_content)
 
             # Add the teacher's full_name str if teacher exists
-            teacher_str = period.teacher.full_name if period.teacher else None
+            teacher_str = period.teacher if period.teacher else None
             dept_str = period.dept.full_name if period.dept else None
             faculty_str = period.dept.faculty.full_name if period.dept else None
 
@@ -440,25 +645,25 @@ class IndivPeriodDisplayFrame(QtWidgets.QFrame):
         return widgets_list
 
 
-    def add_period_widgets_to_frame(self, match_item):
+    def add_period_widgets_to_frame(self, model_type_str, match_item):
         """ Method to add this widget items to the Frame (self) """
-        for frame in self.return_period_frames(match_item):
+        for frame in self.return_period_frames(model_type_str, match_item):
             self.hbox.addWidget(frame)
 
 
-    def run(self, match_item):
+    def run(self, model_type_str, match_item):
         """ Runs the entire process of calculating width, making frames and adding frames to the self """
         self.set_frame_size()
         # Below already run
         # self.return_period_frames()
-        self.add_period_widgets_to_frame(match_item)
+        self.add_period_widgets_to_frame(model_type_str, match_item)
 
 
 
 # ---------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------
 class PeriodsDisplayFrame:
-    """ THE BIG FRAME IN THE GUI INTO WHICH ALL THE HORIZONTAL PERIOD FRAMES WILL BE DYNAMICALLY PUT IN .
+    """ THE BIG FRAME IN THE GUI INTO WHICH ALL THE HORIZONTAL PERIOD FRAMES WILL BE DYNAMICALLY PUT IN. FOR THE FINISHED TIMETABLE
     PRO-TIP:
     1. add periods_list_data()
     2.set_width_height()
@@ -486,11 +691,11 @@ class PeriodsDisplayFrame:
             self.frame.layout().itemAt(k).widget().setParent(None)
 
 
-    def add_childframe_data(self, match_item, periods_data_list=None, padding=(2,2,2,2), spacing=4, period_height=90, period_width=145):
+    def add_childframe_data(self, model_type_str, match_item, periods_data_list=None, padding=(2,2,2,2), spacing=4, period_height=90, period_width=145):
         """ takes in the periods_list data (identifier (day or arm:first mini-frame) and then the periods for the day od arm) to make an individual childframe and appends said frame to the list of child frames """
         if periods_data_list:
             child_frame = IndivPeriodDisplayFrame(periods_data_list, padding=(2,2,2,2), spacing=4, period_height=90, period_width=145)
-            child_frame.run(match_item)
+            child_frame.run(model_type_str, match_item)
             self.child_frames.append(child_frame)
             # self.vbox.addWidget(child_frame)
 
@@ -527,118 +732,6 @@ class PeriodsDisplayFrame:
 
 
 
-
-
-
-
-# class PeriodsDisplayFrame:
-#     """ The Mother class to generate the frame into which all the other period frames would be arranged
-#     vertically """
-#     def __init__(self, frame, spacing, padding):
-#         self.frame = frame if frame else QtWidgets.QFrame()
-#         self.spacing = spacing
-#         self.padding = padding
-#         self.vbox = QtWidgets.QVBoxLayout(self.frame)
-
-
-#     def add_periods_list_and_iden(self):
-#         """ Method to add a periods_list_and_its marker to the  """
-
-
-#     @property
-#     def child_height(self):
-#         """ Returns the height of the first child item in the child_frames list """
-#         return self.child_frames[0].width_height[1] if self.child_frames else 90
-
-
-#     @property
-#     def max_child_width(self):
-#         """ Returns the value of the widest frame in self.child_frames """
-#         widest_frame = max(self.child_frames, key=lambda frame: frame.width_height[0])
-#         return widest_frame.width_height[0]
-
-
-#     @property
-#     def child_frames(self):
-#         """ generates frmaes from the list returned from the self.get_periods_list (method to be defined in the subclasses) """
-#         child_frames = []
-#         for elem_list in self.get_periods_list():
-#             child_frame = IndivPeriodDisplayFrame(elem_list)
-#             child_frame.run()
-#             child_frames.append(child_frame)
-#             # print("HELLO, FRAME STILL BUILDING!")
-#         return child_frames
-
-
-#     def set_width_height(self, beam_val=10):
-#         """ This methods sets the width (and height) of the frame. max_child_width (and num_children) is an INT which stands for the 
-#         largest width of the inside frames embedded within this frame (and the total number of these inner frames), 
-#         so we can wrap the frame around the whole thing. """
-#         v_spacing_count = 0 if not self.child_frames else len(self.child_frames) - 1
-#         height = (len(self.child_frames) * self.child_height) + (v_spacing_count * self.spacing) + self.padding[0] + self.padding[2]
-#         width = self.max_child_width + self.padding[1] + self.padding[3]
-#         self.frame.resize(width, height)
-#         yield beam_val
-
-
-#     def add_childframes_to_frame(self, prev_beam=0, beam_max_val=100):
-#         """ Adds all the child frames into the vertical box layout of self.frame """
-#         len_child_frames = len(self.child_frames)
-
-#         for count, child_frame in enumerate(self.child_frames, start=1):
-#             self.vbox.addWidget(child_frame)
-#             print("The generator yields here")
-#             # yield round((count * beam_max_val / len_child_frames) + prev_beam)
-
-#         self.show_mother_frame()
-
-
-#     def show_mother_frame(self, beam_val=100):
-#         """ Shows the big frame widget"""
-#         self.frame.show()
-#         # yield beam_val
-
-
-#     def run(self):
-#         """ Runs all the afore-defined functions accordingly. Returns all as a list """
-#         self.set_width_height()
-#         return self.add_childframes_to_frame()
- 
-
-
-# --------------------------------------------------------------------------------
-# class PeriodsDisplayByDayFrame(PeriodsDisplayFrame):
-#     """ class to handle putting """
-#     def __init__(self, day, frame=None, spacing=6, padding=(2,2,2,2)):
-#         super().__init__(frame, spacing, padding)
-#         self.day = day
-        
-#     def get_periods_list(self):
-#         """ extracts the period_list (that is, the list of all the class arms for today) from the self.day object in a list of lists
-#         it extracts it in the format that the IndivPeriodDisplayFrame class can use to generate the child frames"""
-#         arms_periods_today_list = []
-#         for class_arm in self.day.school_class_arms_today:
-#             arm_periods_list = [class_arm] + class_arm.periods[self.day]
-#             arms_periods_today_list.append(arm_periods_list)
-#         return arms_periods_today_list
-
-
-# # ----------------------------------------------------------------------------------
-# class PeriodsDisplayByArmFrame(PeriodsDisplayFrame):
-#     def __init__(self, class_arm, frame=None, spacing=6, padding=(2,2,2,2)):
-#         super().__init__(frame, spacing, padding)
-#         self.class_arm = class_arm
-
-#     def get_periods_list(self):
-#         """ extracts the period_list (that is, the list of the school days for this class arm) from the self.class_arm object in a list of lists
-#         it extracts it in the format that the IndivPeriodDisplayFrame class can use to generate the child frames"""
-#         days_periods_for_arm = []
-#         for day, periods_list in self.class_arm.periods.items():
-#             day_periods = [day] + periods_list
-#             days_periods_for_arm.append(day_periods)
-#         return days_periods_for_arm
-
-
 # ----------------------------------------------------------------------------------------------------
 def sort_packet_stylesheet(topic_colour="#f4f4f4"):
     """ Returns styles to be used in the textEdit widgets for the packeting and sorting operations """         
@@ -659,6 +752,7 @@ def sort_packet_stylesheet(topic_colour="#f4f4f4"):
             margin-left:0px;\n
             margin-right:0px;\n
             padding:0px;\n
+            text-align:justify;\n
             }}\n
             #topic{{\n
             color:{topic_colour};\n
@@ -769,16 +863,11 @@ def load_sort_details_html_into_textedit(sort_details_dict, textEdit_widget,
         topic_colour = "#d50000"
         len_displaced_teachers = len(sort_details_dict)
 
-        print()
-        print(sort_details_dict)
-        print()
-
         comment = '<p id="topic">SORT OPERATION NOT (COMPLETELY) SUCCESSFUL</p>' "<p>Despite the robust (and rather lenient) sorting operation, the following "\
         f"teacher{' has' if len_displaced_teachers == 1 else 's have'} been all but stranded; their subjects/courses defying insertion into the periods of "\
-        "their offering class arms enough to fulfill their weekly frequencies without breaking the timetable.</p>" '<p>Number of stranded teachers: '\
+        "their offering class arms enough to fulfill their weekly frequencies without clashing with any of their other periods or displacing another teacher's lesson period.</p>" '<p>Number of stranded teachers: '\
         f'<span class="emphasis">{len_displaced_teachers}</span></p>' 
         comment += "<ol>"
-
 
         erring_subjs_set, erring_arms_set = set(), set()
 

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable for class categories</title>
+    <link rel="stylesheet" href="shelva_stylesheet.css">
+</head>
+<body id="shelva-body">
+    <header>
+        <nav>
+            <div id="shelva-heading">
+                <form action="">
+                    <input type="search" name="Search_by_id" id="shelva-search">
+                    <input type="button" value="Search">
+                </form>
+                <h1 class="shelva-topic shelva-size-5" style="color:#f3f3f3;">TIMETABLE AS RENDERED ON A CLASS CATEGORY-CLASS-ARM BASIS</h1>
+            </div>
+        </nav>
+    </header>
+    <main id="shelva-main">
+        <div id="shelva-introduction">Following a tree-branch-leaf pattern, each of the class categories created are listed, with all the resident classes for said class category and with all the class arms under each of the classes mentioned. The timetable is rendered for each of the class arms listed, for every day of the timetable week in which they function.</div>
+
+        <div>
+            <h3 class="shelva-topic shelva-size-5">CLASS CATEGORY PROFILE</h3>
+            <div class="shelva-gen-info-flex">
+                <ul>
+                    <li>Institution: </li>
+                    <li>Session: </li>
+                    <li>Project codename/Acronym: </li>
+                    <li>Project Director/Principal: </li>
+                </ul>
+                <ul>
+                    <li>Number of class categories: </li>
+                    <li>Total number of school classes: </li>
+                    <li>Total number of (descendant) class arms: </li>
+                    <li>Members of staff involoved: </li>
+                    <li>Total number of subjects offered across (descendant) class arms: </li>
+                </ul>
+            </div>
+        </div>
+        
+        <h3 class="shelva-topic shelva-size-5">CLASS CATEGORY (CLASS GROUPS) DETAILS AND TIMETABLES PROPER</h3>
+        {% for classgroup in data.classgroups_and_details %}
+        <!-- loop through all the class categories in turn and yield thier details -->
+            <div class="shelva-list-items-wrapper">
+                <div class="shelva-level-0-item">
+                    <h3>{{ classgroup.classgroup_name }} with ID: {{ classgroup.classgroup_fullname_id }}</h3>
+                    <p class="shelva-top-level-introduction">
+                        Identifying as the {{ classgroup.classgroup_position }} class category created for this timetable project, this class category retains the following properties (listed just below) and houses the following school classes, their details, as well as the daily details of all the constituent class arms of said school classes (listed further below).
+                    </p>
+                </div>
+                <div class="shelva-level-0-item shelva-overview">
+                    <h5>ANALYTICAL OVERVIEW</h5>
+                    <ul class="shelva-overview-list">
+                        <li>Number of constituent classes: {{ classgroup.num_sch_classes }}</li>
+                        <li>Number of resident class arms: {{ classgroup.num_arms }}</li>
+                        <li>Total number of involved members of staff: {{ classgroup.num_teachers }}</li>
+                        <li>Total number of subjects/courses taught across: {{ classgroup.num_subjs }}</li>
+                    </ul>  
+                </div>
+                <div class="shelva-level-0-item">
+                    <hr>
+                    <h5>Resident classes for class category: {{ classgroup.classgroup_name }}</h5>
+                    <!--loop through all the classes and give details about class arms-->
+                    {% for sch_class in classgroup.sch_class_list %}
+                        <div class="shelva-level-1-item">
+                            <h5>{{ sch_class.sch_class_name }} (with timetable ID: {{ sch_class.sch_class_fullname }})</h5>
+                            
+                            <div class="shelva-level-2-item">
+                                <p>Child arms for {{ sch_class.sch_class_name }}, along with their timetables read below.</p>
+                                
+                                {% for arm in sch_class.arms_list %}
+                                <div class="shelva-level-3-item">
+                                    <!-- The timetable for each arm lies here -->
+                                    <h5>{{ arm.arm_name }}</h5>
+                                    <div class="shelva-timetable-wrapper">
+                                        <table>
+                                            <tr>
+                                                <th scope="col">Day</th>
+                                                <th scope="col" colspan="{{ arm.arm_max_period_length }}">Periods</th>
+                                            </tr>
+                                            {% for p_day in arm.periods_per_day %}
+                                            <tr>
+                                                <td class="shelva-obv-color">{{ p_day.day }}</td>
+                                                {% for period in p_day.periods %}
+                                                <td>
+                                                    <p class="shelva-size-2 shelva-obv-color">{{ period.boundary }}</p>
+                                                    <p>{{ period.period_name }}</p>
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </main>
+    <footer id="shelva-footer">
+        GENERATED BY SHELVA 1.0. COPYRIGHT OLU'TOMI
+    </footer>
+</body>
+</html>

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1340</width>
-    <height>730</height>
+    <width>1356</width>
+    <height>725</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -104,7 +104,7 @@ QLabel{
 }
 
 QFrame[objectName=&quot;nav_bar&quot;]{	
-	background-color:#000;
+	background-color:qlineargradient(spread:pad, x1:0, y1:0.534, x2:1, y2:0.528, stop:0 rgba(0, 0, 0, 255), stop:0.846591 rgba(0, 0, 0, 255), stop:1 rgba(0, 0, 153, 255));
 }
 
 QSpinBox{
@@ -177,7 +177,7 @@ QScrollBar::handle::horizontal{
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1334</width>
+            <width>1350</width>
             <height>124</height>
            </rect>
           </property>
@@ -210,16 +210,16 @@ QScrollBar::handle::horizontal{
              </property>
              <property name="styleSheet">
               <string notr="true">*{
-	color:#282828;
+	color:#040404;
 }
 
 /*color inside the top tab widget*/
 QTabWidget &gt; QWidget &gt; QWidget{
-	background:#f2f2f2;
+	background:#f5f6f7;
 }
 
 QTabBar::tab{
-	background:#000;
+	background:qlineargradient(spread:pad, x1:0, y1:0.472, x2:0.983, y2:0.471591, stop:0.0568182 rgba(0, 0, 191, 255), stop:0.534091 rgba(0, 0, 138, 255), stop:1 rgba(0, 0, 191, 255));
 	padding: 7px 15px;
 	color:#ebebeb;
 }
@@ -303,18 +303,19 @@ QComboBox{
               <attribute name="title">
                <string>File and Settings</string>
               </attribute>
-              <widget class="QFrame" name="frame_64">
+              <widget class="QFrame" name="open_new_save_frame">
                <property name="geometry">
                 <rect>
-                 <x>10</x>
-                 <y>5</y>
-                 <width>461</width>
-                 <height>56</height>
+                 <x>6</x>
+                 <y>3</y>
+                 <width>427</width>
+                 <height>52</height>
                 </rect>
                </property>
                <property name="styleSheet">
-                <string notr="true">background:#aaaaaa;
-border-radius:5px;</string>
+                <string notr="true">QPushButton{
+	font-size:7.5pt;
+}</string>
                </property>
                <property name="frameShape">
                 <enum>QFrame::StyledPanel</enum>
@@ -324,47 +325,20 @@ border-radius:5px;</string>
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout_26">
                 <property name="spacing">
-                 <number>10</number>
+                 <number>5</number>
                 </property>
                 <property name="leftMargin">
                  <number>4</number>
                 </property>
                 <property name="topMargin">
-                 <number>4</number>
+                 <number>3</number>
                 </property>
                 <property name="rightMargin">
                  <number>4</number>
                 </property>
                 <property name="bottomMargin">
-                 <number>4</number>
+                 <number>3</number>
                 </property>
-                <item>
-                 <widget class="QPushButton" name="exit_btn">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Use Alt+F4 or Ctrl+Q. &lt;br/&gt;Exit the app.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                  </property>
-                  <property name="text">
-                   <string>Exit</string>
-                  </property>
-                  <property name="icon">
-                   <iconset>
-                    <normaloff>../Icons-mine/exit_icon.png</normaloff>../Icons-mine/exit_icon.png</iconset>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="Line" name="line_33">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                 </widget>
-                </item>
                 <item>
                  <widget class="QPushButton" name="new_btn">
                   <property name="sizePolicy">
@@ -381,7 +355,7 @@ border-radius:5px;</string>
                   </property>
                   <property name="icon">
                    <iconset>
-                    <normaloff>../Icons-mine/new_file.png</normaloff>../Icons-mine/new_file.png</iconset>
+                    <normaloff>../../Icons-mine/new_file.png</normaloff>../../Icons-mine/new_file.png</iconset>
                   </property>
                   <property name="iconSize">
                    <size>
@@ -400,6 +374,12 @@ border-radius:5px;</string>
                 </item>
                 <item>
                  <widget class="QFrame" name="frame_73">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="frameShape">
                    <enum>QFrame::StyledPanel</enum>
                   </property>
@@ -411,13 +391,13 @@ border-radius:5px;</string>
                     <number>2</number>
                    </property>
                    <property name="topMargin">
-                    <number>2</number>
+                    <number>1</number>
                    </property>
                    <property name="rightMargin">
                     <number>2</number>
                    </property>
                    <property name="bottomMargin">
-                    <number>2</number>
+                    <number>1</number>
                    </property>
                    <item>
                     <widget class="QLabel" name="label_71">
@@ -437,7 +417,7 @@ border-radius:5px;</string>
                       <string/>
                      </property>
                      <property name="pixmap">
-                      <pixmap>../Icons-mine/Open_file.png</pixmap>
+                      <pixmap>../../Icons-mine/Open_file.png</pixmap>
                      </property>
                      <property name="scaledContents">
                       <bool>true</bool>
@@ -454,7 +434,7 @@ border-radius:5px;</string>
                      </property>
                      <layout class="QVBoxLayout" name="verticalLayout_92">
                       <property name="spacing">
-                       <number>2</number>
+                       <number>1</number>
                       </property>
                       <property name="leftMargin">
                        <number>1</number>
@@ -479,6 +459,9 @@ border-radius:5px;</string>
                         <property name="toolTip">
                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ctrl+O.&lt;br/&gt;Open a pre-existing timetable file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                         </property>
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
                         <property name="text">
                          <string>Open</string>
                         </property>
@@ -491,7 +474,7 @@ border-radius:5px;</string>
                        </widget>
                       </item>
                       <item>
-                       <widget class="QPushButton" name="recent_btn">
+                       <widget class="QToolButton" name="recent_files_toolbtn">
                         <property name="sizePolicy">
                          <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
                           <horstretch>0</horstretch>
@@ -499,10 +482,22 @@ border-radius:5px;</string>
                          </sizepolicy>
                         </property>
                         <property name="toolTip">
-                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open one of the most recent timetable files you made.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open one of the ten most recent timetable files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                         </property>
                         <property name="text">
                          <string>Recent</string>
+                        </property>
+                        <property name="popupMode">
+                         <enum>QToolButton::MenuButtonPopup</enum>
+                        </property>
+                        <property name="toolButtonStyle">
+                         <enum>Qt::ToolButtonTextOnly</enum>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>false</bool>
+                        </property>
+                        <property name="arrowType">
+                         <enum>Qt::DownArrow</enum>
                         </property>
                        </widget>
                       </item>
@@ -549,7 +544,7 @@ border-radius:5px;</string>
                       <string/>
                      </property>
                      <property name="pixmap">
-                      <pixmap>../Icons-mine/disk-return-black.png</pixmap>
+                      <pixmap>../../Icons-mine/disk-return-black.png</pixmap>
                      </property>
                     </widget>
                    </item>
@@ -625,11 +620,39 @@ border-radius:5px;</string>
                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Ctrl+Shift+R.&lt;br/&gt;Irrevocably resets the current timetable operation. previously created days, classes, class arms, etc. are permanently lost.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                      <property name="text">
-                      <string>Reset Timetable</string>
+                      <string>Reset
+Timetable</string>
                      </property>
                     </widget>
                    </item>
                   </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="Line" name="line_33">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="exit_btn">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Use Alt+F4 or Ctrl+Q. &lt;br/&gt;Exit the app.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>Exit</string>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normaloff>../../Icons-mine/exit_icon.png</normaloff>../../Icons-mine/exit_icon.png</iconset>
+                  </property>
                  </widget>
                 </item>
                </layout>
@@ -637,8 +660,8 @@ border-radius:5px;</string>
               <widget class="QFrame" name="frame_67">
                <property name="geometry">
                 <rect>
-                 <x>910</x>
-                 <y>5</y>
+                 <x>1167</x>
+                 <y>9</y>
                  <width>141</width>
                  <height>71</height>
                 </rect>
@@ -703,17 +726,14 @@ Developer</string>
                 </item>
                </layout>
               </widget>
-              <widget class="QFrame" name="frame_26">
+              <widget class="QFrame" name="frame_64">
                <property name="geometry">
                 <rect>
-                 <x>500</x>
-                 <y>0</y>
-                 <width>401</width>
-                 <height>91</height>
+                 <x>453</x>
+                 <y>-3</y>
+                 <width>702</width>
+                 <height>97</height>
                 </rect>
-               </property>
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Set the attributes (parameters) that characterize the subjects/courses that would feature in this timetable. Also set corresponding numerical weights. This helps the app to categorize the subjects registered.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="frameShape">
                 <enum>QFrame::StyledPanel</enum>
@@ -721,39 +741,42 @@ Developer</string>
                <property name="frameShadow">
                 <enum>QFrame::Raised</enum>
                </property>
-               <layout class="QVBoxLayout" name="verticalLayout_4">
-                <property name="spacing">
-                 <number>2</number>
-                </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_81">
                 <property name="leftMargin">
-                 <number>4</number>
+                 <number>9</number>
                 </property>
                 <property name="topMargin">
-                 <number>2</number>
+                 <number>0</number>
                 </property>
                 <property name="rightMargin">
-                 <number>4</number>
+                 <number>9</number>
                 </property>
                 <property name="bottomMargin">
-                 <number>2</number>
+                 <number>0</number>
                 </property>
                 <item>
-                 <widget class="QLabel" name="label_8">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
+                 <widget class="QLabel" name="label_127">
+                  <property name="maximumSize">
+                   <size>
+                    <width>30</width>
+                    <height>30</height>
+                   </size>
                   </property>
                   <property name="text">
-                   <string>Set ATPG scale parameters and weights</string>
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap>../../Icons-mine/settings_icon.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QFrame" name="frame_28">
+                 <widget class="QFrame" name="frame_65">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
@@ -764,285 +787,434 @@ Developer</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_16">
-                   <property name="leftMargin">
-                    <number>2</number>
+                  <layout class="QVBoxLayout" name="verticalLayout_51">
+                   <property name="spacing">
+                    <number>1</number>
                    </property>
                    <property name="topMargin">
-                    <number>2</number>
-                   </property>
-                   <property name="rightMargin">
-                    <number>2</number>
+                    <number>1</number>
                    </property>
                    <property name="bottomMargin">
-                    <number>2</number>
+                    <number>1</number>
                    </property>
                    <item>
-                    <widget class="QFrame" name="frame_29">
-                     <property name="frameShape">
-                      <enum>QFrame::StyledPanel</enum>
+                    <widget class="QLabel" name="label_162">
+                     <property name="styleSheet">
+                      <string notr="true">font-size:7.5pt;</string>
                      </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
-                     </property>
-                     <layout class="QGridLayout" name="gridLayout_3">
-                      <property name="leftMargin">
-                       <number>5</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>2</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>2</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>2</number>
-                      </property>
-                      <property name="spacing">
-                       <number>4</number>
-                      </property>
-                      <item row="0" column="0">
-                       <widget class="QLineEdit" name="analytic_lineedit">
-                        <property name="inputMask">
-                         <string/>
-                        </property>
-                        <property name="placeholderText">
-                         <string>Analytic</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="0" column="1">
-                       <widget class="QSpinBox" name="analytic_spinbox">
-                        <property name="maximumSize">
-                         <size>
-                          <width>40</width>
-                          <height>16777215</height>
-                         </size>
-                        </property>
-                        <property name="minimum">
-                         <number>1</number>
-                        </property>
-                        <property name="maximum">
-                         <number>7</number>
-                        </property>
-                        <property name="value">
-                         <number>3</number>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="0">
-                       <widget class="QLineEdit" name="practical_lineedit">
-                        <property name="placeholderText">
-                         <string>Practical</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="1">
-                       <widget class="QSpinBox" name="practical_spinbox">
-                        <property name="maximumSize">
-                         <size>
-                          <width>40</width>
-                          <height>16777215</height>
-                         </size>
-                        </property>
-                        <property name="minimum">
-                         <number>1</number>
-                        </property>
-                        <property name="maximum">
-                         <number>7</number>
-                        </property>
-                        <property name="value">
-                         <number>3</number>
-                        </property>
-                       </widget>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="Line" name="line_22">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
+                     <property name="text">
+                      <string>Inner operation settings</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QFrame" name="frame_31">
-                     <property name="frameShape">
-                      <enum>QFrame::StyledPanel</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
-                     </property>
-                     <layout class="QGridLayout" name="gridLayout_4">
-                      <property name="leftMargin">
-                       <number>5</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>2</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>2</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>2</number>
-                      </property>
-                      <property name="spacing">
-                       <number>4</number>
-                      </property>
-                      <item row="0" column="0">
-                       <widget class="QLineEdit" name="theoretical_lineedit">
-                        <property name="placeholderText">
-                         <string>Theoretical</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="0" column="1">
-                       <widget class="QSpinBox" name="theoretical_spinbox">
-                        <property name="maximumSize">
-                         <size>
-                          <width>40</width>
-                          <height>16777215</height>
-                         </size>
-                        </property>
-                        <property name="minimum">
-                         <number>1</number>
-                        </property>
-                        <property name="maximum">
-                         <number>7</number>
-                        </property>
-                        <property name="value">
-                         <number>2</number>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="0">
-                       <widget class="QLineEdit" name="grammatical_lineedit">
-                        <property name="placeholderText">
-                         <string>Grammatical</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="1">
-                       <widget class="QSpinBox" name="grammatical_spinbox">
-                        <property name="maximumSize">
-                         <size>
-                          <width>40</width>
-                          <height>16777215</height>
-                         </size>
-                        </property>
-                        <property name="minimum">
-                         <number>1</number>
-                        </property>
-                        <property name="maximum">
-                         <number>7</number>
-                        </property>
-                        <property name="value">
-                         <number>2</number>
-                        </property>
-                       </widget>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="set_ATPG_btn">
+                    <widget class="QFrame" name="frame_68">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>55</width>
-                       <height>30</height>
-                      </size>
+                     <property name="frameShape">
+                      <enum>QFrame::StyledPanel</enum>
                      </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>55</width>
-                       <height>16777215</height>
-                      </size>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
                      </property>
-                     <property name="text">
-                      <string>Set</string>
-                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_82">
+                      <property name="leftMargin">
+                       <number>1</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>1</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>1</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>1</number>
+                      </property>
+                      <item>
+                       <widget class="QFrame" name="frame_26">
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Set the attributes (parameters) that characterize the subjects/courses that would feature in this timetable. Also set corresponding numerical weights. This helps the app to categorize the subjects registered.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Raised</enum>
+                        </property>
+                        <layout class="QVBoxLayout" name="verticalLayout_4">
+                         <property name="spacing">
+                          <number>2</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>4</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>2</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>4</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>2</number>
+                         </property>
+                         <item>
+                          <widget class="QLabel" name="label_8">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="text">
+                            <string>Set ATPG scale parameters and weights</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QFrame" name="frame_28">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="frameShape">
+                            <enum>QFrame::StyledPanel</enum>
+                           </property>
+                           <property name="frameShadow">
+                            <enum>QFrame::Raised</enum>
+                           </property>
+                           <layout class="QHBoxLayout" name="horizontalLayout_16">
+                            <property name="leftMargin">
+                             <number>2</number>
+                            </property>
+                            <property name="topMargin">
+                             <number>2</number>
+                            </property>
+                            <property name="rightMargin">
+                             <number>2</number>
+                            </property>
+                            <property name="bottomMargin">
+                             <number>2</number>
+                            </property>
+                            <item>
+                             <widget class="QFrame" name="frame_29">
+                              <property name="frameShape">
+                               <enum>QFrame::StyledPanel</enum>
+                              </property>
+                              <property name="frameShadow">
+                               <enum>QFrame::Raised</enum>
+                              </property>
+                              <layout class="QGridLayout" name="gridLayout_3">
+                               <property name="leftMargin">
+                                <number>5</number>
+                               </property>
+                               <property name="topMargin">
+                                <number>2</number>
+                               </property>
+                               <property name="rightMargin">
+                                <number>2</number>
+                               </property>
+                               <property name="bottomMargin">
+                                <number>2</number>
+                               </property>
+                               <property name="spacing">
+                                <number>4</number>
+                               </property>
+                               <item row="0" column="0">
+                                <widget class="QLineEdit" name="analytic_lineedit">
+                                 <property name="inputMask">
+                                  <string/>
+                                 </property>
+                                 <property name="placeholderText">
+                                  <string>Analytic</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="0" column="1">
+                                <widget class="QSpinBox" name="analytic_spinbox">
+                                 <property name="maximumSize">
+                                  <size>
+                                   <width>40</width>
+                                   <height>16777215</height>
+                                  </size>
+                                 </property>
+                                 <property name="minimum">
+                                  <number>1</number>
+                                 </property>
+                                 <property name="maximum">
+                                  <number>7</number>
+                                 </property>
+                                 <property name="value">
+                                  <number>3</number>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="1" column="0">
+                                <widget class="QLineEdit" name="practical_lineedit">
+                                 <property name="placeholderText">
+                                  <string>Practical</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="1" column="1">
+                                <widget class="QSpinBox" name="practical_spinbox">
+                                 <property name="maximumSize">
+                                  <size>
+                                   <width>40</width>
+                                   <height>16777215</height>
+                                  </size>
+                                 </property>
+                                 <property name="minimum">
+                                  <number>1</number>
+                                 </property>
+                                 <property name="maximum">
+                                  <number>7</number>
+                                 </property>
+                                 <property name="value">
+                                  <number>3</number>
+                                 </property>
+                                </widget>
+                               </item>
+                              </layout>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="Line" name="line_22">
+                              <property name="orientation">
+                               <enum>Qt::Vertical</enum>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QFrame" name="frame_31">
+                              <property name="frameShape">
+                               <enum>QFrame::StyledPanel</enum>
+                              </property>
+                              <property name="frameShadow">
+                               <enum>QFrame::Raised</enum>
+                              </property>
+                              <layout class="QGridLayout" name="gridLayout_4">
+                               <property name="leftMargin">
+                                <number>5</number>
+                               </property>
+                               <property name="topMargin">
+                                <number>2</number>
+                               </property>
+                               <property name="rightMargin">
+                                <number>2</number>
+                               </property>
+                               <property name="bottomMargin">
+                                <number>2</number>
+                               </property>
+                               <property name="spacing">
+                                <number>4</number>
+                               </property>
+                               <item row="0" column="0">
+                                <widget class="QLineEdit" name="theoretical_lineedit">
+                                 <property name="placeholderText">
+                                  <string>Theoretical</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="0" column="1">
+                                <widget class="QSpinBox" name="theoretical_spinbox">
+                                 <property name="maximumSize">
+                                  <size>
+                                   <width>40</width>
+                                   <height>16777215</height>
+                                  </size>
+                                 </property>
+                                 <property name="minimum">
+                                  <number>1</number>
+                                 </property>
+                                 <property name="maximum">
+                                  <number>7</number>
+                                 </property>
+                                 <property name="value">
+                                  <number>2</number>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="1" column="0">
+                                <widget class="QLineEdit" name="grammatical_lineedit">
+                                 <property name="placeholderText">
+                                  <string>Grammatical</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="1" column="1">
+                                <widget class="QSpinBox" name="grammatical_spinbox">
+                                 <property name="maximumSize">
+                                  <size>
+                                   <width>40</width>
+                                   <height>16777215</height>
+                                  </size>
+                                 </property>
+                                 <property name="minimum">
+                                  <number>1</number>
+                                 </property>
+                                 <property name="maximum">
+                                  <number>7</number>
+                                 </property>
+                                 <property name="value">
+                                  <number>2</number>
+                                 </property>
+                                </widget>
+                               </item>
+                              </layout>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="set_ATPG_btn">
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>55</width>
+                                <height>30</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>55</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="text">
+                               <string>Set</string>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                   </layout>
                  </widget>
                 </item>
-               </layout>
-              </widget>
-              <widget class="QFrame" name="frame_66">
-               <property name="geometry">
-                <rect>
-                 <x>15</x>
-                 <y>65</y>
-                 <width>256</width>
-                 <height>26</height>
-                </rect>
-               </property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_29">
-                <property name="spacing">
-                 <number>5</number>
-                </property>
-                <property name="leftMargin">
-                 <number>9</number>
-                </property>
-                <property name="topMargin">
-                 <number>1</number>
-                </property>
-                <property name="rightMargin">
-                 <number>9</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>1</number>
-                </property>
                 <item>
-                 <widget class="QLabel" name="label_33">
-                  <property name="text">
-                   <string>Appearance</string>
+                 <widget class="Line" name="line_32">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QComboBox" name="comboBox_8">
-                  <item>
-                   <property name="text">
-                    <string>Brown-striped</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Mauve-striped</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Green-striped</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="pushButton_17">
-                  <property name="text">
-                   <string>Change</string>
+                 <widget class="QFrame" name="frame_69">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
                   </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_120">
+                   <property name="spacing">
+                    <number>4</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>7</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>9</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>7</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>9</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="label_33">
+                     <property name="text">
+                      <string>Appearance settings</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QFrame" name="frame_66">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="frameShape">
+                      <enum>QFrame::StyledPanel</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_90">
+                      <property name="spacing">
+                       <number>5</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>3</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>1</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>3</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>1</number>
+                      </property>
+                      <item>
+                       <widget class="QComboBox" name="comboBox_8">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <item>
+                         <property name="text">
+                          <string>Brown-striped</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Mauve-striped</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Green-striped</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Greyish</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="pushButton_17">
+                        <property name="text">
+                         <string>Change</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
                </layout>
@@ -1057,12 +1229,15 @@ Developer</string>
                 <rect>
                  <x>10</x>
                  <y>10</y>
-                 <width>91</width>
+                 <width>96</width>
                  <height>71</height>
                 </rect>
                </property>
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;View all the Days, Subjects and School Class related models already created&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;View all the Days, Subjects and School Class related models already created&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                </property>
                <property name="wordWrap">
                 <bool>true</bool>
@@ -1102,8 +1277,8 @@ Developer</string>
                 <rect>
                  <x>115</x>
                  <y>5</y>
-                 <width>456</width>
-                 <height>81</height>
+                 <width>439</width>
+                 <height>82</height>
                 </rect>
                </property>
                <layout class="QGridLayout" name="gridLayout_2">
@@ -1129,12 +1304,12 @@ Developer</string>
                   </property>
                   <property name="icon">
                    <iconset>
-                    <normaloff>../Icons-mine/arm.png</normaloff>../Icons-mine/arm.png</iconset>
+                    <normaloff>../../Icons-mine/arm.png</normaloff>../../Icons-mine/arm.png</iconset>
                   </property>
                   <property name="iconSize">
                    <size>
-                    <width>35</width>
-                    <height>30</height>
+                    <width>30</width>
+                    <height>20</height>
                    </size>
                   </property>
                  </widget>
@@ -1146,7 +1321,7 @@ Developer</string>
                   </property>
                   <property name="icon">
                    <iconset>
-                    <normaloff>../Icons-mine/subject.png</normaloff>../Icons-mine/subject.png</iconset>
+                    <normaloff>../../Icons-mine/subject.png</normaloff>../../Icons-mine/subject.png</iconset>
                   </property>
                   <property name="iconSize">
                    <size>
@@ -1163,7 +1338,7 @@ Developer</string>
                   </property>
                   <property name="icon">
                    <iconset>
-                    <normaloff>../Icons-mine/classgroup.png</normaloff>../Icons-mine/classgroup.png</iconset>
+                    <normaloff>../../Icons-mine/classgroup.png</normaloff>../../Icons-mine/classgroup.png</iconset>
                   </property>
                   <property name="iconSize">
                    <size>
@@ -1180,7 +1355,7 @@ Developer</string>
                   </property>
                   <property name="icon">
                    <iconset>
-                    <normaloff>../Icons-mine/department.png</normaloff>../Icons-mine/department.png</iconset>
+                    <normaloff>../../Icons-mine/department.png</normaloff>../../Icons-mine/department.png</iconset>
                   </property>
                   <property name="iconSize">
                    <size>
@@ -1197,7 +1372,7 @@ Developer</string>
                   </property>
                   <property name="icon">
                    <iconset>
-                    <normaloff>../Icons-mine/class.png</normaloff>../Icons-mine/class.png</iconset>
+                    <normaloff>../../Icons-mine/class.png</normaloff>../../Icons-mine/class.png</iconset>
                   </property>
                   <property name="iconSize">
                    <size>
@@ -1210,17 +1385,20 @@ Developer</string>
                 <item row="3" column="0">
                  <widget class="QPushButton" name="days_nav">
                   <property name="text">
-                   <string>School Week</string>
+                   <string>Days of School Week</string>
                   </property>
                   <property name="icon">
                    <iconset>
-                    <normaloff>../Icons-mine/Day.png</normaloff>../Icons-mine/Day.png</iconset>
+                    <normaloff>../../Icons-mine/Day.png</normaloff>../../Icons-mine/Day.png</iconset>
                   </property>
                   <property name="iconSize">
                    <size>
                     <width>30</width>
                     <height>30</height>
                    </size>
+                  </property>
+                  <property name="flat">
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -1231,7 +1409,7 @@ Developer</string>
                   </property>
                   <property name="icon">
                    <iconset>
-                    <normaloff>../Icons-mine/teacher.png</normaloff>../Icons-mine/teacher.png</iconset>
+                    <normaloff>../../Icons-mine/teacher.png</normaloff>../../Icons-mine/teacher.png</iconset>
                   </property>
                   <property name="iconSize">
                    <size>
@@ -1734,14 +1912,14 @@ QPushButton{
                          </size>
                         </property>
                         <property name="toolTip">
-                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Run diagnostics.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                         </property>
                         <property name="text">
                          <string>Begin</string>
                         </property>
                         <property name="icon">
                          <iconset>
-                          <normaloff>../Icons-mine/Inspect_glasses.png</normaloff>../Icons-mine/Inspect_glasses.png</iconset>
+                          <normaloff>../../Icons-mine/Inspect_glasses.png</normaloff>../../Icons-mine/Inspect_glasses.png</iconset>
                         </property>
                         <property name="iconSize">
                          <size>
@@ -1844,7 +2022,7 @@ QPushButton{
                           <number>1</number>
                          </property>
                          <item>
-                          <widget class="QPushButton" name="pushButton_46">
+                          <widget class="QPushButton" name="teachers_spacing_btn">
                            <property name="minimumSize">
                             <size>
                              <width>0</width>
@@ -1919,7 +2097,7 @@ QPushButton{
                            </property>
                            <property name="icon">
                             <iconset>
-                             <normaloff>../Icons-mine/efficiency-graph.png</normaloff>../Icons-mine/efficiency-graph.png</iconset>
+                             <normaloff>../../Icons-mine/efficiency-graph.png</normaloff>../../Icons-mine/efficiency-graph.png</iconset>
                            </property>
                            <property name="iconSize">
                             <size>
@@ -1958,7 +2136,7 @@ QPushButton{
               <widget class="Line" name="line_5">
                <property name="geometry">
                 <rect>
-                 <x>510</x>
+                 <x>504</x>
                  <y>5</y>
                  <width>3</width>
                  <height>85</height>
@@ -1971,10 +2149,10 @@ QPushButton{
               <widget class="QFrame" name="frame_3">
                <property name="geometry">
                 <rect>
-                 <x>520</x>
-                 <y>35</y>
-                 <width>167</width>
-                 <height>39</height>
+                 <x>309</x>
+                 <y>3</y>
+                 <width>136</width>
+                 <height>88</height>
                 </rect>
                </property>
                <property name="frameShape">
@@ -1984,34 +2162,69 @@ QPushButton{
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_34">
+                <property name="spacing">
+                 <number>4</number>
+                </property>
+                <property name="leftMargin">
+                 <number>6</number>
+                </property>
+                <property name="topMargin">
+                 <number>2</number>
+                </property>
+                <property name="rightMargin">
+                 <number>6</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>2</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="label_6">
+                  <property name="text">
+                   <string>Diagnostics Report</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_52">
+                  <property name="text">
+                   <string>Select format</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_2">
+                  <item>
+                   <property name="text">
+                    <string>DOCX File</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>PDF</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>HTML Document</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
                 <item>
                  <widget class="QPushButton" name="pushButton_2">
                   <property name="text">
-                   <string>Generare disgnostics report</string>
+                   <string>Export</string>
                   </property>
                  </widget>
                 </item>
                </layout>
-              </widget>
-              <widget class="QLabel" name="label_6">
-               <property name="geometry">
-                <rect>
-                 <x>555</x>
-                 <y>10</y>
-                 <width>111</width>
-                 <height>16</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>Diagnostics Report</string>
-               </property>
               </widget>
               <widget class="QFrame" name="frame_87">
                <property name="geometry">
                 <rect>
                  <x>15</x>
                  <y>0</y>
-                 <width>431</width>
+                 <width>286</width>
                  <height>91</height>
                 </rect>
                </property>
@@ -2097,7 +2310,7 @@ QPushButton{
                       <item>
                        <widget class="QLabel" name="label_69">
                         <property name="text">
-                         <string>Generate Report based on</string>
+                         <string>Generate Report based on:</string>
                         </property>
                        </widget>
                       </item>
@@ -2203,64 +2416,6 @@ QPushButton{
                      </layout>
                     </widget>
                    </item>
-                   <item>
-                    <widget class="Line" name="line_32">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QFrame" name="frame_18">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specially for DOCX and PDF files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="frameShape">
-                      <enum>QFrame::StyledPanel</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
-                     </property>
-                     <layout class="QVBoxLayout" name="verticalLayout_55">
-                      <property name="spacing">
-                       <number>4</number>
-                      </property>
-                      <property name="leftMargin">
-                       <number>2</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>2</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>2</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>2</number>
-                      </property>
-                      <item>
-                       <widget class="QLabel" name="label_11">
-                        <property name="text">
-                         <string>File structure</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QComboBox" name="file_structure_combobox">
-                        <item>
-                         <property name="text">
-                          <string>On separate pages</string>
-                         </property>
-                        </item>
-                        <item>
-                         <property name="text">
-                          <string>All together</string>
-                         </property>
-                        </item>
-                       </widget>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
                   </layout>
                  </widget>
                 </item>
@@ -2274,7 +2429,7 @@ QPushButton{
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_28">
                    <property name="spacing">
-                    <number>4</number>
+                    <number>10</number>
                    </property>
                    <property name="leftMargin">
                     <number>4</number>
@@ -2321,6 +2476,82 @@ QPushButton{
                 </item>
                </layout>
               </widget>
+              <widget class="QFrame" name="frame_57">
+               <property name="geometry">
+                <rect>
+                 <x>453</x>
+                 <y>3</y>
+                 <width>12</width>
+                 <height>88</height>
+                </rect>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_57">
+                <property name="leftMargin">
+                 <number>2</number>
+                </property>
+                <property name="topMargin">
+                 <number>1</number>
+                </property>
+                <property name="rightMargin">
+                 <number>2</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>1</number>
+                </property>
+                <item>
+                 <widget class="QProgressBar" name="export_progbar">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>6</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QProgressBar{
+	border-left: none;
+	border-top-left-radius:none;
+	border-bottom-left-radius:none;
+	height:6px;
+}
+
+QProgressBar::chunk{
+	background:qlineargradient(spread:pad, x1:0.971591, y1:0.528, x2:0.034, y2:0.529409, stop:0.0909091 rgba(125, 125, 255, 255), stop:0.886364 rgba(49, 49, 149, 255));
+	border-top-right-radius:2px;
+	border-bottom-right-radius:2px;
+}
+</string>
+                  </property>
+                  <property name="value">
+                   <number>47</number>
+                  </property>
+                  <property name="textVisible">
+                   <bool>false</bool>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
              </widget>
             </widget>
            </item>
@@ -2340,7 +2571,9 @@ QPushButton{
        </sizepolicy>
       </property>
       <property name="styleSheet">
-       <string notr="true"/>
+       <string notr="true">QFrame#main_body{
+	background:#f8f8f8;
+}</string>
       </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
@@ -2380,11 +2613,11 @@ QPushButton{
          </property>
          <property name="styleSheet">
           <string notr="true">*{
-	color:#242424;
+	color:#2c2c2c;
 }
 
 QFrame[objectName=&quot;sidebar&quot;]{
-	background:#f0f0f0;
+	background-color:#f0f0f0;
 }
 
 QFrame[objectName=&quot;sidebar&quot;] QScrollArea{
@@ -2407,9 +2640,9 @@ QPushButton{
          <widget class="QGroupBox" name="prev_next_gbox">
           <property name="geometry">
            <rect>
-            <x>5</x>
-            <y>5</y>
-            <width>101</width>
+            <x>1</x>
+            <y>3</y>
+            <width>108</width>
             <height>25</height>
            </rect>
           </property>
@@ -2468,7 +2701,7 @@ QPushButton::hover{
              </property>
              <property name="icon">
               <iconset>
-               <normaloff>../Icons-mine/arrow-left.png</normaloff>../Icons-mine/arrow-left.png</iconset>
+               <normaloff>../../Icons-mine/arrow-left.png</normaloff>../../Icons-mine/arrow-left.png</iconset>
              </property>
              <property name="iconSize">
               <size>
@@ -2493,7 +2726,7 @@ QPushButton::hover{
              </property>
              <property name="icon">
               <iconset>
-               <normaloff>../Icons-mine/arrow-right.png</normaloff>../Icons-mine/arrow-right.png</iconset>
+               <normaloff>../../Icons-mine/arrow-right.png</normaloff>../../Icons-mine/arrow-right.png</iconset>
              </property>
              <property name="iconSize">
               <size>
@@ -2508,143 +2741,185 @@ QPushButton::hover{
            </item>
           </layout>
          </widget>
-         <widget class="QGroupBox" name="sidebar_nodes">
+         <widget class="QFrame" name="frame_45">
           <property name="geometry">
            <rect>
-            <x>5</x>
-            <y>115</y>
-            <width>101</width>
-            <height>231</height>
+            <x>1</x>
+            <y>35</y>
+            <width>108</width>
+            <height>331</height>
            </rect>
           </property>
-          <property name="styleSheet">
-           <string notr="true">*{
-	color:#f2f2f2;
-}
-QGroupBox{
-	background:#242424;
-	border:none;
-	border-radius:3px;
-	padding:6px;
-}
-
-QPushButton{
-	font-size:8pt;
-	border:none;
-}
-
-QPushButton::hover{
-	background:rgba(0,120,215,0.4);
-}
-
-QPushButton::pressed{
-	background:#000055;
-}</string>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
           </property>
-          <property name="title">
-           <string/>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
-           <property name="spacing">
-            <number>4</number>
-           </property>
            <property name="leftMargin">
             <number>1</number>
            </property>
            <property name="topMargin">
-            <number>1</number>
+            <number>6</number>
            </property>
            <property name="rightMargin">
             <number>1</number>
            </property>
            <property name="bottomMargin">
-            <number>1</number>
+            <number>4</number>
            </property>
            <item>
-            <widget class="QPushButton" name="pushButton_27">
+            <widget class="QLabel" name="page_counter">
+             <property name="styleSheet">
+              <string notr="true">font-weight:bold;</string>
+             </property>
              <property name="text">
-              <string>App Instruction
-Manual</string>
+              <string>Page</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_40">
+            <spacer name="verticalSpacer_7">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>5</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="page_title_label">
+             <property name="styleSheet">
+              <string notr="true">font-size:7pt;
+font-weight:bold;
+color:#cc2b02;</string>
+             </property>
              <property name="text">
-              <string>Days, Classes
-and Class Arms</string>
+              <string>Page Title</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_28">
-             <property name="text">
-              <string>Departments and
-Subjects</string>
+            <widget class="Line" name="line_37">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_53">
+            <spacer name="verticalSpacer_8">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>5</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_121">
              <property name="text">
-              <string>Parameters</string>
+              <string>Page Info Box</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_52">
-             <property name="text">
-              <string>Teachers</string>
+            <spacer name="verticalSpacer_15">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
              </property>
-            </widget>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>6</height>
+              </size>
+             </property>
+            </spacer>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_54">
-             <property name="text">
-              <string>Sort page</string>
+            <widget class="QTextEdit" name="page_info_box_textedit">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>205</height>
+              </size>
              </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton_56">
-             <property name="text">
-              <string>Post-processing</string>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>205</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QTextEdit{
+	text-align:justify;
+	font-size: 8.5pt;
+	font-family:tahoma, arial;
+}</string>
+             </property>
+             <property name="documentTitle">
+              <string/>
+             </property>
+             <property name="undoRedoEnabled">
+              <bool>false</bool>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+             <property name="html">
+              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'tahoma','arial'; font-size:8.5pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::NoTextInteraction</set>
              </property>
             </widget>
            </item>
           </layout>
-         </widget>
-         <widget class="QLabel" name="label_52">
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>90</y>
-            <width>66</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Go to page</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-         <widget class="QLabel" name="page_counter">
-          <property name="geometry">
-           <rect>
-            <x>15</x>
-            <y>40</y>
-            <width>71</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Page</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
          </widget>
         </widget>
        </item>
@@ -2669,7 +2944,9 @@ Subjects</string>
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true"/>
+          <string notr="true">/*QStackedWidget &gt; QWidget{
+	background:transparent;
+}*/</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -2678,12 +2955,18 @@ Subjects</string>
           <enum>QFrame::Raised</enum>
          </property>
          <property name="currentIndex">
-          <number>4</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="manual_stacked_page">
           <layout class="QVBoxLayout" name="verticalLayout_77">
+           <property name="leftMargin">
+            <number>2</number>
+           </property>
            <property name="topMargin">
-            <number>3</number>
+            <number>1</number>
+           </property>
+           <property name="rightMargin">
+            <number>2</number>
            </property>
            <property name="bottomMargin">
             <number>3</number>
@@ -2757,7 +3040,7 @@ Subjects</string>
                      </font>
                     </property>
                     <property name="text">
-                     <string>General Infomation</string>
+                     <string>General Information</string>
                     </property>
                     <property name="wordWrap">
                      <bool>true</bool>
@@ -2922,7 +3205,7 @@ Subjects</string>
                         <string/>
                        </property>
                        <property name="pixmap">
-                        <pixmap>../Icons-mine/App_logo.png</pixmap>
+                        <pixmap>../../Icons-mine/App_logo.png</pixmap>
                        </property>
                        <property name="scaledContents">
                         <bool>true</bool>
@@ -3054,7 +3337,7 @@ Subjects</string>
                         <string/>
                        </property>
                        <property name="pixmap">
-                        <pixmap>../Icons-mine/App_logo.png</pixmap>
+                        <pixmap>../../Icons-mine/App_logo.png</pixmap>
                        </property>
                        <property name="scaledContents">
                         <bool>true</bool>
@@ -3300,8 +3583,8 @@ Subjects</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>886</width>
-                <height>434</height>
+                <width>1225</width>
+                <height>557</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_72">
@@ -3385,8 +3668,8 @@ Subjects</string>
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>359</width>
-                       <height>487</height>
+                       <width>398</width>
+                       <height>524</height>
                       </rect>
                      </property>
                      <layout class="QVBoxLayout" name="verticalLayout_33">
@@ -3476,6 +3759,9 @@ Subjects</string>
                                <string/>
                               </property>
                               <layout class="QHBoxLayout" name="horizontalLayout_34">
+                               <property name="spacing">
+                                <number>15</number>
+                               </property>
                                <property name="leftMargin">
                                 <number>1</number>
                                </property>
@@ -3506,7 +3792,7 @@ Subjects</string>
                                   <string/>
                                  </property>
                                  <property name="pixmap">
-                                  <pixmap>../Icons-mine/classgroup.png</pixmap>
+                                  <pixmap>../../Icons-mine/classgroup.png</pixmap>
                                  </property>
                                  <property name="scaledContents">
                                   <bool>true</bool>
@@ -3592,10 +3878,16 @@ p, li { white-space: pre-wrap; }
                          </item>
                          <item alignment="Qt::AlignTop">
                           <widget class="QGroupBox" name="classArmGroupBox">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>165</height>
+                            </size>
+                           </property>
                            <property name="maximumSize">
                             <size>
                              <width>16777215</width>
-                             <height>150</height>
+                             <height>16777215</height>
                             </size>
                            </property>
                            <property name="title">
@@ -3606,19 +3898,19 @@ p, li { white-space: pre-wrap; }
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_2">
                             <property name="spacing">
-                             <number>4</number>
+                             <number>5</number>
                             </property>
                             <property name="leftMargin">
-                             <number>2</number>
+                             <number>4</number>
                             </property>
                             <property name="topMargin">
-                             <number>2</number>
+                             <number>6</number>
                             </property>
                             <property name="rightMargin">
-                             <number>2</number>
+                             <number>4</number>
                             </property>
                             <property name="bottomMargin">
-                             <number>2</number>
+                             <number>5</number>
                             </property>
                             <item>
                              <widget class="QGroupBox" name="groupBox_10">
@@ -3653,7 +3945,7 @@ p, li { white-space: pre-wrap; }
                                   <string/>
                                  </property>
                                  <property name="pixmap">
-                                  <pixmap>../Icons-mine/class.png</pixmap>
+                                  <pixmap>../../Icons-mine/class.png</pixmap>
                                  </property>
                                  <property name="scaledContents">
                                   <bool>true</bool>
@@ -3792,14 +4084,14 @@ p, li { white-space: pre-wrap; }
                                  <property name="maximumSize">
                                   <size>
                                    <width>45</width>
-                                   <height>30</height>
+                                   <height>22</height>
                                   </size>
                                  </property>
                                  <property name="text">
                                   <string/>
                                  </property>
                                  <property name="pixmap">
-                                  <pixmap>../Icons-mine/arm.png</pixmap>
+                                  <pixmap>../../Icons-mine/arm.png</pixmap>
                                  </property>
                                  <property name="scaledContents">
                                   <bool>true</bool>
@@ -3847,7 +4139,7 @@ p, li { white-space: pre-wrap; }
                             <item>
                              <widget class="QLabel" name="label_2">
                               <property name="text">
-                               <string>School class</string>
+                               <string>School class (Required)</string>
                               </property>
                              </widget>
                             </item>
@@ -3907,7 +4199,7 @@ p, li { white-space: pre-wrap; }
                                   <item>
                                    <widget class="QLabel" name="label_4">
                                     <property name="text">
-                                     <string>Number of Class Arms</string>
+                                     <string>Number of Arms</string>
                                     </property>
                                     <property name="alignment">
                                      <set>Qt::AlignCenter</set>
@@ -4122,7 +4414,7 @@ p, li { white-space: pre-wrap; }
                                   <string/>
                                  </property>
                                  <property name="pixmap">
-                                  <pixmap>../Icons-mine/Day.png</pixmap>
+                                  <pixmap>../../Icons-mine/Day.png</pixmap>
                                  </property>
                                  <property name="scaledContents">
                                   <bool>true</bool>
@@ -4132,7 +4424,7 @@ p, li { white-space: pre-wrap; }
                                <item alignment="Qt::AlignLeft">
                                 <widget class="QLabel" name="label_81">
                                  <property name="sizePolicy">
-                                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                                    <horstretch>0</horstretch>
                                    <verstretch>0</verstretch>
                                   </sizepolicy>
@@ -4144,7 +4436,10 @@ p, li { white-space: pre-wrap; }
                                   </font>
                                  </property>
                                  <property name="text">
-                                  <string>Run Days</string>
+                                  <string>Create Days of School Week</string>
+                                 </property>
+                                 <property name="wordWrap">
+                                  <bool>true</bool>
                                  </property>
                                 </widget>
                                </item>
@@ -4265,20 +4560,7 @@ font-size:8pt;</string>
                     <property name="frameShadow">
                      <enum>QFrame::Raised</enum>
                     </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_73">
-                     <item>
-                      <widget class="QLabel" name="label_127">
-                       <property name="text">
-                        <string>Deleting a class category automatically deletes all of its constituent classes and each class arm under each substituent class, so take caution.
-
-To delete certain arms of a school class, simply activate the override radiobutton in the class arms generation section and reset to the number of your choice.</string>
-                       </property>
-                       <property name="wordWrap">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
+                    <layout class="QVBoxLayout" name="verticalLayout_73"/>
                    </widget>
                   </item>
                   <item>
@@ -4499,7 +4781,7 @@ To delete certain arms of a school class, simply activate the override radiobutt
                            </font>
                           </property>
                           <property name="text">
-                           <string>Created Days</string>
+                           <string>School Week</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -5081,10 +5363,10 @@ QGroupBox[objectName=&quot;reg_department&quot;], QGroupBox[objectName=&quot;reg
                           </colorrole>
                           <colorrole role="Button">
                            <brush brushstyle="SolidPattern">
-                            <color alpha="0">
-                             <red>0</red>
-                             <green>0</green>
-                             <blue>0</blue>
+                            <color alpha="255">
+                             <red>255</red>
+                             <green>255</green>
+                             <blue>255</blue>
                             </color>
                            </brush>
                           </colorrole>
@@ -5108,19 +5390,19 @@ QGroupBox[objectName=&quot;reg_department&quot;], QGroupBox[objectName=&quot;reg
                           </colorrole>
                           <colorrole role="Base">
                            <brush brushstyle="SolidPattern">
-                            <color alpha="0">
-                             <red>0</red>
-                             <green>0</green>
-                             <blue>0</blue>
+                            <color alpha="255">
+                             <red>255</red>
+                             <green>255</green>
+                             <blue>255</blue>
                             </color>
                            </brush>
                           </colorrole>
                           <colorrole role="Window">
-                           <brush brushstyle="NoBrush">
+                           <brush brushstyle="SolidPattern">
                             <color alpha="255">
-                             <red>0</red>
-                             <green>0</green>
-                             <blue>0</blue>
+                             <red>255</red>
+                             <green>255</green>
+                             <blue>255</blue>
                             </color>
                            </brush>
                           </colorrole>
@@ -5146,10 +5428,10 @@ QGroupBox[objectName=&quot;reg_department&quot;], QGroupBox[objectName=&quot;reg
                           </colorrole>
                           <colorrole role="Button">
                            <brush brushstyle="SolidPattern">
-                            <color alpha="0">
-                             <red>0</red>
-                             <green>0</green>
-                             <blue>0</blue>
+                            <color alpha="255">
+                             <red>255</red>
+                             <green>255</green>
+                             <blue>255</blue>
                             </color>
                            </brush>
                           </colorrole>
@@ -5173,19 +5455,19 @@ QGroupBox[objectName=&quot;reg_department&quot;], QGroupBox[objectName=&quot;reg
                           </colorrole>
                           <colorrole role="Base">
                            <brush brushstyle="SolidPattern">
-                            <color alpha="0">
-                             <red>0</red>
-                             <green>0</green>
-                             <blue>0</blue>
+                            <color alpha="255">
+                             <red>255</red>
+                             <green>255</green>
+                             <blue>255</blue>
                             </color>
                            </brush>
                           </colorrole>
                           <colorrole role="Window">
-                           <brush brushstyle="NoBrush">
+                           <brush brushstyle="SolidPattern">
                             <color alpha="255">
-                             <red>0</red>
-                             <green>0</green>
-                             <blue>0</blue>
+                             <red>255</red>
+                             <green>255</green>
+                             <blue>255</blue>
                             </color>
                            </brush>
                           </colorrole>
@@ -5211,10 +5493,10 @@ QGroupBox[objectName=&quot;reg_department&quot;], QGroupBox[objectName=&quot;reg
                           </colorrole>
                           <colorrole role="Button">
                            <brush brushstyle="SolidPattern">
-                            <color alpha="0">
-                             <red>0</red>
-                             <green>0</green>
-                             <blue>0</blue>
+                            <color alpha="255">
+                             <red>255</red>
+                             <green>255</green>
+                             <blue>255</blue>
                             </color>
                            </brush>
                           </colorrole>
@@ -5238,19 +5520,19 @@ QGroupBox[objectName=&quot;reg_department&quot;], QGroupBox[objectName=&quot;reg
                           </colorrole>
                           <colorrole role="Base">
                            <brush brushstyle="SolidPattern">
-                            <color alpha="0">
-                             <red>0</red>
-                             <green>0</green>
-                             <blue>0</blue>
+                            <color alpha="255">
+                             <red>255</red>
+                             <green>255</green>
+                             <blue>255</blue>
                             </color>
                            </brush>
                           </colorrole>
                           <colorrole role="Window">
-                           <brush brushstyle="NoBrush">
+                           <brush brushstyle="SolidPattern">
                             <color alpha="255">
-                             <red>0</red>
-                             <green>0</green>
-                             <blue>0</blue>
+                             <red>255</red>
+                             <green>255</green>
+                             <blue>255</blue>
                             </color>
                            </brush>
                           </colorrole>
@@ -5577,7 +5859,7 @@ QLineEdit, QTextEdit, QComboBox{
                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Should be ticked when two or more subjects/courses intended to run simultaneously are to be registered. Said subjects/courses should be separated with a &amp;quot;/&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                           </property>
                           <property name="text">
-                           <string>Concurrent</string>
+                           <string>In Parallel</string>
                           </property>
                          </widget>
                         </item>
@@ -6038,11 +6320,13 @@ QLabel{
                                  <item>
                                   <widget class="QLabel" name="analytic_marker">
                                    <property name="text">
-                                    <string>Analytic
-(Numerical)</string>
+                                    <string>Analytic (Numerical)</string>
                                    </property>
                                    <property name="alignment">
                                     <set>Qt::AlignCenter</set>
+                                   </property>
+                                   <property name="wordWrap">
+                                    <bool>true</bool>
                                    </property>
                                   </widget>
                                  </item>
@@ -6054,6 +6338,9 @@ QLabel{
                                    <property name="alignment">
                                     <set>Qt::AlignCenter</set>
                                    </property>
+                                   <property name="wordWrap">
+                                    <bool>true</bool>
+                                   </property>
                                   </widget>
                                  </item>
                                  <item>
@@ -6064,6 +6351,9 @@ QLabel{
                                    <property name="alignment">
                                     <set>Qt::AlignCenter</set>
                                    </property>
+                                   <property name="wordWrap">
+                                    <bool>true</bool>
+                                   </property>
                                   </widget>
                                  </item>
                                  <item>
@@ -6073,6 +6363,9 @@ QLabel{
                                    </property>
                                    <property name="alignment">
                                     <set>Qt::AlignCenter</set>
+                                   </property>
+                                   <property name="wordWrap">
+                                    <bool>true</bool>
                                    </property>
                                   </widget>
                                  </item>
@@ -6110,7 +6403,7 @@ QLabel{
                            </font>
                           </property>
                           <property name="text">
-                           <string>Register Subject/Course</string>
+                           <string>Commit</string>
                           </property>
                          </widget>
                         </item>
@@ -6585,7 +6878,7 @@ QLabel{
                                 <string/>
                                </property>
                                <property name="pixmap">
-                                <pixmap>../Icons-mine/blackboard.png</pixmap>
+                                <pixmap>../../Icons-mine/blackboard.png</pixmap>
                                </property>
                                <property name="scaledContents">
                                 <bool>true</bool>
@@ -6700,7 +6993,7 @@ QScrollBar::handle{
                                 </widget>
                                </item>
                                <item>
-                                <widget class="QGroupBox" name="dept_model_gbox_2">
+                                <widget class="QGroupBox" name="dept_model_gbox">
                                  <property name="font">
                                   <font>
                                    <pointsize>7</pointsize>
@@ -7057,7 +7350,7 @@ QScrollBar::handle{
                         </font>
                        </property>
                        <property name="text">
-                        <string>Class-class arms tree</string>
+                        <string>Select class or class arm</string>
                        </property>
                       </widget>
                      </item>
@@ -7128,13 +7421,13 @@ QScrollBar::handle{
                          <number>10</number>
                         </property>
                         <property name="leftMargin">
-                         <number>3</number>
+                         <number>5</number>
                         </property>
                         <property name="topMargin">
                          <number>3</number>
                         </property>
                         <property name="rightMargin">
-                         <number>3</number>
+                         <number>5</number>
                         </property>
                         <property name="bottomMargin">
                          <number>3</number>
@@ -7157,7 +7450,7 @@ QScrollBar::handle{
                            <string/>
                           </property>
                           <property name="pixmap">
-                           <pixmap>../Icons-mine/Day.png</pixmap>
+                           <pixmap>../../Icons-mine/Day.png</pixmap>
                           </property>
                           <property name="scaledContents">
                            <bool>true</bool>
@@ -7182,7 +7475,7 @@ QScrollBar::handle{
                            <string notr="true">color:#e6e6e6;</string>
                           </property>
                           <property name="text">
-                           <string>Select Days</string>
+                           <string>Select Days From School Week</string>
                           </property>
                           <property name="wordWrap">
                            <bool>true</bool>
@@ -7244,7 +7537,7 @@ QLabel[text=&quot;Invalid format&quot;]{
                       <number>6</number>
                      </property>
                      <property name="topMargin">
-                      <number>1</number>
+                      <number>3</number>
                      </property>
                      <property name="rightMargin">
                       <number>6</number>
@@ -7287,7 +7580,7 @@ QLabel[text=&quot;Invalid format&quot;]{
 font-weight:bold;</string>
                           </property>
                           <property name="text">
-                           <string>Generate periods for Selected classes or arms</string>
+                           <string>Generate Periods for Selected Arms</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -7325,7 +7618,7 @@ font-weight:bold;</string>
                         <string notr="true">color:#0000aa;</string>
                        </property>
                        <property name="text">
-                        <string>Should any changes be made to the non-academic periods, simply toggle the radiobuttons to refresh.</string>
+                        <string>Toggle the radiobuttons to refresh.</string>
                        </property>
                        <property name="wordWrap">
                         <bool>true</bool>
@@ -7563,6 +7856,8 @@ E.g. 2 implies this period should occupy the 2nd period.
                          </widget>
                         </item>
                        </layout>
+                       <zorder>groupBox_56</zorder>
+                       <zorder>groupBox_55</zorder>
                       </widget>
                      </item>
                      <item>
@@ -8117,31 +8412,81 @@ E.g. 2 implies this period should occupy the 2nd period.
                       <number>4</number>
                      </property>
                      <item>
-                      <widget class="QLabel" name="label_114">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
+                      <widget class="QFrame" name="frame_18">
+                       <property name="styleSheet">
+                        <string notr="true">background:#000;
+</string>
                        </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>16777215</width>
-                         <height>30</height>
-                        </size>
+                       <property name="frameShape">
+                        <enum>QFrame::StyledPanel</enum>
                        </property>
-                       <property name="font">
-                        <font>
-                         <weight>75</weight>
-                         <bold>true</bold>
-                        </font>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
                        </property>
-                       <property name="text">
-                        <string>Enter each subject's weekly frequencies and chunk values for each of the class arms you have ticked.</string>
-                       </property>
-                       <property name="wordWrap">
-                        <bool>true</bool>
-                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_55">
+                        <property name="topMargin">
+                         <number>5</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>5</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_11">
+                          <property name="font">
+                           <font>
+                            <weight>75</weight>
+                            <bold>true</bold>
+                           </font>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">Color:#f5f5f5;</string>
+                          </property>
+                          <property name="text">
+                           <string>Map Subjects to Selected Arms</string>
+                          </property>
+                          <property name="alignment">
+                           <set>Qt::AlignCenter</set>
+                          </property>
+                          <property name="wordWrap">
+                           <bool>true</bool>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QLabel" name="label_114">
+                          <property name="sizePolicy">
+                           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                           </sizepolicy>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>16777215</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="font">
+                           <font>
+                            <weight>50</weight>
+                            <bold>false</bold>
+                           </font>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">color:#d2d2ff;</string>
+                          </property>
+                          <property name="text">
+                           <string>Enter subjects' weekly frequencies, chunk values for checked arms.</string>
+                          </property>
+                          <property name="alignment">
+                           <set>Qt::AlignCenter</set>
+                          </property>
+                          <property name="wordWrap">
+                           <bool>true</bool>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
                       </widget>
                      </item>
                      <item>
@@ -8176,12 +8521,12 @@ E.g. 2 implies this period should occupy the 2nd period.
                         </property>
                         <property name="icon">
                          <iconset>
-                          <normaloff>../Icons-mine/subject.png</normaloff>../Icons-mine/subject.png</iconset>
+                          <normaloff>../../Icons-mine/subject.png</normaloff>../../Icons-mine/subject.png</iconset>
                         </property>
                        </column>
                        <column>
                         <property name="text">
-                         <string>Weekly</string>
+                         <string>Frequency</string>
                         </property>
                         <property name="toolTip">
                          <string>Subject's weekly frequency, i.e. how many periods per week.</string>
@@ -8298,7 +8643,7 @@ E.g. 2 implies this period should occupy the 2nd period.
                               <string/>
                              </property>
                              <property name="pixmap">
-                              <pixmap>../Icons-mine/down_arrows.png</pixmap>
+                              <pixmap>../../Icons-mine/down_arrows.png</pixmap>
                              </property>
                              <property name="scaledContents">
                               <bool>true</bool>
@@ -8433,7 +8778,7 @@ font-family:cambria;
                         <string notr="true">font-weight:bold;</string>
                        </property>
                        <property name="text">
-                        <string>Class Arms' periods' table</string>
+                        <string>Class Arms' Periods' Table</string>
                        </property>
                       </widget>
                      </item>
@@ -8456,17 +8801,36 @@ font-family:cambria;
                          <number>10</number>
                         </property>
                         <property name="leftMargin">
-                         <number>1</number>
+                         <number>3</number>
                         </property>
                         <property name="topMargin">
-                         <number>1</number>
+                         <number>3</number>
                         </property>
                         <property name="rightMargin">
-                         <number>9</number>
+                         <number>3</number>
                         </property>
                         <property name="bottomMargin">
-                         <number>1</number>
+                         <number>3</number>
                         </property>
+                        <item>
+                         <widget class="QLabel" name="label_122">
+                          <property name="maximumSize">
+                           <size>
+                            <width>60</width>
+                            <height>25</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                          <property name="pixmap">
+                           <pixmap>../../Icons-mine/period_icon.png</pixmap>
+                          </property>
+                          <property name="scaledContents">
+                           <bool>true</bool>
+                          </property>
+                         </widget>
+                        </item>
                         <item alignment="Qt::AlignLeft">
                          <widget class="QPushButton" name="feasibility_btn">
                           <property name="minimumSize">
@@ -8492,7 +8856,7 @@ Frequency Table</string>
                           </property>
                           <property name="icon">
                            <iconset>
-                            <normaloff>../Icons-mine/Inspect_glasses.png</normaloff>../Icons-mine/Inspect_glasses.png</iconset>
+                            <normaloff>../../Icons-mine/Inspect_glasses.png</normaloff>../../Icons-mine/Inspect_glasses.png</iconset>
                           </property>
                           <property name="iconSize">
                            <size>
@@ -8561,7 +8925,7 @@ Display Table</string>
                               <string/>
                              </property>
                              <property name="pixmap">
-                              <pixmap>../Icons-mine/Day.png</pixmap>
+                              <pixmap>../../Icons-mine/Day.png</pixmap>
                              </property>
                              <property name="scaledContents">
                               <bool>true</bool>
@@ -8600,7 +8964,7 @@ Display Table</string>
                      <item>
                       <widget class="QLabel" name="label_103">
                        <property name="text">
-                        <string>A class arm's chunk value is rendered &quot;infeasible&quot; if the sum of all its subjects' chunk values exceeds that of the academic periods alotted to it per week. If so, adjustments should be made to the chunk.</string>
+                        <string>A class arm's chunk value is rendered &quot;infeasible&quot; if the sum of all its subjects' chunk values exceeds that of the academic periods alotted to it per week. If so, adjustments should be made to the weekly frequency.</string>
                        </property>
                        <property name="wordWrap">
                         <bool>true</bool>
@@ -8673,7 +9037,7 @@ Display Table</string>
                            </property>
                            <property name="icon">
                             <iconset>
-                             <normaloff>../Icons-mine/arm.png</normaloff>../Icons-mine/arm.png</iconset>
+                             <normaloff>../../Icons-mine/arm.png</normaloff>../../Icons-mine/arm.png</iconset>
                            </property>
                           </column>
                           <column>
@@ -8823,8 +9187,8 @@ Display Table</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1209</width>
-                <height>568</height>
+                <width>1130</width>
+                <height>450</height>
                </rect>
               </property>
               <property name="minimumSize">
@@ -8966,7 +9330,7 @@ Display Table</string>
                               <string/>
                              </property>
                              <property name="pixmap">
-                              <pixmap>../Icons-mine/teacher.png</pixmap>
+                              <pixmap>../../Icons-mine/teacher.png</pixmap>
                              </property>
                              <property name="scaledContents">
                               <bool>true</bool>
@@ -9009,8 +9373,8 @@ Display Table</string>
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>395</width>
-                             <height>520</height>
+                             <width>378</width>
+                             <height>511</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_23">
@@ -9945,7 +10309,7 @@ padding:2px;</string>
                            </property>
                            <property name="icon">
                             <iconset>
-                             <normaloff>../Icons-mine/teacher.png</normaloff>../Icons-mine/teacher.png</iconset>
+                             <normaloff>../../Icons-mine/teacher.png</normaloff>../../Icons-mine/teacher.png</iconset>
                            </property>
                           </column>
                           <column>
@@ -9962,7 +10326,7 @@ padding:2px;</string>
                            </property>
                            <property name="icon">
                             <iconset>
-                             <normaloff>../Icons-mine/subject.png</normaloff>../Icons-mine/subject.png</iconset>
+                             <normaloff>../../Icons-mine/subject.png</normaloff>../../Icons-mine/subject.png</iconset>
                            </property>
                           </column>
                           <column>
@@ -9990,12 +10354,12 @@ padding:2px;</string>
                            </property>
                            <property name="icon">
                             <iconset>
-                             <normaloff>../Icons-mine/Day_icon.png</normaloff>../Icons-mine/Day_icon.png</iconset>
+                             <normaloff>../../Icons-mine/Day_icon.png</normaloff>../../Icons-mine/Day_icon.png</iconset>
                            </property>
                           </column>
                           <column>
                            <property name="text">
-                            <string>Category</string>
+                            <string>Consistency</string>
                            </property>
                            <property name="toolTip">
                             <string>Based on how many teaching days. Regular if Members teachers every day.</string>
@@ -10050,8 +10414,8 @@ padding:2px;</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1124</width>
-                <height>559</height>
+                <width>1176</width>
+                <height>555</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_54">
@@ -10098,7 +10462,7 @@ padding:2px;</string>
                    <widget class="QFrame" name="frame_4">
                     <property name="maximumSize">
                      <size>
-                      <width>548</width>
+                      <width>595</width>
                       <height>16777215</height>
                      </size>
                     </property>
@@ -10127,9 +10491,15 @@ padding:2px;</string>
                      </property>
                      <item alignment="Qt::AlignTop">
                       <widget class="QFrame" name="frame_2">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>430</height>
+                        </size>
+                       </property>
                        <property name="maximumSize">
                         <size>
-                         <width>190</width>
+                         <width>165</width>
                          <height>16777215</height>
                         </size>
                        </property>
@@ -10156,14 +10526,14 @@ padding:2px;</string>
                          <widget class="QFrame" name="frame_10">
                           <property name="minimumSize">
                            <size>
-                            <width>165</width>
-                            <height>130</height>
+                            <width>0</width>
+                            <height>170</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
                             <width>16777215</width>
-                            <height>16777215</height>
+                            <height>170</height>
                            </size>
                           </property>
                           <layout class="QVBoxLayout" name="verticalLayout_22">
@@ -10184,6 +10554,12 @@ padding:2px;</string>
                            </property>
                            <item>
                             <widget class="QFrame" name="frame_61">
+                             <property name="sizePolicy">
+                              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                               <horstretch>0</horstretch>
+                               <verstretch>0</verstretch>
+                              </sizepolicy>
+                             </property>
                              <property name="styleSheet">
                               <string notr="true"/>
                              </property>
@@ -10194,6 +10570,47 @@ padding:2px;</string>
                               <enum>QFrame::Raised</enum>
                              </property>
                              <layout class="QVBoxLayout" name="verticalLayout_111">
+                              <property name="spacing">
+                               <number>5</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>5</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>5</number>
+                              </property>
+                              <item>
+                               <widget class="QLabel" name="label_132">
+                                <property name="maximumSize">
+                                 <size>
+                                  <width>16777215</width>
+                                  <height>16777215</height>
+                                 </size>
+                                </property>
+                                <property name="font">
+                                 <font>
+                                  <pointsize>8</pointsize>
+                                  <weight>75</weight>
+                                  <bold>true</bold>
+                                 </font>
+                                </property>
+                                <property name="styleSheet">
+                                 <string notr="true">font-weight:bold;
+font-size:7.5pt;
+
+</string>
+                                </property>
+                                <property name="text">
+                                 <string>Assign Subject Teachers to Class Arms</string>
+                                </property>
+                                <property name="alignment">
+                                 <set>Qt::AlignCenter</set>
+                                </property>
+                                <property name="wordWrap">
+                                 <bool>true</bool>
+                                </property>
+                               </widget>
+                              </item>
                               <item alignment="Qt::AlignHCenter">
                                <widget class="QLabel" name="label_87">
                                 <property name="maximumSize">
@@ -10206,34 +10623,9 @@ padding:2px;</string>
                                  <string/>
                                 </property>
                                 <property name="pixmap">
-                                 <pixmap>../Icons-mine/teacher_to_arms.png</pixmap>
+                                 <pixmap>../../Icons-mine/teacher_to_arms.png</pixmap>
                                 </property>
                                 <property name="scaledContents">
-                                 <bool>true</bool>
-                                </property>
-                               </widget>
-                              </item>
-                              <item>
-                               <widget class="QLabel" name="label_132">
-                                <property name="maximumSize">
-                                 <size>
-                                  <width>16777215</width>
-                                  <height>16777215</height>
-                                 </size>
-                                </property>
-                                <property name="font">
-                                 <font>
-                                  <weight>50</weight>
-                                  <bold>false</bold>
-                                 </font>
-                                </property>
-                                <property name="text">
-                                 <string>Assign Subject Teachers to offering class arms</string>
-                                </property>
-                                <property name="alignment">
-                                 <set>Qt::AlignCenter</set>
-                                </property>
-                                <property name="wordWrap">
                                  <bool>true</bool>
                                 </property>
                                </widget>
@@ -10434,7 +10826,7 @@ QProgressBar[objectName=&quot;assign_progbar_right&quot;]::chunk{
                               <item>
                                <widget class="QProgressBar" name="assign_progbar_left">
                                 <property name="value">
-                                 <number>24</number>
+                                 <number>0</number>
                                 </property>
                                 <property name="textVisible">
                                  <bool>false</bool>
@@ -10447,7 +10839,7 @@ QProgressBar[objectName=&quot;assign_progbar_right&quot;]::chunk{
                               <item>
                                <widget class="QProgressBar" name="assign_progbar_right">
                                 <property name="value">
-                                 <number>24</number>
+                                 <number>0</number>
                                 </property>
                                 <property name="textVisible">
                                  <bool>false</bool>
@@ -10471,7 +10863,7 @@ QProgressBar[objectName=&quot;assign_progbar_right&quot;]::chunk{
                           <property name="sizeHint" stdset="0">
                            <size>
                             <width>20</width>
-                            <height>15</height>
+                            <height>26</height>
                            </size>
                           </property>
                          </spacer>
@@ -10484,32 +10876,60 @@ QProgressBar[objectName=&quot;assign_progbar_right&quot;]::chunk{
                          </widget>
                         </item>
                         <item>
-                         <widget class="QFrame" name="frame_57">
+                         <widget class="QFrame" name="frame_62">
+                          <property name="maximumSize">
+                           <size>
+                            <width>16777215</width>
+                            <height>180</height>
+                           </size>
+                          </property>
+                          <property name="toolTip">
+                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search for a class arm and have its details displayed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                          </property>
                           <property name="frameShape">
                            <enum>QFrame::StyledPanel</enum>
                           </property>
                           <property name="frameShadow">
                            <enum>QFrame::Raised</enum>
                           </property>
-                          <layout class="QVBoxLayout" name="verticalLayout_51">
+                          <layout class="QVBoxLayout" name="verticalLayout_26">
                            <property name="leftMargin">
-                            <number>4</number>
+                            <number>5</number>
                            </property>
                            <property name="topMargin">
-                            <number>4</number>
+                            <number>5</number>
                            </property>
                            <property name="rightMargin">
-                            <number>4</number>
+                            <number>5</number>
                            </property>
                            <property name="bottomMargin">
-                            <number>4</number>
+                            <number>5</number>
                            </property>
                            <item>
-                            <widget class="QFrame" name="frame_62">
+                            <widget class="QLabel" name="label_136">
+                             <property name="font">
+                              <font>
+                               <weight>75</weight>
+                               <bold>true</bold>
+                              </font>
+                             </property>
+                             <property name="text">
+                              <string>Pull up Class Arm</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QFrame" name="frame_59">
+                             <property name="sizePolicy">
+                              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                               <horstretch>0</horstretch>
+                               <verstretch>0</verstretch>
+                              </sizepolicy>
+                             </property>
                              <property name="maximumSize">
                               <size>
                                <width>16777215</width>
-                               <height>165</height>
+                               <height>16777215</height>
                               </size>
                              </property>
                              <property name="frameShape">
@@ -10518,43 +10938,69 @@ QProgressBar[objectName=&quot;assign_progbar_right&quot;]::chunk{
                              <property name="frameShadow">
                               <enum>QFrame::Raised</enum>
                              </property>
-                             <layout class="QVBoxLayout" name="verticalLayout_26">
+                             <layout class="QVBoxLayout" name="verticalLayout_60">
                               <property name="leftMargin">
-                               <number>5</number>
+                               <number>4</number>
                               </property>
                               <property name="topMargin">
-                               <number>5</number>
+                               <number>4</number>
                               </property>
                               <property name="rightMargin">
-                               <number>5</number>
+                               <number>4</number>
                               </property>
                               <property name="bottomMargin">
-                               <number>5</number>
+                               <number>4</number>
                               </property>
                               <item>
-                               <widget class="QLabel" name="label_136">
+                               <widget class="QCheckBox" name="arm_from_combo_chbox">
                                 <property name="font">
                                  <font>
-                                  <weight>75</weight>
-                                  <bold>true</bold>
+                                  <weight>50</weight>
+                                  <bold>false</bold>
                                  </font>
                                 </property>
                                 <property name="text">
-                                 <string>Pull up Class Arm</string>
+                                 <string>From dropdown</string>
                                 </property>
                                </widget>
                               </item>
                               <item>
-                               <widget class="QFrame" name="frame_59">
-                                <property name="sizePolicy">
-                                 <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-                                  <horstretch>0</horstretch>
-                                  <verstretch>0</verstretch>
-                                 </sizepolicy>
+                               <widget class="QComboBox" name="arm_combobox">
+                                <property name="enabled">
+                                 <bool>false</bool>
                                 </property>
+                                <property name="styleSheet">
+                                 <string notr="true">font-weight:normal;</string>
+                                </property>
+                                <property name="maxVisibleItems">
+                                 <number>20</number>
+                                </property>
+                               </widget>
+                              </item>
+                              <item>
+                               <widget class="QLabel" name="label_137">
+                                <property name="font">
+                                 <font>
+                                  <weight>50</weight>
+                                  <bold>false</bold>
+                                 </font>
+                                </property>
+                                <property name="text">
+                                 <string>Alternatively, Search by ID</string>
+                                </property>
+                                <property name="alignment">
+                                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                </property>
+                                <property name="wordWrap">
+                                 <bool>true</bool>
+                                </property>
+                               </widget>
+                              </item>
+                              <item alignment="Qt::AlignHCenter">
+                               <widget class="QFrame" name="arm_id_container">
                                 <property name="maximumSize">
                                  <size>
-                                  <width>200</width>
+                                  <width>90</width>
                                   <height>16777215</height>
                                  </size>
                                 </property>
@@ -10564,121 +11010,49 @@ QProgressBar[objectName=&quot;assign_progbar_right&quot;]::chunk{
                                 <property name="frameShadow">
                                  <enum>QFrame::Raised</enum>
                                 </property>
-                                <layout class="QVBoxLayout" name="verticalLayout_60">
+                                <layout class="QHBoxLayout" name="horizontalLayout_55">
+                                 <property name="spacing">
+                                  <number>8</number>
+                                 </property>
                                  <property name="leftMargin">
-                                  <number>4</number>
+                                  <number>3</number>
                                  </property>
                                  <property name="topMargin">
-                                  <number>4</number>
+                                  <number>3</number>
                                  </property>
                                  <property name="rightMargin">
-                                  <number>4</number>
+                                  <number>3</number>
                                  </property>
                                  <property name="bottomMargin">
-                                  <number>4</number>
+                                  <number>3</number>
                                  </property>
                                  <item>
-                                  <widget class="QCheckBox" name="arm_from_combo_chbox">
-                                   <property name="font">
-                                    <font>
-                                     <weight>50</weight>
-                                     <bold>false</bold>
-                                    </font>
-                                   </property>
-                                   <property name="text">
-                                    <string>From dropdown</string>
-                                   </property>
-                                  </widget>
-                                 </item>
-                                 <item>
-                                  <widget class="QComboBox" name="arm_combobox">
-                                   <property name="enabled">
-                                    <bool>false</bool>
-                                   </property>
+                                  <widget class="QSpinBox" name="arm_id_spinbox">
                                    <property name="styleSheet">
-                                    <string notr="true">font-weight:normal;</string>
+                                    <string notr="true">padding-left:5px;</string>
                                    </property>
-                                   <property name="maxVisibleItems">
-                                    <number>20</number>
+                                   <property name="prefix">
+                                    <string>ID: </string>
                                    </property>
-                                  </widget>
-                                 </item>
-                                 <item>
-                                  <widget class="QLabel" name="label_137">
-                                   <property name="font">
-                                    <font>
-                                     <weight>50</weight>
-                                     <bold>false</bold>
-                                    </font>
+                                   <property name="minimum">
+                                    <number>1</number>
                                    </property>
-                                   <property name="text">
-                                    <string>Alternatively, Search by ID</string>
+                                   <property name="maximum">
+                                    <number>4000</number>
                                    </property>
-                                   <property name="alignment">
-                                    <set>Qt::AlignCenter</set>
-                                   </property>
-                                  </widget>
-                                 </item>
-                                 <item alignment="Qt::AlignHCenter">
-                                  <widget class="QFrame" name="arm_id_container">
-                                   <property name="maximumSize">
-                                    <size>
-                                     <width>90</width>
-                                     <height>16777215</height>
-                                    </size>
-                                   </property>
-                                   <property name="frameShape">
-                                    <enum>QFrame::StyledPanel</enum>
-                                   </property>
-                                   <property name="frameShadow">
-                                    <enum>QFrame::Raised</enum>
-                                   </property>
-                                   <layout class="QHBoxLayout" name="horizontalLayout_55">
-                                    <property name="spacing">
-                                     <number>8</number>
-                                    </property>
-                                    <property name="leftMargin">
-                                     <number>3</number>
-                                    </property>
-                                    <property name="topMargin">
-                                     <number>3</number>
-                                    </property>
-                                    <property name="rightMargin">
-                                     <number>3</number>
-                                    </property>
-                                    <property name="bottomMargin">
-                                     <number>3</number>
-                                    </property>
-                                    <item>
-                                     <widget class="QSpinBox" name="arm_id_spinbox">
-                                      <property name="styleSheet">
-                                       <string notr="true">padding-left:5px;</string>
-                                      </property>
-                                      <property name="prefix">
-                                       <string>ID: </string>
-                                      </property>
-                                      <property name="minimum">
-                                       <number>1</number>
-                                      </property>
-                                      <property name="maximum">
-                                       <number>4000</number>
-                                      </property>
-                                     </widget>
-                                    </item>
-                                   </layout>
                                   </widget>
                                  </item>
                                 </layout>
                                </widget>
                               </item>
-                              <item>
-                               <widget class="QPushButton" name="pull_arm_btn">
-                                <property name="text">
-                                 <string>Pull</string>
-                                </property>
-                               </widget>
-                              </item>
                              </layout>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QPushButton" name="pull_arm_btn">
+                             <property name="text">
+                              <string>Pull</string>
+                             </property>
                             </widget>
                            </item>
                           </layout>
@@ -10697,90 +11071,73 @@ QProgressBar[objectName=&quot;assign_progbar_right&quot;]::chunk{
                        </property>
                        <layout class="QVBoxLayout" name="verticalLayout_48">
                         <property name="spacing">
-                         <number>9</number>
+                         <number>7</number>
                         </property>
                         <property name="leftMargin">
                          <number>5</number>
                         </property>
                         <property name="topMargin">
-                         <number>5</number>
+                         <number>3</number>
                         </property>
                         <property name="rightMargin">
                          <number>5</number>
                         </property>
                         <property name="bottomMargin">
-                         <number>5</number>
+                         <number>3</number>
                         </property>
                         <item>
-                         <widget class="QLabel" name="label_148">
-                          <property name="text">
-                           <string>Pulled-up class arm's details</string>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QFrame" name="frame_60">
-                          <property name="maximumSize">
-                           <size>
-                            <width>16777215</width>
-                            <height>140</height>
-                           </size>
-                          </property>
+                         <widget class="QFrame" name="frame_93">
                           <property name="frameShape">
                            <enum>QFrame::StyledPanel</enum>
                           </property>
                           <property name="frameShadow">
                            <enum>QFrame::Raised</enum>
                           </property>
-                          <layout class="QVBoxLayout" name="verticalLayout_59">
-                           <property name="spacing">
-                            <number>3</number>
-                           </property>
+                          <layout class="QVBoxLayout" name="verticalLayout_122">
                            <property name="leftMargin">
-                            <number>5</number>
+                            <number>6</number>
                            </property>
                            <property name="topMargin">
-                            <number>5</number>
+                            <number>6</number>
                            </property>
                            <property name="rightMargin">
-                            <number>5</number>
+                            <number>6</number>
                            </property>
                            <property name="bottomMargin">
-                            <number>5</number>
+                            <number>6</number>
                            </property>
                            <item>
-                            <widget class="QLabel" name="arm_not_found_label">
+                            <widget class="QLabel" name="label_148">
                              <property name="styleSheet">
-                              <string notr="true">color:#d70000;
+                              <string notr="true">font-size:8.5pt;
 font-weight:bold;</string>
                              </property>
                              <property name="text">
-                              <string>Arm not found</string>
+                              <string>Pulled-up class arm's details</string>
                              </property>
                              <property name="alignment">
                               <set>Qt::AlignCenter</set>
                              </property>
-                             <property name="wordWrap">
-                              <bool>true</bool>
-                             </property>
                             </widget>
                            </item>
                            <item>
-                            <widget class="Line" name="line_15">
-                             <property name="orientation">
-                              <enum>Qt::Horizontal</enum>
+                            <widget class="QFrame" name="frame_60">
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>140</height>
+                              </size>
                              </property>
-                            </widget>
-                           </item>
-                           <item>
-                            <widget class="QFrame" name="frame_112">
                              <property name="frameShape">
                               <enum>QFrame::StyledPanel</enum>
                              </property>
                              <property name="frameShadow">
                               <enum>QFrame::Raised</enum>
                              </property>
-                             <layout class="QGridLayout" name="gridLayout_6">
+                             <layout class="QVBoxLayout" name="verticalLayout_59">
+                              <property name="spacing">
+                               <number>3</number>
+                              </property>
                               <property name="leftMargin">
                                <number>5</number>
                               </property>
@@ -10793,82 +11150,130 @@ font-weight:bold;</string>
                               <property name="bottomMargin">
                                <number>5</number>
                               </property>
-                              <item row="0" column="0">
-                               <widget class="QLabel" name="label_138">
-                                <property name="font">
-                                 <font>
-                                  <weight>50</weight>
-                                  <bold>false</bold>
-                                 </font>
-                                </property>
-                                <property name="text">
-                                 <string>School class Arm</string>
-                                </property>
-                               </widget>
-                              </item>
-                              <item row="0" column="1">
-                               <widget class="QLabel" name="arm_label">
+                              <item>
+                               <widget class="QLabel" name="arm_not_found_label">
                                 <property name="styleSheet">
-                                 <string notr="true">color:#000088;</string>
+                                 <string notr="true">color:#d70000;
+font-weight:bold;</string>
                                 </property>
                                 <property name="text">
-                                 <string>None</string>
+                                 <string>Arm not found</string>
+                                </property>
+                                <property name="alignment">
+                                 <set>Qt::AlignCenter</set>
                                 </property>
                                 <property name="wordWrap">
                                  <bool>true</bool>
                                 </property>
                                </widget>
                               </item>
-                              <item row="1" column="0">
-                               <widget class="QLabel" name="label_140">
-                                <property name="font">
-                                 <font>
-                                  <weight>50</weight>
-                                  <bold>false</bold>
-                                 </font>
-                                </property>
-                                <property name="text">
-                                 <string>Parent school Class</string>
+                              <item>
+                               <widget class="Line" name="line_15">
+                                <property name="orientation">
+                                 <enum>Qt::Horizontal</enum>
                                 </property>
                                </widget>
                               </item>
-                              <item row="1" column="1">
-                               <widget class="QLabel" name="arm_class_label">
-                                <property name="styleSheet">
-                                 <string notr="true">color:#000088;</string>
+                              <item>
+                               <widget class="QFrame" name="frame_112">
+                                <property name="frameShape">
+                                 <enum>QFrame::StyledPanel</enum>
                                 </property>
-                                <property name="text">
-                                 <string>None</string>
+                                <property name="frameShadow">
+                                 <enum>QFrame::Raised</enum>
                                 </property>
-                                <property name="wordWrap">
-                                 <bool>true</bool>
-                                </property>
-                               </widget>
-                              </item>
-                              <item row="2" column="0">
-                               <widget class="QLabel" name="label_142">
-                                <property name="font">
-                                 <font>
-                                  <weight>50</weight>
-                                  <bold>false</bold>
-                                 </font>
-                                </property>
-                                <property name="text">
-                                 <string>Parent class category</string>
-                                </property>
-                               </widget>
-                              </item>
-                              <item row="2" column="1">
-                               <widget class="QLabel" name="arm_classcat_label">
-                                <property name="styleSheet">
-                                 <string notr="true">color:#000088;</string>
-                                </property>
-                                <property name="text">
-                                 <string>None</string>
-                                </property>
-                                <property name="wordWrap">
-                                 <bool>true</bool>
-                                </property>
+                                <layout class="QGridLayout" name="gridLayout_6">
+                                 <property name="leftMargin">
+                                  <number>5</number>
+                                 </property>
+                                 <property name="topMargin">
+                                  <number>5</number>
+                                 </property>
+                                 <property name="rightMargin">
+                                  <number>5</number>
+                                 </property>
+                                 <property name="bottomMargin">
+                                  <number>5</number>
+                                 </property>
+                                 <item row="0" column="0">
+                                  <widget class="QLabel" name="label_138">
+                                   <property name="font">
+                                    <font>
+                                     <weight>50</weight>
+                                     <bold>false</bold>
+                                    </font>
+                                   </property>
+                                   <property name="text">
+                                    <string>School class Arm</string>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="0" column="1">
+                                  <widget class="QLabel" name="arm_label">
+                                   <property name="styleSheet">
+                                    <string notr="true">color:#000088;</string>
+                                   </property>
+                                   <property name="text">
+                                    <string>None</string>
+                                   </property>
+                                   <property name="wordWrap">
+                                    <bool>true</bool>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="1" column="0">
+                                  <widget class="QLabel" name="label_140">
+                                   <property name="font">
+                                    <font>
+                                     <weight>50</weight>
+                                     <bold>false</bold>
+                                    </font>
+                                   </property>
+                                   <property name="text">
+                                    <string>Parent school Class</string>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="1" column="1">
+                                  <widget class="QLabel" name="arm_class_label">
+                                   <property name="styleSheet">
+                                    <string notr="true">color:#000088;</string>
+                                   </property>
+                                   <property name="text">
+                                    <string>None</string>
+                                   </property>
+                                   <property name="wordWrap">
+                                    <bool>true</bool>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="2" column="0">
+                                  <widget class="QLabel" name="label_142">
+                                   <property name="font">
+                                    <font>
+                                     <weight>50</weight>
+                                     <bold>false</bold>
+                                    </font>
+                                   </property>
+                                   <property name="text">
+                                    <string>Parent class category</string>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item row="2" column="1">
+                                  <widget class="QLabel" name="arm_classcat_label">
+                                   <property name="styleSheet">
+                                    <string notr="true">color:#000088;</string>
+                                   </property>
+                                   <property name="text">
+                                    <string>None</string>
+                                   </property>
+                                   <property name="wordWrap">
+                                    <bool>true</bool>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                </layout>
                                </widget>
                               </item>
                              </layout>
@@ -10878,104 +11283,277 @@ font-weight:bold;</string>
                          </widget>
                         </item>
                         <item>
-                         <widget class="Line" name="line_24">
-                          <property name="orientation">
-                           <enum>Qt::Horizontal</enum>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QLabel" name="label_149">
-                          <property name="text">
-                           <string>Below is a table containing (column-wise) the pulled-up class arm's subjects/courses, assigned teachers and weekly frequency.</string>
-                          </property>
-                          <property name="wordWrap">
-                           <bool>true</bool>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QTableWidget" name="assign_subj_teacher_table">
-                          <property name="minimumSize">
-                           <size>
-                            <width>330</width>
-                            <height>0</height>
-                           </size>
-                          </property>
+                         <widget class="QFrame" name="frame_70">
                           <property name="maximumSize">
                            <size>
-                            <width>320</width>
+                            <width>16777215</width>
                             <height>16777215</height>
                            </size>
                           </property>
-                          <property name="cornerButtonEnabled">
-                           <bool>false</bool>
+                          <property name="frameShape">
+                           <enum>QFrame::StyledPanel</enum>
                           </property>
-                          <column>
-                           <property name="text">
-                            <string>Subjects/Courses</string>
+                          <property name="frameShadow">
+                           <enum>QFrame::Raised</enum>
+                          </property>
+                          <layout class="QVBoxLayout" name="verticalLayout_121">
+                           <property name="spacing">
+                            <number>7</number>
                            </property>
-                           <property name="font">
-                            <font>
-                             <weight>75</weight>
-                             <bold>true</bold>
-                            </font>
+                           <property name="leftMargin">
+                            <number>3</number>
                            </property>
-                           <property name="background">
-                            <color>
-                             <red>255</red>
-                             <green>255</green>
-                             <blue>255</blue>
-                            </color>
+                           <property name="topMargin">
+                            <number>4</number>
                            </property>
-                           <property name="icon">
-                            <iconset>
-                             <normaloff>../Icons-mine/Edit_subject.png</normaloff>../Icons-mine/Edit_subject.png</iconset>
+                           <property name="rightMargin">
+                            <number>3</number>
                            </property>
-                          </column>
-                          <column>
-                           <property name="text">
-                            <string>Teacher</string>
+                           <property name="bottomMargin">
+                            <number>3</number>
                            </property>
-                           <property name="font">
-                            <font>
-                             <weight>75</weight>
-                             <bold>true</bold>
-                            </font>
+                           <item>
+                            <widget class="QLabel" name="label_149">
+                             <property name="styleSheet">
+                              <string notr="true">font-size:8.5pt;
+font-weight:bold;</string>
+                             </property>
+                             <property name="text">
+                              <string>Arms' subject details table</string>
+                             </property>
+                             <property name="alignment">
+                              <set>Qt::AlignCenter</set>
+                             </property>
+                             <property name="wordWrap">
+                              <bool>true</bool>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QTableWidget" name="assign_subj_teacher_table">
+                             <property name="minimumSize">
+                              <size>
+                               <width>420</width>
+                               <height>0</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>425</width>
+                               <height>16777215</height>
+                              </size>
+                             </property>
+                             <property name="cornerButtonEnabled">
+                              <bool>false</bool>
+                             </property>
+                             <column>
+                              <property name="text">
+                               <string>Subjects/Courses</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                              <property name="background">
+                               <color>
+                                <red>255</red>
+                                <green>255</green>
+                                <blue>255</blue>
+                               </color>
+                              </property>
+                              <property name="icon">
+                               <iconset>
+                                <normaloff>../../Icons-mine/Edit_subject.png</normaloff>../../Icons-mine/Edit_subject.png</iconset>
+                              </property>
+                             </column>
+                             <column>
+                              <property name="text">
+                               <string>Teacher</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                              <property name="background">
+                               <color>
+                                <red>255</red>
+                                <green>255</green>
+                                <blue>255</blue>
+                               </color>
+                              </property>
+                              <property name="icon">
+                               <iconset>
+                                <normaloff>../../Icons-mine/teacher.png</normaloff>../../Icons-mine/teacher.png</iconset>
+                              </property>
+                             </column>
+                             <column>
+                              <property name="text">
+                               <string>f</string>
+                              </property>
+                              <property name="toolTip">
+                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Frequency&lt;/span&gt;: how many times a particular subject features throughout the entire timetable week.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <family>Gabriola</family>
+                                <pointsize>9</pointsize>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                              <property name="background">
+                               <color>
+                                <red>255</red>
+                                <green>255</green>
+                                <blue>255</blue>
+                               </color>
+                              </property>
+                             </column>
+                             <column>
+                              <property name="text">
+                               <string>Chunk</string>
+                              </property>
+                              <property name="toolTip">
+                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The chunk value input by the user for this subject.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                              </property>
+                              <property name="font">
+                               <font>
+                                <weight>75</weight>
+                                <bold>true</bold>
+                               </font>
+                              </property>
+                             </column>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QFrame" name="frame_21">
+                          <property name="frameShape">
+                           <enum>QFrame::StyledPanel</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Raised</enum>
+                          </property>
+                          <layout class="QHBoxLayout" name="horizontalLayout_32">
+                           <property name="topMargin">
+                            <number>4</number>
                            </property>
-                           <property name="background">
-                            <color>
-                             <red>255</red>
-                             <green>255</green>
-                             <blue>255</blue>
-                            </color>
+                           <property name="bottomMargin">
+                            <number>4</number>
                            </property>
-                           <property name="icon">
-                            <iconset>
-                             <normaloff>../Icons-mine/teacher.png</normaloff>../Icons-mine/teacher.png</iconset>
-                           </property>
-                          </column>
-                          <column>
-                           <property name="text">
-                            <string>Frequency</string>
-                           </property>
-                           <property name="toolTip">
-                            <string>Column displaying how many times a particular subject features throughout the span of the entire timetable week.</string>
-                           </property>
-                           <property name="font">
-                            <font>
-                             <weight>75</weight>
-                             <bold>true</bold>
-                            </font>
-                           </property>
-                           <property name="background">
-                            <color>
-                             <red>255</red>
-                             <green>255</green>
-                             <blue>255</blue>
-                            </color>
-                           </property>
-                          </column>
+                           <item>
+                            <widget class="QLabel" name="label_34">
+                             <property name="maximumSize">
+                              <size>
+                               <width>32</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                             <property name="toolTip">
+                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Total number of teachers for this arm.&lt;br/&gt;This number is influenced by whether the subject is In-parallel or not.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                             </property>
+                             <property name="text">
+                              <string/>
+                             </property>
+                             <property name="pixmap">
+                              <pixmap>../../Icons-mine/summation_teachers.png</pixmap>
+                             </property>
+                             <property name="scaledContents">
+                              <bool>true</bool>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QLabel" name="label_36">
+                             <property name="sizePolicy">
+                              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                               <horstretch>0</horstretch>
+                               <verstretch>0</verstretch>
+                              </sizepolicy>
+                             </property>
+                             <property name="text">
+                              <string>:</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QLabel" name="arm_num_teachers_label">
+                             <property name="sizePolicy">
+                              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                               <horstretch>0</horstretch>
+                               <verstretch>0</verstretch>
+                              </sizepolicy>
+                             </property>
+                             <property name="text">
+                              <string>Nil</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <spacer name="horizontalSpacer_6">
+                             <property name="orientation">
+                              <enum>Qt::Horizontal</enum>
+                             </property>
+                             <property name="sizeType">
+                              <enum>QSizePolicy::Fixed</enum>
+                             </property>
+                             <property name="sizeHint" stdset="0">
+                              <size>
+                               <width>20</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </spacer>
+                           </item>
+                           <item>
+                            <widget class="QLabel" name="label_30">
+                             <property name="maximumSize">
+                              <size>
+                               <width>19</width>
+                               <height>13</height>
+                              </size>
+                             </property>
+                             <property name="toolTip">
+                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The total number of frequencies of all the subjects/courses offered by this class arm.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                             </property>
+                             <property name="text">
+                              <string/>
+                             </property>
+                             <property name="pixmap">
+                              <pixmap>../../Icons-mine/summation_frequencies.png</pixmap>
+                             </property>
+                             <property name="scaledContents">
+                              <bool>true</bool>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QLabel" name="label_123">
+                             <property name="text">
+                              <string>:</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QLabel" name="arm_num_freq_label">
+                             <property name="sizePolicy">
+                              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                               <horstretch>0</horstretch>
+                               <verstretch>0</verstretch>
+                              </sizepolicy>
+                             </property>
+                             <property name="text">
+                              <string>Nil</string>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
                          </widget>
                         </item>
                        </layout>
@@ -10997,10 +11575,10 @@ font-weight:bold;</string>
                       <number>4</number>
                      </property>
                      <property name="leftMargin">
-                      <number>4</number>
+                      <number>2</number>
                      </property>
                      <property name="topMargin">
-                      <number>4</number>
+                      <number>0</number>
                      </property>
                      <property name="rightMargin">
                       <number>4</number>
@@ -11018,13 +11596,13 @@ font-weight:bold;</string>
                        </property>
                        <property name="maximumSize">
                         <size>
-                         <width>390</width>
+                         <width>16777215</width>
                          <height>16777215</height>
                         </size>
                        </property>
                        <property name="styleSheet">
                         <string notr="true">QFrame[objectName=&quot;sort_packet_fr&quot;]{
-	background: qlineargradient(spread:pad, x1:0.0266364, y1:0.523, x2:0.968, y2:0.774, stop:0.142045 rgba(0, 0, 0, 255), stop:0.625 rgba(0, 0, 0, 255), stop:0.8125 rgba(139, 139, 209, 255), stop:0.988636 rgba(0, 0, 0, 255));
+	background:qlineargradient(spread:pad, x1:0.0266364, y1:0.523, x2:0.968, y2:0.774, stop:0.142045 rgba(0, 0, 0, 255), stop:0.625 rgba(0, 0, 0, 255), stop:0.8125 rgba(226, 75, 0, 255), stop:0.988636 rgba(0, 0, 0, 255));
 	border:none;
 	border-radius:5px;
 }
@@ -11171,16 +11749,16 @@ padding-left:10px;</string>
                              </property>
                              <layout class="QHBoxLayout" name="horizontalLayout_71">
                               <property name="spacing">
-                               <number>15</number>
+                               <number>12</number>
                               </property>
                               <property name="leftMargin">
-                               <number>5</number>
+                               <number>40</number>
                               </property>
                               <property name="topMargin">
                                <number>5</number>
                               </property>
                               <property name="rightMargin">
-                               <number>5</number>
+                               <number>40</number>
                               </property>
                               <property name="bottomMargin">
                                <number>5</number>
@@ -11428,7 +12006,10 @@ p, li { white-space: pre-wrap; }
                               <string notr="true">color:#252525;</string>
                              </property>
                              <property name="text">
-                              <string>The packet feedback reading &quot;SUCCESSFUL&quot; is not an absolute guarantee that the overall sorting will work out. Conversely, however, overall sorting could NEVER work out if all subjects have not been effectively packeted.</string>
+                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The packet feedback reading &amp;quot;SUCCESSFUL&amp;quot; &lt;span style=&quot; font-weight:600;&quot;&gt;does not always mean&lt;/span&gt; that the overall sorting will work out. Conversely, however, the overall sorting &lt;span style=&quot; font-weight:600;&quot;&gt;cannot&lt;/span&gt; work out if the packet feedback reads &amp;quot;UNSUCCESSFUL&amp;quot;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                             </property>
+                             <property name="alignment">
+                              <set>Qt::AlignJustify|Qt::AlignVCenter</set>
                              </property>
                              <property name="wordWrap">
                               <bool>true</bool>
@@ -11503,7 +12084,7 @@ padding-left:10px;</string>
                               </size>
                              </property>
                              <property name="toolTip">
-                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The sorting algorithm dictates the pattern the sorting process follows.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;The &lt;span style=&quot; font-style:italic;&quot;&gt;reference day&lt;/span&gt; and &lt;span style=&quot; font-style:italic;&quot;&gt;reference arm&lt;/span&gt; are the day and arm from which the sorting process would begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The sorting algorithm dictates the pattern the sorting process follows. &lt;br/&gt;The &lt;span style=&quot; font-style:italic;&quot;&gt;reference day&lt;/span&gt; and &lt;span style=&quot; font-style:italic;&quot;&gt;reference arm&lt;/span&gt; are the day and arm from which the sorting process would begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                              </property>
                              <property name="frameShape">
                               <enum>QFrame::StyledPanel</enum>
@@ -11627,7 +12208,7 @@ padding-left:10px;</string>
                                       </item>
                                       <item>
                                        <property name="text">
-                                        <string>The XLX-Reflection Algorithm </string>
+                                        <string>The XLX-Reflection Algorithm</string>
                                        </property>
                                       </item>
                                       <item>
@@ -12033,6 +12614,18 @@ QProgressBar[objectName=&quot;sort_progbar_right&quot;]::chunk{
          </widget>
          <widget class="QWidget" name="final_output_stacked_page">
           <layout class="QVBoxLayout" name="verticalLayout_35">
+           <property name="leftMargin">
+            <number>3</number>
+           </property>
+           <property name="topMargin">
+            <number>3</number>
+           </property>
+           <property name="rightMargin">
+            <number>3</number>
+           </property>
+           <property name="bottomMargin">
+            <number>3</number>
+           </property>
            <item>
             <widget class="QFrame" name="frame_9">
              <property name="frameShape">
@@ -12310,7 +12903,7 @@ QProgressBar[objectName=&quot;display_progbar_right&quot;]::chunk{
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Controls the class arm item or day item whose periods are to be displayed in the frame to the right.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Helps to select the class arm or day whose periods would be displayed in the frame to the right.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_53">
                     <property name="spacing">
@@ -12532,7 +13125,7 @@ font-size: 8pt;</string>
                             </property>
                             <property name="icon">
                              <iconset>
-                              <normaloff>../Icons-mine/arrow_up.png</normaloff>../Icons-mine/arrow_up.png</iconset>
+                              <normaloff>../../Icons-mine/arrow_up.png</normaloff>../../Icons-mine/arrow_up.png</iconset>
                             </property>
                             <property name="iconSize">
                              <size>
@@ -12562,7 +13155,7 @@ font-size: 8pt;</string>
                             </property>
                             <property name="icon">
                              <iconset>
-                              <normaloff>../Icons-mine/arrow_down.png</normaloff>../Icons-mine/arrow_down.png</iconset>
+                              <normaloff>../../Icons-mine/arrow_down.png</normaloff>../../Icons-mine/arrow_down.png</iconset>
                             </property>
                             <property name="iconSize">
                              <size>
@@ -12807,7 +13400,7 @@ QProgressBar[objectName=&quot;track_progbar_right&quot;]::chunk{
                        <string/>
                       </property>
                       <property name="pixmap">
-                       <pixmap>../Icons-mine/track_icon.png</pixmap>
+                       <pixmap>../../Icons-mine/track_icon.png</pixmap>
                       </property>
                       <property name="scaledContents">
                        <bool>true</bool>
@@ -13103,7 +13696,7 @@ font-size:8pt;</string>
                                 </property>
                                 <property name="icon">
                                  <iconset>
-                                  <normaloff>../Icons-mine/arrow_up.png</normaloff>../Icons-mine/arrow_up.png</iconset>
+                                  <normaloff>../../Icons-mine/arrow_up.png</normaloff>../../Icons-mine/arrow_up.png</iconset>
                                 </property>
                                 <property name="iconSize">
                                  <size>
@@ -13133,7 +13726,7 @@ font-size:8pt;</string>
                                 </property>
                                 <property name="icon">
                                  <iconset>
-                                  <normaloff>../Icons-mine/arrow_down.png</normaloff>../Icons-mine/arrow_down.png</iconset>
+                                  <normaloff>../../Icons-mine/arrow_down.png</normaloff>../../Icons-mine/arrow_down.png</iconset>
                                 </property>
                                 <property name="iconSize">
                                  <size>
@@ -13412,7 +14005,7 @@ color:#dddddd;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>16</width>
+                      <width>26</width>
                       <height>16</height>
                      </rect>
                     </property>
@@ -13431,6 +14024,9 @@ color:#dddddd;</string>
                      </property>
                      <item>
                       <widget class="QFrame" name="periods_display_frame">
+                       <property name="styleSheet">
+                        <string notr="true">background:qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0.0568182 rgba(251, 250, 252, 255), stop:0.994318 rgba(225, 225, 225, 255));</string>
+                       </property>
                        <property name="frameShape">
                         <enum>QFrame::StyledPanel</enum>
                        </property>

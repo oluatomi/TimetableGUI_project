@@ -115,7 +115,7 @@ class ReportBySchoolClass(ModelReport):
         self.context["classgroup_fullname_id"] = self.classgroup.full_name
         self.context["classgroup_position"] = nth_suffix(self.classgroup.id)
         self.context["sch_class_list"] = [{"sch_class_name":sch_class.sch_class_alias, "sch_class_fullname":sch_class.full_name,
-                "arms_list": [{"arm_name": arm.full_name, "periods_per_day":[{"day":day.day, "periods":[period.period_name for period in periods_list]}
+                "arms_list": [{"arm_name": arm.full_name, "periods_per_day":[{"day":day.day, "periods":[{"period_name":period.period_name, "boundary":period.period_boundary_time_str} for period in periods_list]}
                 for day, periods_list in arm.periods.items()]} for arm in sch_class.school_class_arm_list]} 
                 for sch_class in self.classgroup.school_class_list]
 
@@ -181,9 +181,9 @@ class ReportByFaculty(ModelReport):
         self.context["department_subjects"] = [
         {
             "name":dept.dept_name, "hos":dept.hos,
-            "teachers":[{"fullname": teacher.full_name, "repertoire": "Teaches only this subject." if teacher.is_exclusive() else f"Teaches the following besides this one: {teacher.other_depts_taught_str(dept)}." \
-            "This teacher can thus also be found among the list of teachers for each of those other subjects.", 
-            "classarms_taught":teacher.classarms_taught_based_on_dept_str(dept), "specialization":teacher.specialization, "designation":teacher.designation} for teacher in dept.teachers_list]
+            "teachers":[{"fullname": teacher.full_name, "is_exclusive": teacher.is_exclusive(), "other_subjects":teacher.other_depts_taught_str(dept),
+            "classarms_taught":teacher.classarms_taught_based_on_dept_str(dept), "specialization":teacher.specialization,
+            "designation":teacher.designation, "regularity": "Full-time" if teacher.regularity else "Part-time"} for teacher in dept.teachers_list]
         } for dept in self.faculty.depts_list]
 
 

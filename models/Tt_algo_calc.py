@@ -28,7 +28,7 @@ def nth_suffix(num):
 
 
 def Translate_list_items(list_arg, item=None, index=None, base_index=0):
-    """ This static function rotates the elements in a list by taking an 'item' or 'index' if provided 
+    """ This function rotates the elements in a list by taking an 'item' or 'index' if provided 
     and moving to the position 'base_index' 
     item and index should not be provided at the same time. However, if done, the function defaults to 'item'
     """
@@ -801,6 +801,8 @@ def Set_with_order(list_arg):
 class SortAlgorithms:
     """ This class handles ALL the chunking algorithms, the Leapfrog,xlx and the
     centercluster algorithms, for a length of periods per class "array" """
+
+    # sort_algorithms_list = [leap_frog, xlx_reflection, centercluster, r_leapfrog, r_xlx_reflection, r_centercluster]
 
     @staticmethod
     def leap_frog(array, chunk_list={2:2, 1:2}, shift_value=0):

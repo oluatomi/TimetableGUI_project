@@ -17,7 +17,8 @@ from .Tt_algo import TimetableSorter
 import string, re, pickle, math
 from . import Tt_exceptions
 from ..gui import Tt_GuiExtras
-from TIMETABLE.reports.Tt_docx_reports import Reporter
+from TIMETABLE.reports import Tt_docx_reports
+from TIMETABLE.reports import Tt_html_reports
 
 
 subj_freq_chunk = namedtuple("subj_freq_chunk", "dept frequency chunk")
@@ -55,27 +56,91 @@ class TimeTableManager:
         self.pre_existing = None
         self.regex_time_pattern = "\d+:\d+:\d+"
         self.regex_position_pattern = "^(\d+,?)+$"
+        self.extension = '.tmtb'
 
-        # A dictionary, containing all the prequisites for the sorting process to be carried out (keys) and booleans as values
-        self.prerequisites = {"assigned":False, "packeted":False, "sorted": False}
 
-    
-    # ---------------------------- SAVE AND LOAD FILES ---------------------------------
+    def _authorize_assign_op(self):
+        """ BOOL. Checks if all criteria have been met for assignment operation to be carried out """
+        return bool(self.get_model_items("arms")[1]) and bool(self.get_model_items("teachers")[1])
+        
+
+    def _authorize_packet_op(self):
+        """ BOOL. Checks if all criteria have been met for packeting operation operation to be carried out """
+        return self.Timetable_obj.can_packet and self._authorize_assign_op()
+
+
+    def _authorize_sort_op(self):
+        """ BOOL. Checks if all criteria have been met for sort operation to be carried out """
+        return self.Timetable_obj.can_sort and self._authorize_packet_op()
+
+
+    # --------------------------------------------------------------------------------------
+    # ---------------------------- SAVE AND LOAD FILES -------------------------------------
     def save(self, project_file_path):
         """ Pickles the timetable object into a file """
         self.Timetable_obj.save(project_file_path)
+        self.add_project_to_recent(project_file_path)
+
+        # Add this project to the list of recent files
+        self.add_project_to_recent(project_file_path)
 
 
-    def load_from_file(self, project_file_path):
-        """ loads an existing timetable object from a .tmtb file """
+    def add_project_to_recent(self, project_file_path):
+        """ The file that holds recent project_file_paths can hold a 'limit' amount of files and hoists the new 
+        file path to the top of the list. This method manages the input of a new project file into the file such that
+         'limit' is not exceeded, and there are no repititions. A simple python list is used. No need for a LIFO queue """
+        
+        limit = 10
+        project_file_path = project_file_path if project_file_path.endswith(self.extension) else project_file_path + self.extension
+        # Read any already stored paths from the external file
+        with open('TIMETABLE/gui/TimeTable Extras/File_paths_for_recent.txt', 'r') as file:
+            recent_paths = file.readlines()
+        recent_file_paths_list = [] if recent_paths == ["\n"] else [path.strip("\n") for path in recent_paths]
+
+        # Now add to the beginning of the list. and check for if it was already in the list before
+        if project_file_path in recent_file_paths_list:
+            recent_file_paths_list.remove(project_file_path)
+        recent_file_paths_list.insert(0, project_file_path)
+
+        # Now check if the list exceeds 'limit' and clip off any trespassing items
+        len_recent_paths_list = len(recent_file_paths_list)
+        if len_recent_paths_list > limit:
+            recent_file_paths_list[limit - len_recent_paths_list:] = []
+
+        # Now load back into the external file
+        with open('TIMETABLE/gui/TimeTable Extras/File_paths_for_recent.txt', 'w') as file:
+            for line in recent_file_paths_list:
+                file.writelines(line + "\n")
+
+
+    def load_recent_projects(self):
+        """ returns a list of all the recent files """
+        with open('TIMETABLE/gui/TimeTable Extras/File_paths_for_recent.txt', 'r') as file:
+            recent_paths = file.readlines()
+        recent_file_paths_list = [] if recent_paths == ["\n"] else [path.strip("\n") for path in recent_paths]
+        return recent_file_paths_list
+
+
+    def load_tt_obj_from_file(self, project_file_path):
+        """ loads an existing timetable object from a '.tmtb' file and returns said object """
         import os
 
-        if os.path.exists(project_file_path) and os.path.splitext(project_file_path)[1] == ".tmtb":
+        if os.path.exists(project_file_path) and os.path.splitext(project_file_path)[1] == self.extension:
             with open(project_file_path, 'rb') as file:
-                tt_object = pickle.load(file)
+                try:
+                    tt_object = pickle.load(file)
+                except Exception:
+                    raise Tt_exceptions.SomethingWentWrong(f"A problem arose in loading file {project_file_path}. The file has probably been tampered with.")
             return tt_object
 
 
+    def reset_tt_obj(self):
+        """ resets the timetable object """
+        self.Timetable_obj.reset_timetable()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------------
     def stash_general_info(self, info_dict):
         """ passes the general info details from the GUI to the timetable object and back """
         self.Timetable_obj.commit_general_info(info_dict)
@@ -88,19 +153,19 @@ class TimeTableManager:
 
     def get_model_items(self, model_name):
         """ Returns list of type model_name from the timetable object. Model_name rendered in plural """
-        if model_name in ["depts", "courses", "subjects"]:
+        if model_name in ("depts", "courses", "subjects"):
             mod_list = self.Timetable_obj.list_of_departments
-        elif model_name in ["class_groups", "class_cats", "class_categories"]:
+        elif model_name in ("class_groups", "class_cats", "class_categories"):
             mod_list = self.Timetable_obj.list_of_school_class_groups
         elif model_name == "nonacads":
             mod_list = self.Timetable_obj.list_of_nonacad_depts
-        elif model_name == "faculties":
+        elif model_name in ("facs", "faculties"):
             mod_list = self.Timetable_obj.list_of_faculties
-        elif model_name in ["teachers", "staff"]:
+        elif model_name in ("teachers", "staff"):
             mod_list = self.Timetable_obj.list_of_all_teachers
-        elif model_name in ["classes", "school_classes"]:
+        elif model_name in ("classes", "school_classes"):
             mod_list = self.Timetable_obj.list_of_school_classes
-        elif model_name in ["arms", "class_arms"]:
+        elif model_name in ("arms", "class_arms"):
             mod_list = self.Timetable_obj.list_of_school_class_arms
         elif model_name == "days":
             mod_list = self.Timetable_obj.list_of_days
@@ -111,15 +176,19 @@ class TimeTableManager:
         return [item.full_name for item in mod_list], mod_list
 
 
-    def get_object_from_list_by_fullname(self, model_name, object_fullname):
-        """ Returns an object (arm, or dept, etc) from its list. serves as a substitute for self.object_getter. More suitable for functions
-        that may call for objects outside this module """
-        mod_list = self.get_model_items(model_name)[1]
+    def get_model_item_object(self, model_name, identifier):
+        """ Returns a model item, class arm, class cat, teacher etc. given an identifier. Identifier can be
+        fullname or id. """
 
-        for obj in mod_list:
-            if obj.full_name == object_fullname:
-                return obj
-        return ValueError(f"{object_fullname} not found in model list")
+        # search by its fullname if it is a sring else by its number ID
+        attr = "full_name" if isinstance(identifier, str) else "id"
+        model_list = self.get_model_items(model_name)[1]
+        # in case the arm_cred does not match any teacher
+        try:
+            model_obj = self.object_getter(model_list, attr, str(identifier))
+        except ValueError:
+            raise Tt_exceptions.SomethingWentWrong(f"No class arm with ID: {identifier}")
+        return model_obj
 
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -139,17 +208,12 @@ class TimeTableManager:
 
     def create_faculty(self, faculty_name, HOD="Esteemed HOD Sir/Ma'am", description="", update=False):
         #  ...
-        #  set the prerequisite[assigned] dict to False, so sorting or packeting cannot be done
-        self.prerequisites["assigned"] = False
-
         pre_existing = self.pre_existing if update else None 
         self.Timetable_obj.create_faculty(faculty_name, HOD=HOD, description=description, update=update,preexisting_obj=pre_existing)
 
 
     def create_department(self, name, hos=None, is_parallel=False, faculty=None, A=1,T=1,P=1,G=1, update=False):
         #  ...
-        #  set the prerequisite[assigned] dict to False, so sorting or packeting cannot be done
-        self.prerequisites["assigned"] = False
 
         pre_existing = self.pre_existing if update else None
         hos = "Unspecified" if not hos else hos
@@ -157,15 +221,10 @@ class TimeTableManager:
         self.Timetable_obj.create_department(name, faculty=faculty_obj, hos=hos, is_parallel=is_parallel, A=A, T=T,P=P,G=G, preexisting_obj=pre_existing, update=update)
 
 
-
     def create_special_department(self, name, update=None):
         """ handles creation or update of a non-academic subject e.g. break-time """
-
-        #  set the prerequisite[assigned] dict to False, so sorting or packeting cannot be done
-        self.prerequisites["assigned"] = False
         pre_existing = self.pre_existing if update else None
         self.Timetable_obj.create_department(name, is_special=True, update=update, preexisting_obj=pre_existing)
-
 
 
 
@@ -231,7 +290,7 @@ class TimeTableManager:
         """ Handles the creation or update of the school class group, i.e. school class category """
 
         #  set the prerequisite[assigned] dict to False, so sorting or packeting cannot be done
-        self.prerequisites["assigned"] = False
+
 
         pre_existing = None if not update else self.pre_existing
         self.Timetable_obj.create_school_class_group(class_group_name, description=description, 
@@ -240,8 +299,6 @@ class TimeTableManager:
 
     def create_school_class(self, name, class_group, update=False):
         #  ...
-        #  set the prerequisite[assigned] dict to False, so sorting or packeting cannot be done
-        self.prerequisites["assigned"] = False
         
         # label_iden is None when it is creation (and not update) of class
         pre_existing_obj = None if not update else self.pre_existing
@@ -344,10 +401,6 @@ class TimeTableManager:
     def delete_teacher(self, teachers_list):
         """ Completely deletes a teacher and any references to it """
 
-        #  set the prerequisite[assigned] dict to False, so sorting or packeting cannot be done
-        self.prerequisites["assigned"] = False
-        #  ...
-
         teacher_obj_list = [self.object_getter(self.Timetable_obj.list_of_all_teachers, "full_name", teacher_) for teacher_ in teachers_list]
         for teacher in teacher_obj_list:
             self.Timetable_obj.del_teacher(teacher)
@@ -358,9 +411,6 @@ class TimeTableManager:
         """ Creates (or updates) the day object """
         #  ...
         #  set the prerequisite[assigned] dict to False, so sorting or packeting cannot be done
-        self.prerequisites["assigned"] = False
-        #  ...
-        
         pre_existing_obj = None if not update else self.pre_existing
         # The rating parameter helps to situate the day in te list of days
         rating = rating - 1 if rating else None
@@ -420,13 +470,12 @@ class TimeTableManager:
         """ This method add each of the days to each of the class arms in the arms_list """
 
         #  set the prerequisite[assigned] dict to False, so sorting or packeting cannot be done
-        self.prerequisites["assigned"] = False
+        # self.prerequisites["assigned"] = False
         # .......................................................................
         # Add each day object to each arm
         for arm in selected_arms_list:
             # Empty out the days_list of the arm before filling it again
             self.Timetable_obj.unmap_all_depts_from_arm(arm)
-            
             for day in selected_days_list:
                 self.Timetable_obj.map_day_to_arm(arm, day)
 
@@ -475,9 +524,6 @@ class TimeTableManager:
         # --------------------------------------------------------------------------------------------------
         # ----------- First, validate the necessary fields with the regular expressions pattern
         # Validate all the elements normal_periods_dict except the freq and see if they all match to true
-
-        #  set the prerequisite[assigned] dict to False, so sorting or packeting cannot be done
-        self.prerequisites["assigned"] = False
 
         match_list = []
         for field, val in normal_periods_dict.items():
@@ -575,91 +621,57 @@ class TimeTableManager:
 
         # Add the courses in iterable_from_gui to the class arm
         self.iterable_from_gui = iterable_from_gui
-        self.add_depts_to_selected_classarms(arm_objs_list=arm_objs, iterable_from_gui=self.iterable_from_gui)
+        self.add_depts_to_selected_classarms(arm_objs_list=arm_objs, iterable_from_gui=iterable_from_gui)
 
-
+    
 
     def get_arms_feasible_table_data(self):
         """ Returns the arms_feasible_table_data for every class arm to be used in the GUI """
         return [arm.get_arms_feasible_table_data() for arm in self.Timetable_obj.list_of_school_class_arms]
 
 
-
 # --------------------------------------------------------------------------------------------------------
 # -------------------------- ASSIGN TEACHERS TO TEACH SUBJECTS IN CLASS ARMS -------------------------
     def auto_assign_teachers_to_arms(self):
         """ calls the Tt_models module and automatically assigns teacher to arm """
-        # First loads the teachers generators to produce teachers for assignment
-
-        #  set the prerequisite[assigned] dict to True.
-        
-        # set prerequisite to assign teachers to True if both teachers and class arms exist
-        if self.get_model_items("teachers")[0] and self.get_model_items("arms")[0]:
-            self.prerequisites["assigned"] = True
-
-        if self.prerequisites["assigned"]:
-            self.Timetable_obj.load_teachers_from_all_depts(ascending=True)
+        if self._authorize_assign_op():
             assign_teachers = self.Timetable_obj.auto_assign_teachers_to_all_arms()
+            self.Timetable_obj.can_packet = True
             return assign_teachers,
 
 
     def undo_assign_teachers_to_arms(self):
         """ Calls the Tt_models module to strips each class arm of its subject teacher """
-
-        if self.prerequisites["assigned"]:
+        if self._authorize_assign_op():
             undo_assign = self.Timetable_obj.undo_assign_teachers_to_arms()
+            self.Timetable_obj.can_packet = False
             return undo_assign,
-        # set the prerequisite[assigned] dict to False, so sorting or packeting cannot be done
-        self.prerequisites["assigned"] = False
-
-
-    # ---to display details of class arm and assignec teacher snd frequency
-    def get_arm_object(self, arm_cred):
-        """ Returns tha arm object with full_name of arm_fullname.
-        SPECIALLY FOR THE BUTTON THAT FINDS (pulls up) CLASS ARMS AND UPLOADS THEIR DETAILS TO THE TABLEWIDGET IN THE GUI """
-        attr = "full_name" if isinstance(arm_cred, str) else "id"
-        # in case the arm_cred does not match any teacher
-        try:
-            arm_obj = self.object_getter(self.Timetable_obj.list_of_school_class_arms, attr, str(arm_cred))
-        except ValueError:
-            raise Tt_exceptions.SomethingWentWrong(f"No class arm with ID: {arm_cred}")
-        return arm_obj
-
+       
 
 # ---------------------------------------------------------------------------------------------------------
 # ----------------------------------- PACKETING AND SORTING OPERATION -------------------------------------
     def packeting_repacketing(self):
         """ handles the 'packeting' and 'repacketing' of subject teachers into days of the week returns None if 
         prerequisites aren't met """
-
-        self.prerequisites["packeted"] = True
-
-        if self.prerequisites["packeted"] and self.prerequisites["assigned"]:
-            # ....................................
-            packet = self.TimetableSorter.packet_depts_into_arms_per_day(self.iterable_from_gui)
-            # Repacket will be adjusted later
-            repacket = self.TimetableSorter.repacket_teachers()       
+        # ...................................
+        if self._authorize_packet_op():
+            packet = self.TimetableSorter.packet_depts_into_arms_per_day()
+            repacket = self.TimetableSorter.repacket_teachers()
+            self.Timetable_obj.can_sort = True
             return packet, repacket
 
 
     def undo_packeting_repacketing(self):
         """ Handles undoing the packet_repacketing process """
-        if self.prerequisites["packeted"]:
+        if self._authorize_packet_op():
             undo_packet_operation = self.TimetableSorter.undo_packeting()
-            return (undo_packet_operation,)
-
-        self.prerequisites["packeted"] = False
+            self.Timetable_obj.can_sort = False
+            return undo_packet_operation,
 
 
     def algosort_handle_cleanup_periodmap(self, algorithm_text, ref_day, ref_arm):
         """ MEGA METHOD. Handles the sorting, handling displaced teachers, clean up and maps the result to arms' periods """
-
-        # Sets the sorted prerequisite to True, so we can sort
-        self.prerequisites["sorted"] = True
-
-        # If requirements for assignment, and packeting and sorting are all in place...
-        if self.prerequisites["assigned"] and self.prerequisites["packeted"] and self.prerequisites["sorted"]:
-
+        if self._authorize_sort_op():
             ref_day_obj = self.object_getter(self.Timetable_obj.list_of_days, "full_name", ref_day.strip()) 
             ref_arm_obj = self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", ref_arm.strip())
 
@@ -667,24 +679,33 @@ class TimeTableManager:
             handle = self.TimetableSorter.handle_displaced_teachers()
             cleanup = self.TimetableSorter.clean_out_displaced_teachers()
             map_to_period = self.TimetableSorter.map_chunk_to_arms_periods()
-
             return algosort, handle, cleanup, map_to_period
+
+
+# -----------------------------------------------------------------------------------------------------------
+# ------------------ HANDLES THE 'ADVANCED' SECTION, WITH TEACHERS'SPACING ETC ------------------------------
+    def teachers_relative_spacing_per_algorithm(self, ref_day, ref_arm):
+        """ Handles the inner function that calculates the teacher's spacing """
+        # try:
+        ref_day_obj = self.object_getter(self.Timetable_obj.list_of_days, "full_name", ref_day.strip()) 
+        ref_arm_obj = self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", ref_arm.strip())
+        self.TimetableSorter.calc_teachers_spacing_per_algorithm(ref_arm_obj, ref_day_obj)
+        # except Exception:
+            # print("CALCULATING SPACING NOT ALLOWED!")
+
 
 
 #--------------------------------------------------------------------------------------------------------------- 
 # ------------------ RESPOND TO THE DIALS TO LOAD PERIODS INTO FRAMES AFTER SORTING IS DONE --------------------
-
     def dial_value_to_index(self, dial_value, model_length, min_=1, max_=100):
         """ This function converts the value passed in from the QDial into the index (int) of the model_object """
         index = math.ceil(dial_value * model_length/(max_ - min_ + 1)) - 1
         return index
 
-
     def index_to_dial_value(self, index, model_length, min_=1, max_=100):
         """ Converts the value of the index to its QDial value on the GUI. Returns the QDial value """
         dial_value = math.floor((index + 1)*(max_ - min_ + 1)/model_length)
         return dial_value
-
 
     def model_list_for_dial(self, model_type_str, index=0):
         """ Makes ready a model_list, be it class arms or days. iIndex is 0 or 1 based on whether the object itself
@@ -699,21 +720,22 @@ class TimeTableManager:
         elif "department" in model_type_str.lower():
             param = "faculties"
         else:
-            param = "days"
-            
+            param = "days"       
         return self.get_model_items(param)[index]
-        
 
 
     def return_item_from_dial_value(self, by_day_or_arm_str, dial_val):
         """ Takes the dial value, does some things to it and returns the corresponding model item to it """
-        # only do this if all prerequisites have been met, i.e. every item in the dictionary reads 'True'.
-        # By doing the above, teachers and class arms would already have been created
-        if all(self.prerequisites.values()):
-            model_list = self.model_list_for_dial(by_day_or_arm_str)
-            model_list_length = len(model_list)
-            index = self.dial_value_to_index(dial_val, model_list_length, min_=1, max_=100)
-            return model_list[index]
+
+        # ------- HERE. CREATE A CAN_DISPLAY ATTRIBUTE ON THE TIMETABLE CLASS ITSELF TO HELP CHECK
+        
+        model_list = self.model_list_for_dial(by_day_or_arm_str)
+        model_list_length = len(model_list)
+        index = self.dial_value_to_index(dial_val, model_list_length, min_=1, max_=100)
+        return model_list[index]
+
+    # --------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------------------------------------
 
 
     def load_period_frames(self, frame_from_gui, details_tuple):
@@ -817,10 +839,13 @@ class TimeTableManager:
         be based on, (days, class category or departments) and format is whether it is PDF, DOCX or HTML """
         
         if "docx" in format_.lower():
-            report = Reporter(self.Timetable_obj)
+            report = Tt_docx_reports.Reporter(self.Timetable_obj)
             report.runs_models_by_basis(basis, file_path, convert_to_pdf=False)
 
         elif "pdf" in format_.lower():
-            report = Reporter(self.Timetable_obj)
+            report = Tt_docx_reports.Reporter(self.Timetable_obj)
             report.runs_models_by_basis(basis, file_path, convert_to_pdf=True)
-            
+
+        elif "html" in format_.lower():
+            Tt_html_reports.HTMLReporter(self.Timetable_obj, basis, file_path)
+             

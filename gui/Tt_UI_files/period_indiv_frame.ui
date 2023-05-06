@@ -28,11 +28,12 @@
   <property name="styleSheet">
    <string notr="true">QFrame[objectName=&quot;Frame&quot;]{
 	border-radius:5px;
-	border:2.5px solid #000059;
+	border:1.3px solid #a0a0a0;
+	background:qlineargradient(spread:pad, x1:0.011, y1:0.517136, x2:0.965909, y2:0.528, stop:0.142045 rgba(253, 250, 255, 255), stop:0.528409 rgba(237, 235, 238, 255), stop:0.948864 rgba(225, 225, 225, 255));
 }
 
-QFrame &gt; QFrame{
-	border:0.7px solid #808080;	
+QFrame[objectName=&quot;Frame&quot;] QWidget{
+	background:transparent;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -70,9 +71,9 @@ QScrollBar::handle{
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-8</y>
-        <width>129</width>
-        <height>92</height>
+        <y>0</y>
+        <width>133</width>
+        <height>98</height>
        </rect>
       </property>
       <property name="maximumSize">
@@ -103,10 +104,16 @@ QScrollBar::handle{
        <item>
         <widget class="QFrame" name="p_name_fr">
          <property name="styleSheet">
-          <string notr="true">QWidget{
-	background:qlineargradient(spread:pad, x1:0.0266364, y1:0.523, x2:0.968, y2:0.535, stop:0.147727 rgba(42, 0, 127, 255), stop:0.8125 rgba(0, 0, 0, 255));
-	color:#f9f9f9;
+          <string notr="true">QFrame[objectName=&quot;p_name_fr&quot;]{
+	border-bottom:1.5px solid #292929;
+	padding-top:3px;
+	padding-bottom:1px;
+}
+
+QLabel{
+	font: 8pt arial;
 	font-weight:bold;
+	color:#313131;
 }</string>
          </property>
          <property name="frameShape">
@@ -129,12 +136,15 @@ QScrollBar::handle{
            <number>1</number>
           </property>
           <item>
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="period_title_label">
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
             <property name="text">
              <string>period name (Acad or No)</string>
             </property>
             <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             <set>Qt::AlignCenter</set>
             </property>
             <property name="wordWrap">
              <bool>true</bool>
@@ -147,11 +157,14 @@ QScrollBar::handle{
        <item>
         <widget class="QFrame" name="p_dur_fr">
          <property name="styleSheet">
-          <string notr="true">QWidget{
+          <string notr="true">QFrame[objectName=&quot;p_dur_fr&quot;]{
 	color: #934900;
 	font-weight:bold;
 	border:none;
-}</string>
+	padding-bottom:1px;
+	padding-top:1px;
+}
+</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -173,13 +186,17 @@ QScrollBar::handle{
            <number>3</number>
           </property>
           <item>
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="period_duration_label">
             <property name="font">
              <font>
-              <pointsize>8</pointsize>
+              <pointsize>7</pointsize>
               <weight>75</weight>
               <bold>true</bold>
              </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color:#b33804;
+font-size:7pt;</string>
             </property>
             <property name="text">
              <string>Period duration</string>
@@ -198,9 +215,14 @@ QScrollBar::handle{
        <item>
         <widget class="QFrame" name="subj_fr">
          <property name="styleSheet">
-          <string notr="true">QWidget{
+          <string notr="true">QFrame[objectName=&quot;subj_fr&quot;]{
+	border-top: 1.5px solid #292929;
+}
+
+QFrame[objectName=&quot;subj_fr&quot;] QTextEdit{
 	border:none;
-	border-top: 1.5px solid #000059;
+	background:transparent;
+	color: #171717;
 }</string>
          </property>
          <property name="frameShape">
@@ -223,7 +245,7 @@ QScrollBar::handle{
            <number>0</number>
           </property>
           <item>
-           <widget class="QTextEdit" name="textEdit">
+           <widget class="QTextEdit" name="period_textedit">
             <property name="maximumSize">
              <size>
               <width>16777215</width>
@@ -231,9 +253,7 @@ QScrollBar::handle{
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">QTextEdit{
-background:transparent;
-}</string>
+             <string notr="true"/>
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -243,7 +263,7 @@ background:transparent;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2';&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2';&quot;&gt;cghbjn&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="placeholderText">
              <string>FREE</string>

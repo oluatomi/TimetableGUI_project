@@ -16,7 +16,6 @@ class TtWorkerSignals(QtCore.QObject):
     progress = QtCore.pyqtSignal(int)
     # Runs at the end of the entire process, error or no
     deadend = QtCore.pyqtSignal()
-
     progress_with_info = QtCore.pyqtSignal(tuple)
 
 
@@ -28,8 +27,8 @@ class TtWorker(QtCore.QRunnable):
         super().__init__()
         self.signals = TtWorkerSignals()
         # The working object is the function/method passed in that will be run in the run function. Working_obj is a tuple
-        # of the one (or two or more) threasing operations that need to be carried out, (e.g, packeting and repacketing)
-        # the auxiliary function is to be run when the nil_error_string is emitted
+        # of the one (or two or more) threading operations that need to be carried out, (e.g, packeting and repacketing)
+        # the auxiliary function (aux_function) is to be run when the nil_error_string is emitted
 
         self.working_obj = working_obj
         # Below.. the working object run with args and kwargs
