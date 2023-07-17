@@ -1,20 +1,155 @@
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
-from ..models import Tt_manager, Tt_algo
+from ..models import Tt_manager, Tt_algo, Tt_algo_calc
 from ..models.Tt_models import TimeTable as tt
+import math
 
 
-# def widget_for_tree(icon_path="../Icons-mine/teacher.png",label_text="", with_checkbox=False):
-    # """Function to generate the widgets which would go into the trees in the gui, rather than mere text"""
+class LoadFrame(QtWidgets.QWidget):
+    """ The loading widget with progressbars filling from min to max """
+    def __init__(self, loading_text="Operation Loading..."):
+        super().__init__()
+        uic.loadUi("TIMETABLE/gui/Tt_UI_files/loading.ui", self)
+        self.setWindowFlags(QtCore.Qt.SplashScreen|QtCore.Qt.FramelessWindowHint)
+        # Do not show just yet
+        self.loading_label = self.findChild(QtWidgets.QLabel, "loading_label")
+        self.loading_label.setText(loading_text)
 
-class LoadingFrame(QtWidgets.QWidget):
-    """ class that handles the mini frame that shows up when stuff is loading """
-    def __init__(self):
+        self.progressbars = [self.findChild(QtWidgets.QProgressBar, "progbar_1"), 
+        self.findChild(QtWidgets.QProgressBar, "progbar_2")]
+
+        self.show()
+
+    def animate_progbars(self, val):
+        """ sets val as the value to the progressbars """
+        for progbar in self.progressbars:
+            progbar.setValue(val)
+
+
+
+class PerpetualLoadFrame(QtWidgets.QWidget):
+    """ class that handles the mini frame that shows up when stuff is loading (with progressbars and stuff) """
+    def __init__(self, time_interval=100, loading_text="A moment, please. Task loading in the background."):
         super().__init__()
         # Load the ui file
-        uic.loadUi("TIMETABLE/gui/load_screen.ui", self)
+        uic.loadUi("TIMETABLE/gui/Tt_UI_files/perpetual_loading.ui", self)
         self.setWindowFlags(QtCore.Qt.SplashScreen|QtCore.Qt.FramelessWindowHint)
         self.show()
 
+        # get the progressbars in a dict
+        self.progressbars = {
+        1 : self.findChild(QtWidgets.QProgressBar, "progbar_1"),
+        2 : self.findChild(QtWidgets.QProgressBar, "progbar_2"),
+        3 : self.findChild(QtWidgets.QProgressBar, "progbar_3"),
+        4 : self.findChild(QtWidgets.QProgressBar, "progbar_4"),
+        5 : self.findChild(QtWidgets.QProgressBar, "progbar_5")
+        }
+
+        self.loading_label = self.findChild(QtWidgets.QLabel, "loading_label")
+        self.loading_label.setText(loading_text)
+        self.max_prog = 100
+        self.step_k = 0.24
+        self.steps, self.count = 10, 0
+
+        # set the timer
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.animate_progbars)
+        self.timer.start(time_interval)
+
+        # define the equation of motion
+    def EOM(self, time_count):
+        """ Defines the "exponential" EOM to move the progressbars. time_t is an integer 1 <= time_t <= self.steps """
+        return 1.1*self.max_prog*(1 - math.e**(-1*self.step_k*time_count))
+
+
+    def animate_progbars(self):
+        """ Does all the work of setting values to these progbars """
+        self.count = (self.count % self.steps) + 1
+        
+        for k_int, progbar in self.progressbars.items():
+            # change up if k_int is even
+            val = self.max_prog - self.EOM(self.count) if k_int % 2 == 0 else self.EOM(self.count)
+            val = round(val)
+            progbar.setValue(val)
+
+
+    def stop_animation(self):
+        """ stops the animation of the progressbars """
+        self.timer.stop()
+        self.count = 0
+
+        for progbar in self.progressbars.values():
+            # change up if k_int is even
+            progbar.setValue(0)
+        # close the this entire QWidget
+        self.close()
+
+
+
+class ATPGSettingsWindow(QtWidgets.QWidget):
+    """ The window that shows the ATPG parameter names and weighted values to be set """
+    def __init__(self, mother_window):
+        super().__init__()
+        uic.loadUi("TIMETABLE/gui/Tt_UI_files/preferences_window.ui", self)
+        self.setWindowFlags(QtCore.Qt.SplashScreen|QtCore.Qt.FramelessWindowHint)
+
+        self.mother_window = mother_window
+        # self.load_atpg_func = load_atpg_func
+        # self.message_func = message_func
+        # self.workrate_func = workrate_func
+        
+        # Get the lineEdits
+        self.analytic_lineEdit = self.findChild(QtWidgets.QLineEdit, "analytic_lineEdit")
+        self.theoretical_lineEdit = self.findChild(QtWidgets.QLineEdit, "theoretical_lineEdit")
+        self.practical_lineEdit = self.findChild(QtWidgets.QLineEdit, "practical_lineEdit")
+        self.grammatical_lineEdit = self.findChild(QtWidgets.QLineEdit, "grammatical_lineEdit")
+
+        # get the values to the spinboxes
+        self.analytic_spinbox = self.findChild(QtWidgets.QSpinBox, "analytic_spinbox")
+        self.theoretical_spinbox = self.findChild(QtWidgets.QSpinBox, "theoretical_spinbox")
+        self.practical_spinbox = self.findChild(QtWidgets.QSpinBox, "practical_spinbox")
+        self.grammatical_spinbox = self.findChild(QtWidgets.QSpinBox, "grammatical_spinbox")
+        self.set_atpg_btn = self.findChild(QtWidgets.QPushButton, "set_atpg_btn")
+
+        self.busy_checkbox = self.findChild(QtWidgets.QCheckBox, "busy_checkbox")
+        self.busy_frame = self.findChild(QtWidgets.QFrame, "busy_frame")
+        self.busy_spinbox = self.findChild(QtWidgets.QSpinBox, "busy_spinbox")
+        self.set_busy_btn = self.findChild(QtWidgets.QPushButton, "set_busy_btn")
+        self.close_btn = self.findChild(QtWidgets.QPushButton, "close_btn")
+
+        self.set_atpg_btn.clicked.connect(self.set_atpg)
+        self.set_busy_btn.clicked.connect(self.set_workrate_inflexion)
+        self.busy_checkbox.stateChanged.connect(self.busy_frame.setEnabled)
+        self.close_btn.clicked.connect(lambda: self.close())
+
+
+    def set_atpg(self):
+        analytic_name = "Analytic" if not self.analytic_lineEdit.text() else self.analytic_lineEdit.text()
+        theoretical_name = "Theoretical" if not self.theoretical_lineEdit.text() else self.theoretical_lineEdit.text()
+        practical_name = "Practical" if not self.practical_lineEdit.text() else self.practical_lineEdit.text()
+        grammatical_name = "Grammatical" if not self.grammatical_lineEdit.text() else self.grammatical_lineEdit.text()
+
+        analytic_val = self.analytic_spinbox.value()
+        theoretical_val = self.theoretical_spinbox.value()
+        practical_val = self.practical_spinbox.value()
+        grammatical_val = self.grammatical_spinbox.value()
+
+        self.mother_window.Timetable.set_ATPG_parameters((analytic_name, analytic_val), (theoretical_name, theoretical_val), 
+            (practical_name, practical_val), (grammatical_name, grammatical_val))
+        
+        self.mother_window.load_atpg()
+        self.mother_window.messagebox(title="ATPG modification success.", text="ATPG preferences successfully registered and displayed on the top tab", icon="Information")
+
+
+    def set_workrate_inflexion(self):
+        workrate_val = self.busy_spinbox.value()
+        self.mother_window.Timetable.set_workrate_inflexion_num(workrate_val)
+        self.mother_window.load_workrate()
+        self.mother_window.messagebox(title="Workrate modification success.", 
+            text=f"Work-Rate percentage of <strong>{workrate_val}</strong> successfully registered.", icon="Information")
+
+
+# ---------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------
 
 def get_detailed_info_from_fac_or_dept(model_obj, identifier):
     """ STR. Returns an HTML string of detailed info from 'model_obj' depending on whether it is a department (faculty) object
@@ -44,9 +179,9 @@ def get_detailed_info_from_fac_or_dept(model_obj, identifier):
             <p>This subject, based on its structural attributes, weighs <strong>{model_obj.dept_ATPG()}</strong> on the ATPG-
             course structure scale.
             <br>
-            <p style="font: 8pt arial;">N.B: The ATPG scale is not by any means a measure of the importance of a subject/course. Such judgement is within the descretion
-            of the school or Ministry of Education or the presiding institution(s) involved. This rating simply helps sort the subjects.</p>
-            <p>Number of resident teachers: {len(model_obj.teachers_list)}</p>
+            <p style="font: 8pt arial;">N.B: The ATPG scale is not by any means a measure of the importance of a subject/course. Such judgement 
+            is reserved for the presiding institution. This rating simply helps sort the subjects.</p>
+            <p>Number of resident teachers: <strong>{len(model_obj.teachers_list)}</strong></p>
             </html>
             """
 
@@ -129,10 +264,10 @@ class MySpinBox(QtWidgets.QSpinBox):
 
 class ModelDetailWindow(QtWidgets.QDialog):
     """This class handles the small window that would show details for arm, teachers, subjects etc on click"""
-    def __init__(self, tt_obj):
+    def __init__(self, tt_manager):
         super().__init__()
-        self.tt_obj = tt_obj
-        uic.loadUi("TIMETABLE/gui/model_info_window.ui", self)
+        self.tt_obj = tt_manager.Timetable_obj
+        uic.loadUi("TIMETABLE/gui/Tt_UI_files/model_info_window.ui", self)
         self.setWindowTitle("display Information")
         self.setWindowFlags(QtCore.Qt.SplashScreen|QtCore.Qt.FramelessWindowHint)
 
@@ -149,7 +284,8 @@ class ModelDetailWindow(QtWidgets.QDialog):
 
 
 class ModelDetails:
-    """ Handles the generating the details of models (in HTML) to be shown on the gui with the appropriate QSS styling"""
+    """ Handles the generating the details of models (in HTML) 
+    to be shown on the GUI with the appropriate QSS styling. """
     def __init__(self, tt_obj):
         self.tt_obj = tt_obj
 
@@ -252,7 +388,7 @@ class ModelDetails:
         detail_text = f"""
         <style>{self._css_style()}</style>
         <h4>CLASS ARM DETAILS</h4>
-        <p>The class arms created so fart are listed below:</p>
+        <p>The class arms created so far are listed below:</p>
         {self._bulleted_items_from_list(all_arms, ordered=True)}
         <p class="emphasis">Total: <strong>{len(all_arms)}</strong> in all.</p>
         """
@@ -359,9 +495,11 @@ class ModelDetails:
 # The period frames class
 
 class PeriodFrame(QtWidgets.QFrame):
-    def __init__(self, height=0):
+    def __init__(self, is_acad_bool, height=0):
         super().__init__()
-        uic.loadUi("TIMETABLE/gui/Tt_UI_files/period_indiv_frame.ui", self)
+
+        period_path = "acad_period_frame" if is_acad_bool else "non_acad_period_frame"
+        uic.loadUi(f"TIMETABLE/gui/Tt_UI_files/{period_path}.ui", self)
 
         self.height = height
         self.teacher_str = None
@@ -379,7 +517,7 @@ class PeriodFrame(QtWidgets.QFrame):
         "untracked": "QWidget{\n"
             "border:none;\n"
             "border-top: 1.5px solid #000059;\n"
-            "}"
+            "}\n"
         }
 
         # get the labels and textedit and all
@@ -393,7 +531,7 @@ class PeriodFrame(QtWidgets.QFrame):
         self.period_duration_label.setText(duration_str)
         self.period_textedit.setHtml(f"""
             <html>
-                <p style="text-align:center; color:#161616;font-size:10pt;
+                <p style="text-align:center; color:#161616;font-size:8pt;
                 font-family: tahoma; font-weight:bold;">{dept_name}</p>
             </html>
             """)
@@ -413,7 +551,7 @@ class PeriodFrame(QtWidgets.QFrame):
 
     def _string_matches(self, match_str):
         """ BOOL. Returns whether or not 'match_str' matches any of this instance's dept, teacher, or faculty values """
-        return match_str in [self.teacher]+[self.dept, self.faculty]
+        return match_str in Tt_algo_calc.strip_list_wrapper([self.teacher, self.dept, self.faculty])
 
     def match_and_colour_based_on_track(self, match_str):
         """ Matches 'match_str' with the dept, teacher, faculty parameters and colours the subj_fr if there is 
@@ -606,12 +744,12 @@ class IndivPeriodDisplayFrame(QtWidgets.QFrame):
         self.setMaximumSize(QtCore.QSize(*self.width_height))
 
 
-    def _frame_setup(self, fr_widget):
-        """ Private method to setup the arm and period frames """
-        # Frame = QtWidgets.QFrame()
-        Frame = fr_widget()
-        # ui.setupUi(Frame)
-        return Frame
+    # def _frame_setup(self, fr_widget):
+    #     """ Private method to setup the arm and period frames """
+    #     # Frame = QtWidgets.QFrame()
+    #     Frame = fr_widget()
+    #     # ui.setupUi(Frame)
+    #     return Frame
         
 
     def return_period_frames(self, model_type_str, match_item):
@@ -621,7 +759,7 @@ class IndivPeriodDisplayFrame(QtWidgets.QFrame):
 
         marker, *periods = self.periods_list
         # make the marker frame
-        marker_frame = self._frame_setup(ArmFrame)
+        marker_frame = ArmFrame()
         marker_frame.add_arm_fullname(model_type_str, marker.full_name)
 
         # The list of widgets this function will eventually returns
@@ -629,7 +767,7 @@ class IndivPeriodDisplayFrame(QtWidgets.QFrame):
 
         # add in the rest of the periods
         for period in periods:
-            period_frame = self._frame_setup(PeriodFrame)
+            period_frame = PeriodFrame(period.is_acad)
             # Customize this period by adding the time-limits and title
             period_frame.add_name_duration_content(period.period_title, period.period_boundary_time_str, period.dept_content)
 
@@ -637,6 +775,10 @@ class IndivPeriodDisplayFrame(QtWidgets.QFrame):
             teacher_str = period.teacher if period.teacher else None
             dept_str = period.dept.full_name if period.dept else None
             faculty_str = period.dept.faculty.full_name if period.dept else None
+
+
+            if not period.is_acad:
+                print(f"Non-acad periods dept: {dept_str} || dept_content: {period.dept_content}")
 
             period_frame.add_teacher_dept_fac_str(teacher_str, dept_str, faculty_str)
             # match by an empty string if no match item is given; so no matches are found
@@ -736,13 +878,16 @@ class PeriodsDisplayFrame:
 def sort_packet_stylesheet(topic_colour="#f4f4f4"):
     """ Returns styles to be used in the textEdit widgets for the packeting and sorting operations """         
     style = f""" 
-            p, li {{\n 
+            p, li{{\n 
             white-space: pre-wrap;\n
-            }}\n
-            p{{\n
             color:#272727;\n
-            font-size:8pt;\n
-            font-family:calibri;\n
+            font-size:8.5pt;\n
+            font-family:arial;\n
+            margin:0px;\n
+            }}\n
+            ul, ol{{\n
+            margin:0px;\n
+            padding:0px;\n
             }}\n
             body{{\n
             font-family:calibri;\n
@@ -759,7 +904,7 @@ def sort_packet_stylesheet(topic_colour="#f4f4f4"):
             font-weight:bold;\n
             text-align:center;\n
             font-size: 10pt;\n
-            margin-top:0px;\n
+            margin-top:5px;\n
             }}\n
             .item{{\n
                 font-weight:bold;\n
@@ -772,15 +917,51 @@ def sort_packet_stylesheet(topic_colour="#f4f4f4"):
                 border:0.9px solid #3c3c3c;\n
             }}\n
             li hr{{\n
-                margin-left:40px;\n
                 border:0.8px solid #4a4aff;\n
                 }}\n
             .indent-hr{{\n
-                margin-left: 30px;
-                padding-left:30px;
-            }}
+                margin-left: 30px;\n
+                padding-left:30px;\n
+            }}\n
             """
     return style
+
+
+def load_teacher_details_into_textEdit(teacher, textEdit_widget):
+    """ Generates (searched) teacher's details and displays it in the textEdit widget """
+    if teacher:
+        topic_colour = "#2b2bff"
+        comment = '<p id="topic">DETAILS</p><hr>'
+        comment += f'<p>Consistency: {"Full-time" if teacher.regularity else "Part-time"}</p>'
+        comment += f"<p>Subjects taught: <strong>{teacher.str_teacher_depts}</strong></p>"
+        comment += "<hr>"
+        comment += '<h3>Subject and class arms to which teacher has been assigned</h3>'
+        comment += '<ol>'
+        for dept, arm in teacher.dept_and_arms:
+            comment += f'<li>Teaches <strong>{dept.full_name}</strong> to <strong>{arm.full_name}</strong>.</li>'
+        comment += '<hr></ol>'
+        comment += f'<p>A total of <strong>{len(teacher.dept_and_arms)}</strong> subject-class arm combinations.</p>'
+
+    else:
+        topic_colour = "#007100"
+        comment = '<p id="topic">CANNOT RENDER DETAILS</p><hr>'
+        comment += "<p>The details of a non-existent teacher/tutor cannot be rendered.</p>"
+
+    # Generate the HTML string with the comment
+    html_body = f"""
+        <html>
+        <head>
+            <style type="text/css">
+               {sort_packet_stylesheet(topic_colour)}
+            </style>
+        </head>
+        <body>
+            {comment}
+        </body>
+        </html>"""
+    # Now load this html_body variable into the textEdit widget
+    textEdit_widget.setHtml(html_body)
+
 
 
 def load_packeting_details_html_into_textedit(details_list, textEdit_widget, len_all_subjs, len_all_days=5, beam_max_val=100):
@@ -791,8 +972,8 @@ def load_packeting_details_html_into_textedit(details_list, textEdit_widget, len
     if details_list:
         topic_colour = "#ea0000"
 
-        comment = f"""\n
-        <p id="topic">PACKETING NOT (COMPLETELY) SUCCESSFUL!</p>\n
+        comment = f"""
+        <p id="topic">PRE-ARRANGEMENT NOT (COMPLETELY) SUCCESSFUL!</p>\n
         <p>Due to an insufficiency in the number of teachers/handlers/tutors handling the following subject{'' if len(details_list) == 1 else 's'} across all of its offering class arms, the packeting operation has proven unsuccessful.</p>\n
         <p>Defaulting subjects: <span class="emphasis">{len(details_list)}</span></p>
         <p>Helpful details on the defaulting subjects read below.</p>\n
@@ -800,11 +981,7 @@ def load_packeting_details_html_into_textedit(details_list, textEdit_widget, len
         <hr>\n
         <ol>\n
         """
-        # current_beam = round(0.15 * beam_max_val)
-        # yield current_beam
-
         len_details_list = len(details_list)
-        # width = round(0.75 * beam_max_val) - current_beam
 
         # ----- loop over all the subjects details to the comment string ----------
         for count, dept in enumerate(details_list, start=1):
@@ -816,7 +993,7 @@ def load_packeting_details_html_into_textedit(details_list, textEdit_widget, len
             comment += f'<li><p class="item">{dept_full_name}</p>'
             comment += f"""<p>A minimum of <span class="emphasis">{dept_min_teachers}</span> teacher{'' if dept_min_teachers == 1 else 's'} required;"""
             comment += "based on the typical number of subjects handled by the existing number of teachers.</p>"
-            comment += f"""<p>At least, <span class="emphasis">{dept_teachers_more}</span> more teacher{'' if dept_teachers_more == 1 else 's'} needed.</p>"""
+            comment += f"""<p>At least, <span class="emphasis">{dept_teachers_more}</span> more full-time teacher{'' if dept_teachers_more == 1 else 's'} needed.</p>"""
             comment += "<hr></li>"
 
             # beam_val = round(count * width / len_details_list)
@@ -828,24 +1005,23 @@ def load_packeting_details_html_into_textedit(details_list, textEdit_widget, len
     else:
         topic_colour = "#007100"
 
-        comment = '<p id="topic">PACKETING SUCCESSFUL!</p>' "<p>The teachers created for each subject are (up till this point) sufficient for each of the "\
+        comment = '<p id="topic">PRE-ARRANGEMENT SUCCESSFUL!</p>' "<p>The teachers created for each subject are (up till this point) sufficient for each of the "\
         "offering class arms.</p> <p>Congratulations! On with the sorting.</p>"
 
         # yield round(0.9 * beam_max_val)
 
 
     # Generate the HTML string with the comment
-    html_body = f"""\n
-        <html>\n
-        <head>\n
-            <meta name="qrichtext" content="1" />\n
-            <style type="text/css">\n
+    html_body = f"""
+        <html>
+        <head>
+            <style type="text/css">
                {sort_packet_stylesheet(topic_colour)}
-            </style>\n
-        </head>\n
-        <body>\n
-            {comment}\n
-        </body>\n
+            </style>
+        </head>
+        <body>
+            {comment}
+        </body>
         </html>"""
 
     # Now load this html_body variable into the textEdit widget
@@ -865,8 +1041,8 @@ def load_sort_details_html_into_textedit(sort_details_dict, textEdit_widget,
 
         comment = '<p id="topic">SORT OPERATION NOT (COMPLETELY) SUCCESSFUL</p>' "<p>Despite the robust (and rather lenient) sorting operation, the following "\
         f"teacher{' has' if len_displaced_teachers == 1 else 's have'} been all but stranded; their subjects/courses defying insertion into the periods of "\
-        "their offering class arms enough to fulfill their weekly frequencies without clashing with any of their other periods or displacing another teacher's lesson period.</p>" '<p>Number of stranded teachers: '\
-        f'<span class="emphasis">{len_displaced_teachers}</span></p>' 
+        "their offering class arms enough to fulfill their weekly frequencies without clashing with any of their other periods or displacing another teacher's lesson period.</p>" '<p>According to the selected sort algorithm, '\
+        f'the number of stranded teachers:<span class="emphasis">{len_displaced_teachers}</span></p>' 
         comment += "<ol>"
 
         erring_subjs_set, erring_arms_set = set(), set()
@@ -886,44 +1062,123 @@ def load_sort_details_html_into_textedit(sort_details_dict, textEdit_widget,
 
                     if (arm_full_name, subj_full_name) not in arms_depts_set:
                         comment += f'<li><p>Teacher ID: <span class="item">{teacher_full_name}</span></p>'
-                        comment += f'<p>Default info: <span class="emphasis">{subj_full_name}</span> for class arm <span class="emphasis">{arm_full_name}</span><hr class="indent-hr">'
+                        comment += f'<p>Default info: <span class="emphasis">{subj_full_name}</span> for class arm <span class="emphasis">{arm_full_name}</span><hr class="indent-hr"></li>'
                         arms_depts_set.add((arm_full_name, subj_full_name))
 
         comment += "</ol>"
-        comment += "<hr>"
-        comment += "<ul>"
-        comment += f"""<li>Teachers' percentage sort success: <span class="emphasis">{(len_displaced_teachers*100/num_all_teachers):.2f}%</span></li>"""
-        comment += f"""<li>Sort errors occurred across <span class="emphasis">{(len(erring_arms_set)*100/num_all_arms):2f}%</span> of the available class """\
-            f"""arms for <span class="emphasis">{(len(erring_subjs_set)*100/num_all_subjects):2f}%</span> of the available subjects</li>"""
-        comment += "</ul>"
+        comment += "<br>"
 
     # The sort operation was successful!
     else:
         topic_colour = "#00793d"
 
-        comment = '<p id="topic">SORT OPERATION SUCCESSFUL!</p>' "<p>All the requirements for the teachers, class arms and subjects in all the"\
+        comment = '<p id="topic">SORT OPERATION SUCCESSFUL!</p>' "<p>All the requirements for the teachers, class arms and subjects in all the "\
             "periods for every day have been completely met.</p>" "<p>Congratulations! On with the display and tracking.</p>"
 
-
-    html_body = f"""\n
-        <html>\n
-        <head>\n
-            <meta name="qrichtext" content="1" />\n
-            <style type="text/css">\n
+    # -------------------------------------------------------------------------------------------------
+    html_body = f"""
+        <html>
+        <head>
+            <style type="text/css">
                {sort_packet_stylesheet(topic_colour)}
-            </style>\n
-        </head>\n
-        <body>\n
-            {comment}\n
-        </body>\n
+            </style>
+        </head>
+        <body>
+            {comment}
+        </body>
         </html>"""
+    # Now load this html_body variable into the textEdit widget
+    textEdit_widget.setHtml(html_body)
 
+
+def load_sort_correction_details_textedit(extra_teachers_dict, textEdit_widget):
+    """ If the user's sorting errors out, this function would load the details of the extra teachers created
+     to make the timetable work """
+    topic_colour = "#00793d"
+    comment = '<p id="topic">AUTO-FIX REPORT: FIXES EFFECTED (TIMETABLE NOW OPERABLE).</p>'\
+            '<p>The issue of teachers/handlers (and by extension, some of their subjects/courses) getting stranded i.e. unable to '\
+            'fulfill their weekly quotas for their client class arms is solved (optimally) by the introduction of '\
+            'a calculated number of extra (exclusive to each subject) full-time teacher objects which would lighten the load on the '\
+            'previously created teacher objects.</p>'\
+            '<p>The liberty has been taken to create the optimal number of the aforementioned <em>extra</em> teachers, assign them '\
+            'class arms and teaching periods. Each of them is designated by "(Exclusive) Member of staff".'\
+            '<br>The subjects and the extra teachers created for each are outlined below:</p>'
+
+    comment += '<ol>'
+
+    for dept, xtra_teacher_holder in extra_teachers_dict.items():
+        comment += '<li><hr>'
+        comment += f'<p><strong>{dept.full_name}</strong></p>'
+        comment += f'<p>Extra teachers created: <span class="emphasis">{xtra_teacher_holder.created_teachers_num()}</span></p>'
+        comment += '<br>'
+
+        comment += "<strong>Teachers' Details</strong>"
+        comment += '<ul>'
+        for teacher in xtra_teacher_holder.xtra_created_teachers:
+            comment += '<li>'
+            comment += f'<p>Identity: <span class=emphasis>{teacher.full_name}</span></p>'
+            comment += f'<p>Designation: <span class=emphasis>{teacher.designation}</span></p>'
+            comment += f'<p>Class category specialization: <span class=emphasis>All</span></p>'
+            comment += f'<p>Consistency: <span class=emphasis>Full-time</span></p>'
+            comment += f'<p>Assigned class arms: <span class=emphasis>{teacher.classarms_taught_based_on_dept_str(dept)}</span></p>'
+            comment += '</li>'
+        comment += '</ul>'
+        comment += '</li>'
+    comment += '</ol>'
+
+    comment += "<p>Congratulations.Timetable operable. Timetable viewable.</p>"
+        
+    # ---------
+    html_body = f"""
+    <html>
+    <head>
+        <style type="text/css">
+           {sort_packet_stylesheet(topic_colour)}
+        </style>
+    </head>
+    <body>
+        {comment}
+    </body>
+    </html>"""
     # Now load this html_body variable into the textEdit widget
     textEdit_widget.setHtml(html_body)
 
 
 
-# if __name__ == "__main__":
+def load_tracked_model_details(model_name, tracked_models_dict, textEdit_widget):
+    """ Takes the models that have been tracked and loads their details into the textEdit widget on the GUI screen """
+    topic_colour = "#3a4b9f"
+    comment = """<p id="topic">TRACKED ITEM'S OCCURRENCES</p>"""
+    comment += f"<p><strong>{model_name}</strong> can be found in the following day(s) in the following class arms</p>"
+
+    count = 0
+    for day_fullname, coords_list in tracked_models_dict.items():
+        comment += f"{day_fullname}"
+        comment += "<ul><hr>"
+        for arm_full_name, period_id in coords_list:
+            comment += f"<li>Occurs in <strong>{arm_full_name}, {Tt_algo_calc.nth_suffix(period_id)} period</strong>.</li>"
+            count += 1
+        comment += "</ul>"
+
+    comment += f"<br><p><strong>{count}</strong> occurrences found for <strong>{model_name}</strong> across the entire timetable.</p>"
+
+
+    html_body = f"""
+    <html>
+    <head>
+        <style type="text/css">
+           {sort_packet_stylesheet(topic_colour)}
+        </style>
+    </head>
+    <body>
+        {comment}
+    </body>
+    </html>"""
+    textEdit_widget.setHtml(comment)
+
+
+
+
 def main():
     import sys
     app = QtWidgets.QApplication(sys.argv)

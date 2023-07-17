@@ -1,5 +1,5 @@
 # - ************************************************************************************************************
-# -- WRITTEN AND OWNED BY OWOEYE, OLUWATOMILAYO INIOLUWA. JANUARY, 2022.
+# -- WRITTEN AND OWNED BY OWOEYE OLUWATOMILAYO INIOLUWA. JANUARY, 2022.
 
 # -- All rights (whichever applies) reserved!
 # **************************************************************************************************************
@@ -25,7 +25,9 @@ from TIMETABLE.models.Tt_manager import get_obj_from_param as object_getter
 from . import Tt_threads
 from .Tt_gui_handler import load_manual
 from .Tt_GuiExtras import (WidgetTree, MySpinBox, PeriodsContainer, ModelDetailWindow, load_packeting_details_html_into_textedit,
-    load_sort_details_html_into_textedit, PeriodsDisplayFrame, LoadingFrame, get_detailed_info_from_fac_or_dept)
+    load_sort_details_html_into_textedit, PeriodsDisplayFrame, LoadFrame, PerpetualLoadFrame, get_detailed_info_from_fac_or_dept,
+    load_sort_correction_details_textedit, load_tracked_model_details, load_teacher_details_into_textEdit,  ATPGSettingsWindow)
+
 from collections import namedtuple
 from PyQt5.QtCore import Qt
 
@@ -46,9 +48,52 @@ class TtSplashScreen(QtWidgets.QMainWindow):
         uic.loadUi("TIMETABLE/gui/Tt_UI_files/Splashscreen.ui", self)
         self.setWindowFlags(QtCore.Qt.SplashScreen|QtCore.Qt.FramelessWindowHint)
         self.counter = 0
+        self.progbar_frame = self.findChild(QtWidgets.QFrame, "progbar_frame")
+        
+        # the 5 vertical progressbars jumping up and down
+        self.progressbars = [child for child in self.progbar_frame.children() if isinstance(child, QtWidgets.QProgressBar)]
+        self.len_progressbars = len(self.progressbars)
+        self.tot_run_time = 5000
+        self.progbar_steps = 10
+        self.oscillations = 6
+        self.progbar_max = 100
+        self.max_counter = self.progbar_steps * self.oscillations * self.len_progressbars
+        # self.time_per_osc = self.tot_run_time // self.oscillations
+        beam_time = self.tot_run_time // self.max_counter
+        self.count = 0
+
+
         self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.load_progressbar)
-        self.timer.start(40)
+        self.timer.timeout.connect(self.animate_progbars)
+        self.timer.start(beam_time)
+
+
+    def animate_progbars(self):
+        """ Method that makes the vertical progressbars jump up and down """
+        oscillation, in_osc_rem = divmod(self.count, self.progbar_steps * self.len_progressbars)
+        progbar_index, progbar_height = divmod(in_osc_rem, self.progbar_steps)
+        progbar_index = int(progbar_index )
+        height = self.progbar_steps * (progbar_height + 1)
+        if oscillation % 2 == 0:
+            # If it is an odd number oscillation, fill choice progressbar
+            # print(f"Progbar index: {progbar_index} -- {in_osc_rem}")
+            try:
+                self.progressbars[progbar_index].setValue(height)
+            except Exception:
+                print("Error here")
+        else:
+            self.progressbars[self.len_progressbars - 1 - progbar_index].setValue(self.progbar_max - height)
+
+        # closing conditions
+        if self.count > self.max_counter:
+            self.timer.stop()
+            self.close()
+            self.tt_mainwindow = UITimetable()
+            self.tt_mainwindow.show()
+            return
+        self.count += 1
+
+
 
 
     def load_progressbar(self):
@@ -82,10 +127,10 @@ class UITimetable(QtWidgets.QMainWindow):
     2: ("Department and subject creation page","<p><strong>Note:</strong> When a department gets deleted, all of its descendant subjects also get deleted. Take caution.</p>"),
     3: ("Periods and subject-to-arm mapping page", "<p></p>"),
     4: ("Generate teachers page", "<p>When a 'parallel' subject is selected, the same amount of 'x' teachers the user inputs is generated for all the sub-subjects making up the 'parallel' subject</p>"),
-    5: ("Assign, packet, sort page", "<p>Assign (or unassign) subject teachers/handlers to class arms, Packet (or undo) subjects into days of the week for each class arm, and finally sort.</p>"\
-        "<p><strong>Important:</strong> Should any alterations be made to any of the models (teachers, class arms, days), be sure to first Undo the sort (click the button), packeting and assignment operations, before assigning, packeting and sorting."\
+    5: ("Assign, Pre-arrange and Sort Page", "<p>Assign (or unassign) subject teachers/handlers to class arms, pre-arrange (or undo) subjects into days of the week for each class arm, and finally sort.</p>"\
+        "<p><strong>Important:</strong> Should any alterations be made to any of the models (teachers, class arms, days), be sure to first <strong>Undo</strong> the sort (click the button), packeting and assignment operations, before assigning, packeting and sorting."\
         "This way, the new changes will be properly registered.</p>"),
-    6: ("Timetable display page", "<p>Display the timetable on a day or class arm basis. You can also track a particular department, subject or teacher across the entire timetable to see where they exist (if they exist).</p>")
+    6: ("Timetable display page", "<p>Display the timetable on a day or class arm basis. You can also track a particular department, subject or teacher across the entire timetable to see where they occur (if they occur).</p>")
 }
 
 
@@ -94,14 +139,14 @@ class UITimetable(QtWidgets.QMainWindow):
 
     # Load the ui file
         uic.loadUi("TIMETABLE/gui/Tt_UI_files/Timetable_GUI.ui", self)
-        self.setWindowIcon(QtGui.QIcon('TIMETABLE/Icons-mine/App_logo.jpg'))
+        self.setWindowIcon(QtGui.QIcon('TIMETABLE/Icons-mine/App_logo_white.jpg'))
         self.load_manual_into_toolbox()
 
         # The working timetable manager instance
         self.Timetable = Tt_manager.TimeTableManager(tt_obj=tt_obj)
         self.setWindowTitle(self.Timetable.Timetable_obj.project_file_name)
 
-    # ------------------------ NAV-BAR ARCHIVE BUTTONS --------------------------------------------------
+    # ------------------------ NAV-BAR (TOP TAB BAR) ARCHIVE (OR INFO) PAGE BUTTONS --------------------------------------------------
         self.class_cat_nav = self.findChild(QtWidgets.QPushButton, "class_cat_nav")
         self.class_nav = self.findChild(QtWidgets.QPushButton, "class_nav")
         self.class_arms_nav = self.findChild(QtWidgets.QPushButton, "class_arm_nav")
@@ -109,6 +154,21 @@ class UITimetable(QtWidgets.QMainWindow):
         self.depts_nav = self.findChild(QtWidgets.QPushButton, "subjs_nav")
         self.faculties_nav = self.findChild(QtWidgets.QPushButton, "departments_nav")
         self.teachers_nav = self.findChild(QtWidgets.QPushButton, "teachers_nav")
+
+        # The comboboxes to carry the values of operations for a day
+        self.day_range_combobox = self.findChild(QtWidgets.QComboBox, "day_range_combobox")
+        self.periods_created_combobox = self.findChild(QtWidgets.QComboBox, "periods_created_combobox")
+        self.periods_avg_combobox = self.findChild(QtWidgets.QComboBox, "periods_avg_combobox")
+        self.max_periods_combobox = self.findChild(QtWidgets.QComboBox, "max_periods_combobox")
+        self.min_periods_combobox = self.findChild(QtWidgets.QComboBox, "min_periods_combobox")
+
+        # The labels to carry the details
+        self.day_range_label = self.findChild(QtWidgets.QLabel, "day_range_label")
+        self.periods_created_label = self.findChild(QtWidgets.QLabel, "periods_created_label")
+        self.periods_avg_label = self.findChild(QtWidgets.QLabel, "periods_avg_label")
+        self.max_periods_label = self.findChild(QtWidgets.QLabel, "max_periods_label")
+        self.min_periods_label = self.findChild(QtWidgets.QLabel, "min_periods_label")
+
 
         # Connect these buttons to functions
         self.class_cat_nav.clicked.connect(lambda :self.load_nav_dialog_with_details("class_cats"))
@@ -119,6 +179,13 @@ class UITimetable(QtWidgets.QMainWindow):
         self.faculties_nav.clicked.connect(lambda :self.load_nav_dialog_with_details("faculties"))
         self.teachers_nav.clicked.connect(lambda :self.load_nav_dialog_with_details("teachers"))
 
+        # Connect the comboxes to functions
+        self.day_range_combobox.activated.connect(self.day_range_tab)
+        self.periods_created_combobox.activated.connect(self.periods_created_tab)
+        self.periods_avg_combobox.activated.connect(self.periods_avg_tab)
+        self.max_periods_combobox.activated.connect(self.max_periods_tab)
+        self.min_periods_combobox.activated.connect(self.min_periods_tab)
+
 
     # --------------- SIDE-BAR: PREVIOUS AND NEXT BUTTONS -------------------------------------------------------------------------
         # The previous and next arrow btns for flipping through the main stacked widget box
@@ -127,6 +194,26 @@ class UITimetable(QtWidgets.QMainWindow):
         self.mainStackedWidget = self.findChild(QtWidgets.QStackedWidget, "mainStackedWidget")
         self.page_title_label = self.findChild(QtWidgets.QLabel, "page_title_label")
         self.page_info_box_textedit = self.findChild(QtWidgets.QTextEdit, "page_info_box_textedit")
+
+        # Loads sidebar nav btns
+        # self.sidebar_navbtns()
+        self.sidebarbtn_1 = self.findChild(QtWidgets.QPushButton, "sidebarbtn_1")
+        self.sidebarbtn_2 = self.findChild(QtWidgets.QPushButton, "sidebarbtn_2")
+        self.sidebarbtn_3 = self.findChild(QtWidgets.QPushButton, "sidebarbtn_3")
+        self.sidebarbtn_4 = self.findChild(QtWidgets.QPushButton, "sidebarbtn_4")
+        self.sidebarbtn_5 = self.findChild(QtWidgets.QPushButton, "sidebarbtn_5")
+        self.sidebarbtn_6 = self.findChild(QtWidgets.QPushButton, "sidebarbtn_6")
+        self.sidebarbtn_7 = self.findChild(QtWidgets.QPushButton, "sidebarbtn_7")
+
+        # connect the sidebar btns to slots
+        self.sidebarbtn_1.clicked.connect(lambda: self.switch_mainstacked_by_sidebar_btn(0))
+        self.sidebarbtn_2.clicked.connect(lambda: self.switch_mainstacked_by_sidebar_btn(1))
+        self.sidebarbtn_3.clicked.connect(lambda: self.switch_mainstacked_by_sidebar_btn(2))
+        self.sidebarbtn_4.clicked.connect(lambda: self.switch_mainstacked_by_sidebar_btn(3))
+        self.sidebarbtn_5.clicked.connect(lambda: self.switch_mainstacked_by_sidebar_btn(4))
+        self.sidebarbtn_6.clicked.connect(lambda: self.switch_mainstacked_by_sidebar_btn(5))
+        self.sidebarbtn_7.clicked.connect(lambda: self.switch_mainstacked_by_sidebar_btn(6))
+
 
         title, info = self.stacked_pages_title_and_details[0]
         self.page_title_label.setText(title.upper())
@@ -137,7 +224,7 @@ class UITimetable(QtWidgets.QMainWindow):
 
 
 
-    # --------------- SET/CHANGE ATPG PARAMETERS ------------------------
+    # --------------- SET/CHANGE ATPG PARAMETERS (AND WORKRATE VALUE)------------------------
         self.atpg_btn = self.findChild(QtWidgets.QPushButton, "set_ATPG_btn")
         self.analytic_lineedit = self.findChild(QtWidgets.QLineEdit, "analytic_lineedit")
         self.theoretical_lineedit = self.findChild(QtWidgets.QLineEdit, "theoretical_lineedit")
@@ -150,13 +237,28 @@ class UITimetable(QtWidgets.QMainWindow):
         self.practical_spinbox = self.findChild(QtWidgets.QSpinBox, "practical_spinbox")
         self.grammatical_spinbox = self.findChild(QtWidgets.QSpinBox, "grammatical_spinbox")
 
-        # ------ The parameter labels from the GUI
+        # ------- The labels carrying the newly set ATPG values and weights in the settings/preferences ... ---
+        self.analytic_tab_label = self.findChild(QtWidgets.QLabel, "analytic_tab_label")
+        self.theoretical_tab_label = self.findChild(QtWidgets.QLabel, "theoretical_tab_label")
+        self.practical_tab_label = self.findChild(QtWidgets.QLabel, "practical_tab_label")
+        self.grammatical_tab_label = self.findChild(QtWidgets.QLabel, "grammatical_tab_label")
+
+        self.analytic_tab_weight = self.findChild(QtWidgets.QLabel, "analytic_tab_weight")
+        self.theoretical_tab_weight = self.findChild(QtWidgets.QLabel, "theoretical_tab_weight")
+        self.practical_tab_weight = self.findChild(QtWidgets.QLabel, "practical_tab_weight")
+        self.grammatical_tab_weight = self.findChild(QtWidgets.QLabel, "grammatical_tab_weight")
+
+
+        # ------ The parameter labels from the GUI (FROM THE DEPTS? NOT THE TABS)
         self.analytic_marker = self.findChild(QtWidgets.QLabel, "analytic_marker")
         self.theoretical_marker = self.findChild(QtWidgets.QLabel, "theoretical_marker")
         self.practical_marker = self.findChild(QtWidgets.QLabel, "practical_marker")
         self.grammatical_marker = self.findChild(QtWidgets.QLabel, "grammatical_marker")
 
         self.atpg_btn.clicked.connect(self.set_atpg)
+
+        # -------- The workrate label
+        self.workrate_label = self.findChild(QtWidgets.QLabel, "workrate_label")
 
 
     # ------------------------- FILE NEW, SAVE, SAVE AS, OPEN,RECENT, RESET, AND QUIT FUNCTIONALITY -----------------------------------
@@ -184,6 +286,10 @@ class UITimetable(QtWidgets.QMainWindow):
         self.load_recent_files()
         self.recent_files_menu.triggered.connect(lambda x: self.load_recent_file_in_window(x.text()))
         self.recent_files_toolbtn.setMenu(self.recent_files_menu)
+
+        # clear recent files
+        self.clear_recent_btn = self.findChild(QtWidgets.QPushButton, "clear_recent_btn")
+        self.clear_recent_btn.clicked.connect(self.clear_recent_files)
 
         # ---------- file reset ----------------
         self.shortcut_reset = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Shift+R'), self)
@@ -221,7 +327,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.session_or_year = self.findChild(QtWidgets.QLineEdit, "session_lineedit")
         self.acronym = self.findChild(QtWidgets.QLineEdit, "acronym_lineedit")
         self.extra_info = self.findChild(QtWidgets.QPlainTextEdit, "extra_info_plaintextedit")
-        self.logo_path = "TIMETABLE/Icons-mine/App_logo.png"
+        self.logo_path = "TIMETABLE/Icons-mine/App_logo_white.jpg"
 
         self.browse_for_logo = self.findChild(QtWidgets.QPushButton, "browse_for_logo_btn")
         self.gen_info_commit = self.findChild(QtWidgets.QPushButton, "gen_info_commit")
@@ -382,8 +488,8 @@ class UITimetable(QtWidgets.QMainWindow):
         self.designation_lineedit = self.findChild(QtWidgets.QLineEdit, "designation_lineedit")
 
         # Button to expand or contract the treewidget showing faculties(departments), subjects/courses and teachers
-        self.expand_fac_course_teachers_tree_btn = self.findChild(QtWidgets.QPushButton, "expand_fac_courses_teachers_tree_btn")
-        self.expand_fac_course_teachers_tree_btn.clicked.connect(self.expand_fac_courses_teachers_tree)
+        self.expand_subjs_tree_btn = self.findChild(QtWidgets.QPushButton, "expand_subjs_tree_btn")
+        self.expand_subjs_tree_btn.clicked.connect(self.expand_fac_courses_teachers_tree)
 
         # The button to mark courses in bulk
         self.mark_btn = self.findChild(QtWidgets.QPushButton, "mark_courses_btn")
@@ -405,7 +511,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.all_staff_table = self.findChild(QtWidgets.QTableWidget, "all_staff_tablewidget")
 
 
-        # --------------- MODIFY DEPT MODELS (FACULTY, SUBJECT (NOT TEACHERS)) ---------------------------
+        # ----------------------- MODIFY DEPT MODELS (FACULTY, SUBJECT (NOT TEACHERS)) ----------------------------------
         self.dept_model_gbox = self.findChild(QtWidgets.QGroupBox, "dept_model_gbox")
         self.dept_model_combobox = self.findChild(QtWidgets.QComboBox, "dept_model_combo")
         self.pull_dept_btn = self.findChild(QtWidgets.QPushButton, "pull_dept_model_btn")
@@ -419,11 +525,16 @@ class UITimetable(QtWidgets.QMainWindow):
         # Delete dept models
         self.del_depts_btn.clicked.connect(self.del_deptmodels)
 
-        #------------------ the Mark buttons on the dept models tree and list widgets (NO TEACHERS INVOLVED) --------------------
+        #------------------ the Mark buttons on the dept models (DEPARTMENTS/FACULTIES AND SUBJECTS) tree --------------
+        # and list widgets (NO TEACHERS INVOLVED) --------------------
+        
         self.mark_subj_btn = self.findChild(QtWidgets.QPushButton, "mark_subj")
         self.mark_nonacad_btn = self.findChild(QtWidgets.QPushButton, "mark_nonacad")
         self.markall_subj_btn = self.findChild(QtWidgets.QPushButton, "markall_subj")
         self.markall_nonacad_btn = self.findChild(QtWidgets.QPushButton, "markall_nonacad")
+
+        # btn to expand or collapse the tree containing DEPARTMENTS and child subjects
+        
 
         self.mark_subj_btn.clicked.connect(self.enable_mark_fac_subj)
         self.mark_nonacad_btn.clicked.connect(self.enable_mark_nonacad)
@@ -460,14 +571,25 @@ class UITimetable(QtWidgets.QMainWindow):
         self.del_teacher_btn.clicked.connect(self.del_teacher)
 
 
-    # ---------------------------------------------------------------------------------------------------------
-    # ------------------ HANDLES PERIODS MAPPING DEPTS TO CLASS ARMS AND HANDLES THEIR CHUNK VALUES --------------------
+    # --------------------------------------------------------------------------------------------------------------------------------
+    # ------------------ THE PAGE THAT HANDLES PERIODS MAPPING DEPTS TO CLASS ARMS AND HANDLES THEIR CHUNK VALUES --------------------
 
         self.subj_freq_chunk_table = self.findChild(QtWidgets.QTableWidget, "subject_freq_chunk_table")
         self.arms_for_chunk_tree = self.findChild(QtWidgets.QTreeWidget, "arms_for_chunk_tree")
+        # ------buttons for selecting (or de-selecting) all class arms or days
+        self.select_all_arms_btn = self.findChild(QtWidgets.QPushButton, "select_all_arms_btn")
+        self.deselect_all_arms_btn = self.findChild(QtWidgets.QPushButton, "deselect_all_arms_btn")
+        self.select_all_days_btn = self.findChild(QtWidgets.QPushButton, "select_all_days_btn")
+        self.deselect_all_days_btn = self.findChild(QtWidgets.QPushButton, "deselect_all_days_btn")
 
         # self.subj_freq_chunk_table.setEditable(False)
         self.adjust_table_columns(self.subj_freq_chunk_table, column_width_cont=[(0,200),(1,70),(2,70)])
+
+        # Selecting and deselecting arms and days
+        self.select_all_arms_btn.clicked.connect(lambda: self.select_all_arms(selected=True))
+        self.deselect_all_arms_btn.clicked.connect(lambda: self.select_all_arms(selected=False))
+        self.select_all_days_btn.clicked.connect(lambda: self.checkall_widgtree_in_listwidget(self.days_for_arms_listwidget, checkall=True))
+        self.deselect_all_days_btn.clicked.connect(lambda: self.checkall_widgtree_in_listwidget(self.days_for_arms_listwidget, checkall=False))
         
 
         # ----------------------- PERIOD GENERATION ------------------------------
@@ -486,7 +608,6 @@ class UITimetable(QtWidgets.QMainWindow):
         self.nonacad_table1 = self.findChild(QtWidgets.QTableWidget, "nonacad_table1")
         self.nonacad_table2 = self.findChild(QtWidgets.QTableWidget, "nonacad_table2")
         self.nonacad_table3 = self.findChild(QtWidgets.QTableWidget, "nonacad_table3")
-        self.refresh_period_display_btn = self.findChild(QtWidgets.QPushButton, "refresh_period_display_btn")
 
         self.gen_periods_btn.clicked.connect(self.generate_periods)
         self.nullify_dayperiods_for_arm_btn.clicked.connect(self.nullify_day_and_periods_from_arms)
@@ -500,16 +621,16 @@ class UITimetable(QtWidgets.QMainWindow):
         self.adjust_table_columns(self.nonacad_table3, column_width_cont=[(0,170),(1,60),(2,60)])
 
 
+        # ---------------- THE TABLES TO SHOW ARMS FREQ DATA AND PERIODS CREATED ---------------------------
         self.days_for_arms_listwidget = self.findChild(QtWidgets.QListWidget, "days_for_arms_listwidget")
-        self.arms_feasible_table = self.findChild(QtWidgets.QTableWidget, "arms_feasible_table")
+        self.arms_viable_table = self.findChild(QtWidgets.QTableWidget, "arms_viable_table")
         self.arms_periods_table = self.findChild(QtWidgets.QTableWidget, "arms_periods_table")
-        self.feasibility_btn = self.findChild(QtWidgets.QPushButton, "feasibility_btn")
-        self.days_combobox_for_chunk = self.findChild(QtWidgets.QComboBox, "days_combobox_for_chunk")
+        self.days_combobox_periods = self.findChild(QtWidgets.QComboBox, "days_combobox_periods")
+        self.view_periods_in_tables_btn = self.findChild(QtWidgets.QPushButton, "view_periods_in_tables_btn")
 
-        self.days_combobox_for_chunk.activated.connect(self.display_periods_in_table)
-        self.refresh_period_display_btn.clicked.connect(self.display_periods_in_table)
+        self.view_periods_in_tables_btn.clicked.connect(self.display_periods_in_table)
 
-        self.adjust_table_columns(self.arms_feasible_table, column_width_cont=[(0,175),(1,60),(2,60),(3,60)])
+        self.adjust_table_columns(self.arms_viable_table, column_width_cont=[(0,150),(1,90),(2,90),(3,60)])
         # self.adjust_table_columns(self.arms_periods_table, column_width_cont=[(1, 550)])
 
         # -----------------------------------------------
@@ -523,20 +644,23 @@ class UITimetable(QtWidgets.QMainWindow):
         self.abs_day_startend_radbtn.toggled.connect(lambda boole, gbox=self.abs_startend_gbox: self.disable_period_boxes(gbox))
 
 
-    # ----------------------- ASSIGN SUBJECT TEACHERS TO CLASS ARMS ----------------------------------------
+    # ----------------------- ASSIGN SUBJECT TEACHERS TO CLASS ARMS AND TABLE LOOK-UP (ARMS' DATA IN TABLE) ----------------------------------------
         # the frame that contains the progressbars that show when teachers are being assigned.
-        self.load_assignment_frame = self.findChild(QtWidgets.QFrame, "load_assignment_fr")
 
         self.auto_assign_btn = self.findChild(QtWidgets.QPushButton, "auto_assign_btn")
         self.manual_assign_btn = self.findChild(QtWidgets.QPushButton, "manual_assign_btn")
         self.undo_assign_btn = self.findChild(QtWidgets.QPushButton, "undo_assign_btn")
-        self.pull_arm_btn = self.findChild(QtWidgets.QPushButton, "pull_arm_btn")
 
-        self.assign_teacher_combobox = self.findChild(QtWidgets.QComboBox, "assign_teacher_combobox")
-        self.assign_arm_combobox = self.findChild(QtWidgets.QComboBox, "assign_arm_combobox")
-        self.assign_subj_combobox = self.findChild(QtWidgets.QComboBox, "assign_subj_combobox")
-        self.arm_id_container = self.findChild(QtWidgets.QFrame, "arm_id_container")
+        # ------------ Pull up teachers details ----------------
+        self.teacher_details_chbox = self.findChild(QtWidgets.QCheckBox, "teacher_details_chbox")
+        self.teacher_details_combobox = self.findChild(QtWidgets.QComboBox, "teacher_details_combobox")
+        self.teacher_details_spinbox = self.findChild(QtWidgets.QSpinBox, "teacher_details_spinbox")
+        self.teacher_details_btn = self.findChild(QtWidgets.QPushButton, "teacher_details_btn")
+        self.teacher_details_label = self.findChild(QtWidgets.QLabel, "teacher_details_label")
+        self.teacher_details_textEdit = self.findChild(QtWidgets.QTextEdit, "teacher_details_textEdit")
 
+        # ------------ Pull up arms class arm's details --------------
+        self.pull_arm_btn = self.findChild(QtWidgets.QPushButton, "pull_arm_btn")        
         self.arm_from_combo_chbox = self.findChild(QtWidgets.QCheckBox, "arm_from_combo_chbox")
         self.arm_combobox = self.findChild(QtWidgets.QComboBox, "arm_combobox")
         self.arm_id_spinbox = self.findChild(QtWidgets.QSpinBox, "arm_id_spinbox")
@@ -546,14 +670,25 @@ class UITimetable(QtWidgets.QMainWindow):
         self.arm_label = self.findChild(QtWidgets.QLabel, "arm_label")
         self.arm_class_label = self.findChild(QtWidgets.QLabel, "arm_class_label")
         self.arm_classcat_label = self.findChild(QtWidgets.QLabel, "arm_classcat_label")
+        self.arm_days_label = self.findChild(QtWidgets.QLabel, "arm_days_label")
         self.assign_subj_teacher_table = self.findChild(QtWidgets.QTableWidget, "assign_subj_teacher_table")
 
+        # Labels for the total number of teachers and frequency underneath the assign_subj_table
+        self.arm_num_teachers_label = self.findChild(QtWidgets.QLabel, "arm_num_teachers_label")
+        self.arm_num_freq_label = self.findChild(QtWidgets.QLabel, "arm_num_freq_label")
+        self.arm_total_nonacad_label = self.findChild(QtWidgets.QLabel, "arm_total_nonacad_label")
+        self.arm_total_acad_label = self.findChild(QtWidgets.QLabel, "arm_total_acad_label")
         # Adjust the columns of the tablewidget
         self.adjust_table_columns(self.assign_subj_teacher_table, [(0, 140), (1, 110), (2, 50), (3, 50)])
         self.arm_not_found_label.hide()
 
-        # ------------- Add signals and stuff ----------
-        self.load_assignment_frame.hide()
+        # ---------------- Add signals and stuff ---------------
+        # --- for searched teacher's details -----
+        self.teacher_details_chbox.stateChanged.connect(self.load_teachers_into_combobox_for_details)
+        self.teacher_details_btn.clicked.connect(self.pull_teacher_details)
+
+
+        # --- for searched arm's details -----
         self.arm_from_combo_chbox.stateChanged.connect(self.load_arms_into_combobox)
         self.pull_arm_btn.clicked.connect(self.pull_up_classarm)
         self.auto_assign_btn.clicked.connect(self.auto_assign_teachers_to_arms)
@@ -563,35 +698,35 @@ class UITimetable(QtWidgets.QMainWindow):
 
 
     # ---------------------- PACKETING (AND UNDOING) AND SORTING BUTTONS ----------------------------
-        # frame to come on when packeting process is loading
-        self.load_packeting_frame = self.findChild(QtWidgets.QFrame, "load_packeting_fr")
         self.packet_btn = self.findChild(QtWidgets.QPushButton, "packet_btn")
         self.sort_btn = self.findChild(QtWidgets.QPushButton, "sort_btn")
+        self.undo_sort_btn = self.findChild(QtWidgets.QPushButton, "undo_sort_btn")
         self.undo_packet_btn = self.findChild(QtWidgets.QPushButton, "undo_packet_btn")
         self.ref_day_combobox = self.findChild(QtWidgets.QComboBox, "ref_day_combobox")
         self.ref_arm_combobox = self.findChild(QtWidgets.QComboBox, "ref_arm_combobox")
-        self.refresh_ref_day_arm_btn = self.findChild(QtWidgets.QPushButton, "refresh_ref_day_arm_btn")
+        self.auto_fix_btn = self.findChild(QtWidgets.QPushButton, "auto_fix_btn")
 
-
-        # The sorting frame with the progressbars that come alive when an operation is loading
-        self.load_sorting_frame = self.findChild(QtWidgets.QFrame, "load_sorting_fr")
-        
-        self.load_packeting_frame.hide()
-        self.load_sorting_frame.hide()
 
         # --- Add slots to the above buttons ---
         self.packet_btn.clicked.connect(self.packet)
         self.undo_packet_btn.clicked.connect(self.undo_packet)
-        self.refresh_ref_day_arm_btn.clicked.connect(self.refresh_day_arm)
         # ------ The sort operation -------
         self.sort_btn.clicked.connect(self.full_sort)
+        self.undo_sort_btn.clicked.connect(self.undo_full_sort)
+        # ----- Auto-fix
+        self.auto_fix_btn.clicked.connect(self.auto_fix_displaced_teachers)
 
+
+        # ----- TEMPORARY BTN (WILL BE WIPED OUT LATER)
+        self.ins_btn = self.findChild(QtWidgets.QPushButton, "ins_btn_tent")
+        # self.ins_btn_tent.clicked.connect(self.tent_test)
+        self.ins_btn.clicked.connect(self.perp_load)
 
 
     # --------------------------------------------------------------------------------------------------------------------
-    # --------------------------- THE ADVANCED SECTION (WITH TEACHERS' SPACING IMPLICIT) ---------------------------------
-        self.teachers_spacing_btn = self.findChild(QtWidgets.QPushButton, "teachers_spacing_btn")
-        self.teachers_spacing_btn.clicked.connect(self.teachers_spacing)
+    # --------------------------- THE ADVANCED SECTION IN THE NAV-BAR TAB (WITH TEACHERS' SPACING IMPLICIT) ---------------------------------
+        # self.teachers_spacing_btn = self.findChild(QtWidgets.QPushButton, "teachers_spacing_btn")
+        # self.teachers_spacing_btn.clicked.connect(self.teachers_spacing)
 
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -612,9 +747,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.display_dial_and_btns_frame = self.findChild(QtWidgets.QFrame, "display_dial_and_btns_frame")
         self.track_dial_and_btns_frame = self.findChild(QtWidgets.QFrame, "track_dial_and_btns_frame")
         # -------------
-        # frames for the progressbars for display and track
-        self.load_track_frame = self.findChild(QtWidgets.QFrame, "load_track_fr")
-        self.load_display_frame = self.findChild(QtWidgets.QFrame, "load_display_fr")
+    
         # ------------------------
         self.model_type_label = self.findChild(QtWidgets.QLabel, "model_type_label")
         self.model_item_label = self.findChild(QtWidgets.QLabel, "model_item_label")
@@ -633,14 +766,20 @@ class UITimetable(QtWidgets.QMainWindow):
         self.track_next_item_btn = self.findChild(QtWidgets.QPushButton, "track_next_item_btn")
         self.track_prev_item_btn = self.findChild(QtWidgets.QPushButton, "track_prev_item_btn")
 
+        # --------- Details of the tracked item displayed in textedit -------------
+        self.track_details_frame = self.findChild(QtWidgets.QFrame, "track_details_frame")
+        self.track_details_textedit = self.findChild(QtWidgets.QTextEdit, "track_details_textedit")
+        self.close_track_details_frame_btn = self.findChild(QtWidgets.QPushButton, "close_track_details_frame_btn")
+
         # ---------- connect the signals to slots --------------
         self.display_dial_and_btns_frame.setEnabled(False)
         self.track_dial_and_btns_frame.setEnabled(False)
 
-        self.load_display_frame.hide()
-        self.load_track_frame.hide()
+        # Hide the rack details frame upon opening the app
+        self.track_details_frame.hide()
 
-
+        # close the track details frame on click
+        self.close_track_details_frame_btn.clicked.connect(lambda: self.track_details_frame.hide())
         self.display_by_btn.clicked.connect(self.display_by_arm_or_day)
         self.items_dial.valueChanged.connect(lambda :self.get_item_from_dial_value(self.items_dial, self.model_item_label, self.model_type_label))
         # display periods in the frame
@@ -664,9 +803,16 @@ class UITimetable(QtWidgets.QMainWindow):
         self.get_dir_btn = self.findChild(QtWidgets.QPushButton, "get_dir_btn")
         self.report_basis_combobox = self.findChild(QtWidgets.QComboBox, "report_basis_combobox")
         self.report_format_combobox = self.findChild(QtWidgets.QComboBox, "report_format_combobox")
+        # Report margin widgets
+        self.margin_combobox = self.findChild(QtWidgets.QComboBox, "margin_combobox")
+        self.left_dspinbox = self.findChild(QtWidgets.QDoubleSpinBox, "left_dspinbox")
+        self.right_dspinbox = self.findChild(QtWidgets.QDoubleSpinBox, "right_dspinbox")
+        self.top_dspinbox = self.findChild(QtWidgets.QDoubleSpinBox, "top_dspinbox")
+        self.bottom_dspinbox = self.findChild(QtWidgets.QDoubleSpinBox, "bottom_dspinbox")
 
         # Add slots to buttons
         self.get_dir_btn.clicked.connect(self.generate_finished_report)
+        self.margin_combobox.currentIndexChanged.connect(self.set_max_min_for_margins)
 
     # ------------------ LOADS ALLTHE TREES especially for when app is starting from an existing file ------------------
         # Loads the faculty/department-courses tree widget
@@ -685,7 +831,7 @@ class UITimetable(QtWidgets.QMainWindow):
 
         # Check to see if this file has not been saved before, by checking the Timetable objects project_file_path attribute
         if self.Timetable.Timetable_obj.project_file_path == '':
-            file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save your timetable file", "", "Shelva timetable file(*tmtb)")       
+            file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save your timetable file", "", "sheffl timetable file(*tmtb)")       
             if file_path:
                 file_path = QtCore.QDir.toNativeSeparators(file_path)
         else:
@@ -698,7 +844,7 @@ class UITimetable(QtWidgets.QMainWindow):
 
     def save_file_as(self):
         """ Fires when the save as button or shortcut is triggered """
-        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save your timetable file as", "", "Shelva timetable file(*tmtb)")       
+        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save your timetable file as", "", "sheffl timetable file(*tmtb)")       
         if file_path:
             file_path = QtCore.QDir.toNativeSeparators(file_path)
         self.Timetable.save(file_path)
@@ -712,9 +858,9 @@ class UITimetable(QtWidgets.QMainWindow):
 
         # If a file path input was given as an argument, make that the file_path, else open a Qdialog box
         if file_path_input:
-            file_path = file_path_input + ".tmtb" if not file_path_input.endswith(".tmtb") else file_path_input
+            file_path = file_path_input + self.Timetable.extension if not file_path_input.endswith(self.Timetable.extension) else file_path_input
         else:
-            file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open a timetable file", "", "Shelva timetable file(*tmtb)")
+            file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open a timetable file", "", f"SHEFFL Timetable File(*{self.Timetable.extension})")
 
         if file_path:
             file_path = QtCore.QDir.toNativeSeparators(file_path)
@@ -728,8 +874,8 @@ class UITimetable(QtWidgets.QMainWindow):
     def load_recent_file_in_window(self, recent_file_path):
         """ Loads the recent file clicked into THIS window, not another """
         # Load up the timetable object from the 'recent_file_path'
-        if not recent_file_path.endswith(".tmtb"):
-            recent_file_path += ".tmtb"
+        if not recent_file_path.endswith(self.Timetable.extension):
+            recent_file_path += self.Timetable.extension
             
         tt_obj = self.Timetable.load_tt_obj_from_file(recent_file_path)
         self.Timetable = Tt_manager.TimeTableManager(tt_obj=tt_obj)
@@ -737,9 +883,6 @@ class UITimetable(QtWidgets.QMainWindow):
         # Now load all the models
         self.statusBar().showMessage("Loading up a recent timetable file", 3000)
         self.load_all_models()
-
-
-
 
 
     def load_recent_files(self):
@@ -751,8 +894,19 @@ class UITimetable(QtWidgets.QMainWindow):
         recent_files = self.Timetable.load_recent_projects()
         for project in recent_files:
             self.recent_files_menu.addAction(project)
-
         self.statusBar().showMessage("Load up a recent file", 1000)
+
+
+    def clear_recent_files(self):
+        """ Clears the record of the recent files """
+        def clear_recent(button):
+            if "ok" in button.text().lower():
+                self.Timetable.clear_recent_files()
+                self.load_recent_files()
+
+        self.messagebox(text="Paths to recently opened files will be lost. Proceed regardless?", 
+            icon="warning" ,title="Clear recent confirmation", callback=clear_recent)
+        self.statusBar().showMessage("Paths to recent files cleared.", 2000)
 
 
     def reset_timetable(self):
@@ -770,58 +924,147 @@ class UITimetable(QtWidgets.QMainWindow):
         self.statusBar().showMessage("Timetable has been reset", 2000)
 
 
+    def load_atpg(self):
+        """ Loads the ATPG values to the GUI screen. Both in the tab up-top and the frame to register (create) subjs
+        This method id also to be called upon initial load of GUI screen """
+        analytic, theoretical, practical, grammatical = self.Timetable.get_ATPG_parameters()
+        self.analytic_marker.setText(analytic[0])
+        self.analytic_tab_label.setText(analytic[0])
+        self.analytic_tab_weight.setText(str(analytic[1]))
+
+        self.theoretical_marker.setText(theoretical[0])
+        self.theoretical_tab_label.setText(theoretical[0])
+        self.theoretical_tab_weight.setText(str(theoretical[1]))
+
+        self.practical_marker.setText(practical[0])
+        self.practical_tab_label.setText(practical[0])
+        self.practical_tab_weight.setText(str(practical[1]))
+
+        self.grammatical_marker.setText(grammatical[0])
+        self.grammatical_tab_label.setText(grammatical[0])
+        self.grammatical_tab_weight.setText(str(grammatical[1]))
+
+
+    def load_workrate(self):
+        """ Loads the number (the workrate inflexion beyond which teacher can be deemed to be busy) """
+        self.workrate_label.setText(str(self.Timetable.get_workrate_coefficient()))
+
+
     def set_atpg(self):
         """ This slot fires in order to set atpg values and parameter names """
-        # Get the inputs of the widgets
-        analytic_name = self.analytic_lineedit.text()
-        theoretical_name = self.theoretical_lineedit.text()
-        practical_name = self.practical_lineedit.text()
-        grammatical_name = self.grammatical_lineedit.text()
-
-        analytic_val = self.analytic_spinbox.value()
-        theoretical_val = self.theoretical_spinbox.value()
-        practical_val = self.practical_spinbox.value()
-        grammatical_val = self.grammatical_spinbox.value()
+        atpg_window = ATPGSettingsWindow(self)
+        atpg_window.show()
         
-        analytic_name = analytic_name if analytic_name else "Analytic"
-        theoretical_name = theoretical_name if theoretical_name else "Theoretical"
-        practical_name = practical_name if practical_name else "Practical"
-        grammatical_name = grammatical_name if grammatical_name else "Grammatical"
-        
-        # Pass in these values  as tuple arguments to the timetable manager's set_ATPG_parameters method
-        self.Timetable.set_ATPG_parameters((analytic_name, analytic_val), (theoretical_name, theoretical_val), 
-            (practical_name, practical_val), (grammatical_name, grammatical_val))
-
-        self.analytic_marker.setText(analytic_name)
-        self.theoretical_marker.setText(theoretical_name)
-        self.practical_marker.setText(practical_name)
-        self.grammatical_marker.setText(grammatical_name)
-
 
 
     def load_nav_dialog_with_details(self, str_arg):
         """ Loads the dialog box when any of the buttons in the archive tab on the nav bar is clicked """
-        ModelDetailWindow(self.Timetable.Timetable_obj).get_details_load_on_dialog(str_arg)
+        ModelDetailWindow(self.Timetable).get_details_load_on_dialog(str_arg)
 
+
+    # ------------- TAB WIDGET INFO METHODS (ARCHIVE (INFO) PAGE AND STUFF) -------------------
+    def day_range_tab(self):
+        """ Loads the value of the day range today, hh:mm:ss into the top tab widget in one of the tab pages """
+        day_str = self.day_range_combobox.currentText()
+        if day_str:
+            start, end, duration = self.Timetable.day_range(day_str)
+            self.day_range_label.setText(f"Start - End: {start} - {end} | Duration: {duration}")
+
+
+    def periods_created_tab(self):
+        """ Loads the total number of periods created today into the label in the top tab widget """
+        day_str = self.day_range_combobox.currentText()
+        if day_str:
+            total, acads, non_acads = self.Timetable.periods_total(day_str)
+            self.periods_created_label.setText(f"Acads: {acads} | Non-acads: {non_acads} | Total: {total}")
+
+
+    def periods_avg_tab(self):
+        """ Loads the average count of the periods of all arms today """
+        day_str = self.day_range_combobox.currentText()
+        if day_str:
+            avg_periods = self.Timetable.average_num_periods(day_str)
+            self.periods_avg_label.setText(avg_periods)
+
+    def max_periods_tab(self):
+        """ Gives the max num of periods and the arms that have them, loads them into the label """
+        day_str = self.day_range_combobox.currentText()
+        if day_str:
+            max_period, arms = self.Timetable.arm_with_max_periods(day_str)
+            self.max_periods_label.setText(f"{max_period} ({arms})")
+
+    def min_periods_tab(self):
+        """ Gives the max num of periods and the arms that have them, loads them into the label """
+        day_str = self.day_range_combobox.currentText()
+        if day_str:
+            min_period, arms = self.Timetable.arm_with_min_periods(day_str)
+            self.min_periods_label.setText(f"{min_period} ({arms})")
+
+
+    def load_tab_bar_info_widgets(self):
+        """ Loads the widgets (from the comboboxes) for the day range, max number of periods per day, total number of periods
+        etc. """
+        self.day_range_tab()
+        # self.periods_created_tab()
+        self.periods_avg_tab()
+        self.max_periods_tab()
+        self.min_periods_tab()
+
+
+    # ------------------------------------------------------------------------------------------------------
+            
 
     def load_all_models(self):
-        """Loads up all the trees and lists and whatnot at once"""
+        """Loads up all the trees and lists and whatnot at once """
+
+        # self.perp_frame = PerpetualLoadFrame(loading_text="Loading all models items into widgets")
+        # self.perp_frame.animate_progbars()
 
         self.load_fac_courses_tree()
         self.load_group_class_arm_tree()
         self.load_days_list()
-        self.load_faculty_courses_teachers_tree()
+
+        # loads the informative widgets in the tab bar
+        self.load_days_into_tab_comboboxes()
+        self.load_tab_bar_info_widgets()
+
+        # self.load_faculty_courses_teachers_tree()
         self.load_gen_teachers_day_chboxes()
-        self.gen_arms_freq_chunk_tree(expand= True)
+        self.gen_arms_freq_chunk_tree(expand=True)
         self.load_days_for_arms_listwidget()
         self.load_days_for_arms_listwidget()
         self.load_subjects_freq_chunk_table()
-        self.load_arms_feasible_table()
+        self.load_arms_viable_table()
         self.load_gen_teachers_courselist()
         self.load_gen_teachers_day_chboxes()
         self.load_faculty_courses_teachers_tree(markable=False, expanded=True)
         self.load_all_staff_table(with_checkbox=False, check_all=False)
+
+        self.load_atpg()
+        self.load_workrate()
         
+        # self.threadpool = QtCore.QThreadPool()
+        # load_model_worker = Tt_threads.WorkerForSingleTask()
+
+        # # ---- supply arguments for the working objects to run
+        # load_model_worker.add_task_and_args(self.load_fac_courses_tree, "Error in loading subject departments!")
+        # load_model_worker.add_task_and_args(self.load_group_class_arm_tree,"Error in loading school classes and arms!")
+        # load_model_worker.add_task_and_args(self.load_days_list,"Error in loading days!")
+        # load_model_worker.add_task_and_args(self.load_faculty_courses_teachers_tree,"Error in loading data into Departments, subjects and teachers tree!")
+        # load_model_worker.add_task_and_args(self.load_gen_teachers_day_chboxes, "Error in loading created days for selection for teachers!")
+        # load_model_worker.add_task_and_args(self.gen_arms_freq_chunk_tree, "Error in loading arms, weekly features and chunk values!", expand=True)
+        # load_model_worker.add_task_and_args(self.load_days_for_arms_listwidget,"Error in loading days into listwidget for class arms!")
+        # load_model_worker.add_task_and_args(self.load_subjects_freq_chunk_table, "Error in loading table for displaying subjects, weekly features and chunk values")
+        # load_model_worker.add_task_and_args(self.load_arms_viable_table, "Error in loading table showing each arm, sum of all its periods and subject features!")
+        # load_model_worker.add_task_and_args(self.load_gen_teachers_courselist, "Error in loading subjects into list for teachers to handle!")
+        # load_model_worker.add_task_and_args(self.load_all_staff_table, "Error in loading member of staff into table!", with_checkbox=False, check_all=False)
+
+
+        # load_model_worker.signals.error.connect(lambda err_msg: self.messagebox(title="Export error", icon="critical", 
+        #     text=err_msg, extratext="You might want to look your work over again."))
+        # load_model_worker.signals.deadend.connect(lambda : self.perp_frame.stop_animation())
+        # self.threadpool.start(load_model_worker)
+
 
 
     def load_manual_into_toolbox(self):
@@ -833,12 +1076,8 @@ class UITimetable(QtWidgets.QMainWindow):
         # Empty the tool_box
         for i in range(tool_box.count()):
             tool_box.removeItem(i)
-            # tool_box.removeIt
-
         manual = load_manual()
-        
-        topics = manual.keys() 
-        # widget = QtWidgets.QWidgets()        
+        topics = manual.keys()     
 
         widgets_list = []
         for topic in topics:
@@ -866,41 +1105,32 @@ class UITimetable(QtWidgets.QMainWindow):
             font-family:Times New Roman;
             }
             """)
-
         tool_scroll.setWidget(tool_box)
     
-
-    # def menubar_colour(self):
-    #     tool_bar = self.findChild(QtWidgets.QToolBar,"toolBar")
-    #     menu_bar = self.findChild(QtWidgets.QMenuBar,"menuBar")
-
-    #     style = """
-
-    #         background:qlineargradient(spread:pad, x1:0.04, y1:0.499, x2:0.95, y2:0.501, 
-    #         stop:0.0568182 rgba(0, 0, 0, 255), stop:0.855114 rgba(0, 0, 0, 255), 
-    #         stop:0.995222 rgba(94, 94, 94, 255));
-
-    #         """
-
-    #     tool_bar.setStyleSheet(style + "height:7px;")
-        # menu_bar.setStyleSheet(style + "height:20px; color: #fff;")
-
-
-    def switch_mainstacked(self, int_num):
-        """Switches between pages of the stacked widget for different operations"""
-        num_pages = self.mainStackedWidget.count()
-
-        index = (self.main_stacked_curr_index + int_num) % num_pages
-        self.main_stacked_curr_index = index
-
+    # ----------------------------------------------------------------------------
+    def set_stackedwidget_page(self):
         # set the current mainstacked widget to the widget with index index
         self.mainStackedWidget.setCurrentIndex(self.main_stacked_curr_index)
-        self.page_label.setText(f"Page {self.main_stacked_curr_index + 1} of {num_pages}")
+        self.page_label.setText(f"Page {self.main_stacked_curr_index + 1} of {self.mainStackedWidget.count()}")
 
         # Get the title and info to be displayed on the textedit, paga by page
         title, info = self.stacked_pages_title_and_details[self.main_stacked_curr_index]
         self.page_title_label.setText(title.upper())
         self.page_info_box_textedit.setHtml(info)
+
+
+    def switch_mainstacked(self, int_num):
+        """ Switches between pages of the main stacked widget in the GUI for different operations"""
+        index = (self.main_stacked_curr_index + int_num) % self.mainStackedWidget.count()
+        self.main_stacked_curr_index = index
+        self.set_stackedwidget_page()
+
+
+    def switch_mainstacked_by_sidebar_btn(self, int_num=0):
+        """ Switches the main stacked widget to a particular page """
+        self.main_stacked_curr_index = int_num
+        print(f"Int_num: {int_num}")
+        self.set_stackedwidget_page()
 
 
     # --------------------------------------------------------------------------------------------------
@@ -927,7 +1157,7 @@ class UITimetable(QtWidgets.QMainWindow):
         institution = self.institution.text().strip()
         director = self.director.text().strip()
         session = self.session_or_year.text().strip()
-        acronym = self.acronym.text().strip() if self.acronym.text() else "PROJECT-SHELVA"
+        acronym = self.acronym.text().strip() if self.acronym.text() else "PROJECT-SHEFFL"
         extra_info = self.extra_info.toPlainText().strip()
 
         # Something interesting happens with self.logo_path; a dialog box is opened.
@@ -1876,7 +2106,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.combo_class.clear()
         # the class reg combox will also be cleared too below!
 
-        for class_group in self.Timetable.Timetable_obj.list_of_school_class_groups:
+        for class_group in self.Timetable.get_model_items("class_groups")[1]:
             # Load the  class group(category) name into the tree widget
             item = QtWidgets.QTreeWidgetItem()
             class_group_widg = WidgetTree(icon_path="TIMETABLE/Icons-mine/classgroup.png", icon_width=20, icon_height=15, label_text=class_group.full_name, with_checkbox=with_checkbox)
@@ -1904,6 +2134,9 @@ class UITimetable(QtWidgets.QMainWindow):
                     class_tree_item.addChild(arm_tree_item)
 
                     self.classgroup_class_arm_tree.setItemWidget(arm_tree_item, 0, arm_widg)
+
+                    # Add this arm to the reference_arm combobox
+                    self.ref_arm_combobox.addItem(arm.full_name)
 
 
     # ----------------------------- REGISTER/MODIFY DAY MODELS -------------------------------------------------
@@ -1942,7 +2175,11 @@ class UITimetable(QtWidgets.QMainWindow):
         self.day_position_spinbox.setEnabled(False)
         self.day_checkbox.setCheckState(False)
         
+        # --------Load this newly created day into all the relevant widgets -----------------
         self.load_days_list()
+
+        self.load_days_into_tab_comboboxes()
+
         self.load_days_for_arms_listwidget()
         # Load days combobox in periods generation page
         self.load_day_combobox_for_periods()
@@ -1954,17 +2191,31 @@ class UITimetable(QtWidgets.QMainWindow):
         self.class_none_radbtn.setChecked(True)
 
 
-    def load_days_list(self, with_checkbox=False):
-        """Loads the trww widget with created days on"""
+    def load_days_into_tab_comboboxes(self):
+        """ Loads the created days into the comboboxes on the top tab widget for information (archive)
+        and display purposes  """
+        days = self.Timetable.get_model_items("days")[0]
+        self.day_range_combobox.addItems(days)
+        self.periods_created_combobox.addItems(days)
+        self.periods_avg_combobox.addItems(days)
+        self.max_periods_combobox.addItems(days)
+        self.min_periods_combobox.addItems(days)
 
-        # treewidget.setColumnCount(1)
+
+
+    def load_days_list(self, with_checkbox=False):
+        """ Loads the listwidget with created days on """
+
         self.day_list.clear()
+        self.ref_day_combobox.clear()
         
-        for day_obj in self.Timetable.Timetable_obj.list_of_days:
+        for day_fullname in self.Timetable.get_model_items("days")[0]:
             day_listwidget_item = QtWidgets.QListWidgetItem()
-            day_widg = WidgetTree(label_text=day_obj.full_name, icon_path='TIMETABLE/Icons-mine/Day_icon.png', with_checkbox=with_checkbox)
+            day_widg = WidgetTree(label_text=day_fullname, icon_path='TIMETABLE/Icons-mine/Day_icon.png', with_checkbox=with_checkbox)
             self.day_list.addItem(day_listwidget_item)
             self.day_list.setItemWidget(day_listwidget_item,day_widg)
+            # Load today into the combobox (in the sort page) for reference day
+            self.ref_day_combobox.addItem(day_fullname)
 
 
 # ------------------------------------------------------------------------------------------
@@ -1992,8 +2243,6 @@ class UITimetable(QtWidgets.QMainWindow):
     def load_gen_teachers_courselist(self):
         """ Loads the listwidget bearing all the courses registered so Teacher can be generated.
         Also calls a method that loads up the class_group_span of the courses clicked """
-
-        # -----------------------------------------------------------------------------------
         # -----------------------------------------------------------------------------------
         self.gen_teachers_courselist.clear()
         for course in self.Timetable.Timetable_obj.list_of_departments:
@@ -2010,7 +2259,7 @@ class UITimetable(QtWidgets.QMainWindow):
 
 
     def load_gen_teachers_day_chboxes(self):
-        """This loads the days Listwidget with checkboxes, in the big box where teachers are to be registered. Teachers can select
+        """ This loads the days Listwidget with checkboxes, in the big box where teachers are to be registered. Teachers can select
         which days of the week they work from here."""
 
         self.gen_teachers_days_listwidget.clear()
@@ -2031,7 +2280,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.dept_and_teachers_tree.clear()
 
         # the class reg combox will also be cleared too below!
-        for faculty in self.Timetable.Timetable_obj.list_of_faculties:
+        for faculty in self.Timetable.get_model_items('faculties')[1]:
             # Load the  class group(category) name into the tree widget
             item = QtWidgets.QTreeWidgetItem()
             fac_widg = WidgetTree(label_text=faculty.full_name, icon_path='TIMETABLE/Icons-mine/classgroup.png')  
@@ -2066,13 +2315,13 @@ class UITimetable(QtWidgets.QMainWindow):
 
     def expand_fac_courses_teachers_tree(self):
         """ Reloads the faculty-course-teachers tree in expand or contract mode """
-        expand = True if "expand" in self.expand_fac_course_teachers_tree_btn.text().lower() else False
-        updated_btntext = "Reload-contract" if expand else "Reload-expand"
+        expand = "expand" in self.expand_subjs_tree_btn.text().lower()
+        updated_btntext = "Contract" if expand else "Expand"
 
         # Load the tree with the above boolean parameters
-        self.load_faculty_courses_teachers_tree(expanded=expand)
+        self.load_fac_courses_tree(expanded=expand)
         # change the text on the button appropriately
-        self.expand_fac_course_teachers_tree_btn.setText(updated_btntext)
+        self.expand_subjs_tree_btn.setText(updated_btntext)
 
 
     def pull_teacher(self):
@@ -2300,7 +2549,7 @@ class UITimetable(QtWidgets.QMainWindow):
 # --------------------------------------------------------------------------------------------------------------
 # ---------------- PERIOD GENERATION AND MAPPING SUBJ, FREQ AND CHUNK TO ARM------------------------------------
     def _marked_classarms_from_tree(self, class_arm_tree):
-        """ Method to return all the class arms whose checkboxes have been ticked from the class arms tree.
+        """ Method to return all the class arms (in the class-class arms tree) whose checkboxes have been ticked from the class arms tree.
         class and arm is used here as dummy variables, though. """
 
         selected_arms = []
@@ -2318,8 +2567,31 @@ class UITimetable(QtWidgets.QMainWindow):
                 # if the checkbox in the custom widget of the arm is checked,
                 if arm_widget.get_checkbox().isChecked():
                     selected_arms.append(arm_widget.full_name_label.text())
-
         return selected_arms
+
+
+
+    def select_all_arms(self, selected=True):
+        """ Method to select (or deselect) all the class arms (and sch class objects)
+        in the self.arms_for_chunk_tree when the select_all btn is clicked. """
+
+        state = QtCore.Qt.Checked if selected else selected
+        
+        root = self.arms_for_chunk_tree.invisibleRootItem()
+        child_count = root.childCount()
+
+        # Sniff through the tree for arms that have been clicked!
+        for x in range(child_count):
+            class_item = root.child(x)
+            class_item_widg = self.arms_for_chunk_tree.itemWidget(class_item, 0)
+            class_item_widg.get_checkbox().setCheckState(state)
+
+            for y in range(class_item.childCount()):
+                arm_item = class_item.child(y)
+                arm_widget = self.arms_for_chunk_tree.itemWidget(arm_item, 0)
+                # check (select) or uncheck based on 'selected' variable
+                arm_widget.get_checkbox().setCheckState(state)
+
 
 
     def _load_nonacad_tables(self, nonacad_table):
@@ -2398,6 +2670,10 @@ class UITimetable(QtWidgets.QMainWindow):
             self.days_for_arms_listwidget.setItemWidget(item, widg)
 
 
+        # Loads days into the combobox above the table displaying periods and arms data
+        self.load_day_combobox_for_periods()
+
+
     def disable_period_boxes(self, gbox):
         """ For period generation, disables groupboxes based on what radio button is clicked """
 
@@ -2433,10 +2709,11 @@ class UITimetable(QtWidgets.QMainWindow):
         """ Generate class arms (and classes) into the tree upon which selection for chunking would be carried out """
 
         # --------------------------------------------------------------------
-        def _bulk_mark_class_arms(self, checked=False, tree_item=None):
+        def _bulk_mark_class_arms(self, checked=False, tree_item=None, selected_by_default=False):
             """ Specifically for school classes. It marks (checks) all the arms under it if is checked """
-
-            check = QtCore.Qt.Checked if checked else checked   #QtChecked if checked is true else false
+            
+            # QtChecked if checked is true else false
+            check = QtCore.Qt.Checked if checked else checked
             child_count = tree_item.childCount()
 
             for i in range(child_count):
@@ -2453,7 +2730,7 @@ class UITimetable(QtWidgets.QMainWindow):
         for clss in self.Timetable.get_model_items("classes")[1]:
 
             clss_item = QtWidgets.QTreeWidgetItem()
-            clss_widg = WidgetTree(icon_path="TIMETABLE/Icons-mine/classgroup.png",label_text=clss.full_name, with_checkbox=True)
+            clss_widg = WidgetTree(icon_path="TIMETABLE/Icons-mine/class.png",label_text=clss.full_name, with_checkbox=True)
             self.arms_for_chunk_tree.addTopLevelItem(clss_item)
             self.arms_for_chunk_tree.setItemWidget(clss_item, 0, clss_widg)
 
@@ -2464,7 +2741,7 @@ class UITimetable(QtWidgets.QMainWindow):
 
             for arm in clss.school_class_arm_list:
                 arm_item = QtWidgets.QTreeWidgetItem()
-                arm_widg = WidgetTree(icon_path="TIMETABLE/Icons-mine/class.png",label_text=arm.full_name, with_checkbox=True)
+                arm_widg = WidgetTree(icon_path="TIMETABLE/Icons-mine/arm.png",label_text=arm.full_name, with_checkbox=True)
 
                 clss_item.addChild(arm_item)
                 self.arms_for_chunk_tree.setItemWidget(arm_item, 0, arm_widg)
@@ -2504,10 +2781,10 @@ class UITimetable(QtWidgets.QMainWindow):
    
     def load_day_combobox_for_periods(self):
         """ Loads the combobox in the period page to help select periods for a certain day """
-        self.days_combobox_for_chunk.clear()
+        self.days_combobox_periods.clear()
 
         all_days = self.Timetable.get_model_items("days")[0]
-        self.days_combobox_for_chunk.addItems(all_days)
+        self.days_combobox_periods.addItems(all_days)
 
 
     def generate_periods(self):
@@ -2590,7 +2867,7 @@ class UITimetable(QtWidgets.QMainWindow):
 
         # The button to enable display of the generated periods in the table
         arm_objs = self.Timetable.get_model_items("arms")[1]
-        combobox_text = self.days_combobox_for_chunk.currentText()
+        combobox_text = self.days_combobox_periods.currentText()
 
         day = self.Timetable.get_model_item_object("days", combobox_text)
         # Roll out the custom widget objects to in sert into table
@@ -2658,75 +2935,114 @@ class UITimetable(QtWidgets.QMainWindow):
         # --------------------------------------------------------------------------------
         self.Timetable.map_arms_to_chunkfreq_details(selected_arms, dept_chunk_freq_list)
         # --------------------------------------------------------------------------------
-        # Load the self.arms_feasible_table to display results
-        self.load_arms_feasible_table()
+        # Load the self.arms_viable_table to display results
+        self.load_arms_viable_table()
 
 
  
-    def load_arms_feasible_table(self):
-        """ Loads the contents of the arms_feasible_table, i.e. the arms' names, total period, total frequency
+    def load_arms_viable_table(self):
+        """ Loads the contents of the arms_viable_table, i.e. the arms' names, total period, total frequency
         and whether it is feasible or not """
 
-        self.arms_feasible_table.clearContents() 
+        self.arms_viable_table.clearContents()
         # gets the arm_feasible_data of all the class arms of the timetable
-        table_data = self.Timetable.get_arms_feasible_table_data()
+        table_data = self.Timetable.get_arms_viable_table_data()
+
+        # List to hold non-vaible subjects so we can raise an alarm
+        non_viables = []
 
 
-        self.arms_feasible_table.setRowCount(len(table_data))
+        self.arms_viable_table.setRowCount(len(table_data))
         for index, details in enumerate(table_data):
             row = index
-            full_name, periods_sum, frequency_sum, feasible, feasible_colour = details
-            feasible_label = QtWidgets.QLabel()
-            feasible_label.setText(str(feasible))
-            feasible_label.setStyleSheet(f"color: {feasible_colour} padding-left:5px;")
+
+            self.arms_viable_table.setRowHeight(row, 44)
+            full_name, periods_sum, frequency_sum, viable = details
+            if not viable:
+                non_viables.append(full_name)
+
+            viable_label = QtWidgets.QLabel()
+            viable_label.setText(str(viable))
+            viable_label.setStyleSheet(f'color: {"#000" if viable else "#e80000"}; padding-left:10px; font-weight:bold;')
+            self.arms_viable_table.setItem(row, 0, QtWidgets.QTableWidgetItem(full_name))
+            self.arms_viable_table.setItem(row, 1, QtWidgets.QTableWidgetItem(str(periods_sum)))
+            self.arms_viable_table.setItem(row, 2, QtWidgets.QTableWidgetItem(str(frequency_sum)))
+            self.arms_viable_table.setCellWidget(row, 3, viable_label)
+
+
+        # Raise an alarm if there are arms in the non_viables list
+        if non_viables:
+            self.messagebox(title="Incontinency Error", icon="warning", text="Arms have more subject features than periods.",
+                extratext=f"Make changes to: {', '.join(non_viables)}.")
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# --------------- ASSIGNMENT OF SUBJECT TEACHERS TO CLASS ARMS AND TEACHER & CLASS ARM DETAILS ----------------
+    def load_teachers_into_combobox_for_details(self, checkstate):
+        """ Loads teachers into the combobx (from which a teacher's details can be gotten) """
+
+        self.teacher_details_combobox.setEnabled(checkstate)
+        self.teacher_details_combobox.addItems(self.Timetable.get_model_items("teachers")[0])\
+        if checkstate else self.teacher_details_combobox.clear()   
+        self.teacher_details_spinbox.setEnabled(not(checkstate))
+
+
+    def pull_teacher_details(self):
+        """ Extracts the teacher whose fullname or ID has been selected and get inputs his details to the screen """
+        teacher_identifier = self.teacher_details_combobox.currentText() if self.teacher_details_combobox.isEnabled()\
+        else self.teacher_details_spinbox.value()
+        try:
+            teacher = self.Timetable.get_model_item_object("teachers", teacher_identifier)
+        except Tt_exceptions.SomethingWentWrong as err:
+            self.teacher_details_label.setText("No such teacher/tutor found")
+            load_teacher_details_into_textEdit(None, self.teacher_details_textEdit)
+        else:
+            # Get teachers details up on the screen
+            self.teacher_details_label.setText(teacher.full_name)
+            load_teacher_details_into_textEdit(teacher, self.teacher_details_textEdit)
             
-            self.arms_feasible_table.setItem(row, 0, QtWidgets.QTableWidgetItem(full_name))
-            self.arms_feasible_table.setItem(row, 1, QtWidgets.QTableWidgetItem(str(periods_sum)))
-            self.arms_feasible_table.setItem(row, 2, QtWidgets.QTableWidgetItem(str(frequency_sum)))
-            self.arms_feasible_table.setCellWidget(row, 3, feasible_label)
 
 
-# -----------------------------------------------------------------------------------------------------
-# ------------------- ASSIGNMENT OF SUBJECT TEACHERS TO CLASS ARMS AND CLASS ARM DETAILS ------------------------------------
+
+
     def load_arms_into_combobox(self, checkstate):
         """ Loads class arms into the combobox (in order to show class arm details) """
         if checkstate:
             self.arm_combobox.setEnabled(True)
-            self.arm_id_container.setEnabled(False)
             # Load up arms into combobx
+            self.arm_id_spinbox.setEnabled(False)
             self.arm_combobox.addItems(self.Timetable.get_model_items("arms")[0])
         else:
             self.arm_combobox.clear()
             self.arm_combobox.setEnabled(False)
-            self.arm_id_container.setEnabled(True)
+            self.arm_id_spinbox.setEnabled(True)
+
 
 
     def auto_assign_teachers_to_arms(self):
         """ The method the auto-assign button calls to automatically pair subject teachers to class arms """
         def _finished(msg): 
             self.messagebox(title="Assignment Status", icon="Information", text=msg)
-            self.load_assignment_frame.hide()
 
         def _error(err_msg):
             self.messagebox(title="Assignment Error", icon="Critical", text=err_msg)
-            self.load_assignment_frame.hide()
+    
         # ----------------------------------------------------------------
-
-        self.load_assignment_frame.show()
-        progbar_left = self.findChild(QtWidgets.QProgressBar, "assign_progbar_left")
-        progbar_right = self.findChild(QtWidgets.QProgressBar, "assign_progbar_right")
+        load_frame = LoadFrame(loading_text="Assignment operation underway")
 
         self.threadpool = QtCore.QThreadPool()
         working_object = self.Timetable.auto_assign_teachers_to_arms
         assign_worker = Tt_threads.TtWorker(working_object, finished_string="Assignment operation completed successfully", 
             error_string="Error occurred during assignment operation", nil_error_string="Assignment not permitted.", 
-            aux_function=self.load_assignment_frame.hide)
+            aux_function=None)
 
         # connect slots to the progressbars
-        assign_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
+        # assign_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
+        assign_worker.signals.progress.connect(lambda int_val: load_frame.animate_progbars(int_val))
         assign_worker.signals.finished.connect(lambda msg: _finished(msg))
         assign_worker.signals.error.connect(lambda err_msg: _error(err_msg))
         assign_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Criteria not met", icon="Critical", text=nil_msg))
+        assign_worker.signals.deadend.connect(lambda: load_frame.close())
         self.threadpool.start(assign_worker)
 
 
@@ -2735,37 +3051,75 @@ class UITimetable(QtWidgets.QMainWindow):
 
         def _finished(msg): 
             self.messagebox(title="Assignment Status", icon="Information", text=msg)
-            self.load_assignment_frame.hide()
+        
         def _error(err_msg):
             self.messagebox(title="Assignment Error", icon="Critical", text=err_msg)
-            self.load_assignment_frame.hide()
         # --------------------------------------------------------------------------
         # --------------------------------------------------------------------------
-
-        self.load_assignment_frame.show()
         # Store function to hide without running it in the variable below
-
-        progbar_left = self.findChild(QtWidgets.QProgressBar, "assign_progbar_left")
-        progbar_right = self.findChild(QtWidgets.QProgressBar, "assign_progbar_right")
-
+        load_frame = LoadFrame(loading_text="Undoing assignment operation")
         self.threadpool = QtCore.QThreadPool()
         working_object = self.Timetable.undo_assign_teachers_to_arms
         assign_worker = Tt_threads.TtWorker(working_object, finished_string="Assignment successfully undone!", 
             error_string="Error occurred during undoing assignment operation", nil_error_string="Undoing assignment not permitted.", 
-            aux_function=self.load_assignment_frame.hide)
+            aux_function=None)
 
         # connect slots to the progressbars
-        assign_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
+        assign_worker.signals.progress.connect(lambda int_val: load_frame.animate_progbars(int_val))
         assign_worker.signals.finished.connect(lambda msg: _finished(msg))
         assign_worker.signals.error.connect(lambda err_msg: _error(err_msg))
         assign_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Criteria not met", icon="Critical", text=nil_msg))
+        assign_worker.signals.deadend.connect(lambda: load_frame.close())
         self.threadpool.start(assign_worker)
-
 
 
     def pull_up_classarm(self):
         """ Method called when the pull is called. Extracts the arm_cred from the GUI and and passes it to the 
         manager to fetch the object """
+
+        def arm_found():
+            """ Populates the table when the pulled up arm is found """
+            # Start populating the widgets on the GUI
+            self.arm_label.setText(arm.full_name)
+            self.arm_class_label.setText(arm.school_class.full_name)
+            self.arm_classcat_label.setText(arm.school_class.school_class_group.full_name)
+
+            # Set arms working days
+            self.arm_days_label.setText(arm.get_class_arm_days_str(self.Timetable.Timetable_obj))
+
+            # Load up the table
+            self.assign_subj_teacher_table.setRowCount(len(arm.get_arm_dept_teacher_freq_chunk()))
+
+            for row, (dept, _, frequency, chunk) in enumerate(arm.get_arm_dept_teacher_freq_chunk()):
+                teachers_para_or_no = arm.get_teacher_fullname_str_for_dept(dept)
+                self.assign_subj_teacher_table.setItem(row, 0, QtWidgets.QTableWidgetItem(dept.full_name if dept else "None"))
+                self.assign_subj_teacher_table.setItem(row, 1, QtWidgets.QTableWidgetItem(teachers_para_or_no if teachers_para_or_no else "None"))
+                self.assign_subj_teacher_table.setItem(row, 2, QtWidgets.QTableWidgetItem(str(frequency)))
+                self.assign_subj_teacher_table.setItem(row, 3, QtWidgets.QTableWidgetItem(str(chunk)))
+
+
+            self.arm_num_teachers_label.setText(f": {arm.all_teachers_for_class_arm(include_parallels=True, as_int=True)}")
+            self.arm_num_freq_label.setText(f": {arm.total_freq_all_depts()}")
+            self.arm_total_acad_label.setText(str(arm.period_count_total()))
+            self.arm_total_nonacad_label.setText(str(arm.period_count_nonacad_total()))
+
+
+        def arm_not_found():
+            """ Fires when pulled up arm is not found """
+            self.arm_label.setText("Non-existent")
+            self.arm_class_label.setText("Non-existent")
+            self.arm_classcat_label.setText("Non-existent")
+
+            self.arm_not_found_label.show()
+            self.arm_not_found_label.setText(err.comment)
+            self.assign_subj_teacher_table.clearContents()
+
+            self.arm_num_teachers_label.setText(": Nil")
+            self.arm_num_freq_label.setText(f": Nil")
+            self.arm_total_acad_label.setText("")
+            self.arm_total_nonacad_label.setText("")
+
+
 
         # carries the credential for arm to be searched out
         self.arm_cred = self.arm_combobox.currentText() if self.arm_combobox.isEnabled() else self.arm_id_spinbox.value()
@@ -2774,49 +3128,28 @@ class UITimetable(QtWidgets.QMainWindow):
             arm = self.Timetable.get_model_item_object("arms", self.arm_cred)
             self.arm_not_found_label.hide()
 
-        except Tt_exceptions.SomethingWentWrong as e:
+        except Tt_exceptions.SomethingWentWrong as err:
             # if an invalid cred is entered
-            self.arm_not_found_label.show()
-            self.arm_not_found_label.setText(e.comment)
+            arm_not_found()
             return
+        # Arm is definitely found here, load the tables and labels
+        arm_found()
 
-        # Start populating the widgets on the GUI
-        self.arm_label.setText(arm.full_name)
-        self.arm_class_label.setText(arm.school_class.full_name)
-        self.arm_classcat_label.setText(arm.school_class.school_class_group.full_name)
-
-        # Load up the table
-        self.assign_subj_teacher_table.setRowCount(len(arm.get_arm_dept_teacher_freq_chunk()))
-
-        for row, (dept, _, frequency, chunk) in enumerate(arm.get_arm_dept_teacher_freq_chunk()):
-            teachers_para_or_no = arm.get_teacher_fullname_str_for_dept(dept)
-
-            self.assign_subj_teacher_table.setItem(row, 0, QtWidgets.QTableWidgetItem(dept.full_name if dept else "None"))
-            self.assign_subj_teacher_table.setItem(row, 1, QtWidgets.QTableWidgetItem(teachers_para_or_no if teachers_para_or_no else "None"))
-            self.assign_subj_teacher_table.setItem(row, 2, QtWidgets.QTableWidgetItem(str(frequency)))
-            self.assign_subj_teacher_table.setItem(row, 3, QtWidgets.QTableWidgetItem(str(chunk)))
+        
 
 
     # ------------------------------------------------------------------------------------------------------------
-    # ---------------------------------- PACKETING AND THE REAL CHUNK-SORTING ------------------------------------
-    def _set_progressbar_to_val(self, progressbar_tuple, int_val):
-        """ semi-private method to set the progressbars in the tuple argument to the value of the int_val argument.
-        could also be used for one progressbar in the tuple """
-        for progbar in progressbar_tuple:
-            progbar.setValue(int_val)
-
+    # ---------------------------------- PACKETING(PRE-ARRANGING) AND THE REAL CHUNK-SORTING ------------------------------------
 
     def packet(self):
         """ This function instructs the manager to packet (and repacket) all the subjects into class arms and report any errors """
         # ------------------------------------------------------------------------------------------------------------
         def _finished(msg): 
             self.messagebox(title="Packet status", icon="Information", text=msg)
-            # self.load_packeting_frame.hide()
             
 
         def _error(err_msg):
             self.messagebox(title="Packet error", icon="Critical", text=err_msg)
-            # self.load_packeting_frame.hide()
             
 
         def _finally():
@@ -2824,20 +3157,16 @@ class UITimetable(QtWidgets.QMainWindow):
             # print(list(range(1000)))
             load_packeting_details_html_into_textedit(packet_worker.comment, 
                 packet_textedit, len_all_subjects, len_all_days=len_all_days)
-            self.load_packeting_frame.hide()
+            load_frame.close()
                 
         # -----------------------------------------------------------------------------------------------------------
         
-        self.load_packeting_frame.show()
+        load_frame = LoadFrame(loading_text="Pre-arranging underway")
 
         # How many subjects in total, needed for the function to generate details on the textEdit screen
         len_all_subjects = len(self.Timetable.get_model_items("depts")[0])
         len_all_days = len(self.Timetable.get_model_items("days")[0])
         
-        # get the progressbars
-        progbar_left = self.findChild(QtWidgets.QProgressBar, "packet_progbar_left")
-        progbar_right = self.findChild(QtWidgets.QProgressBar, "packet_progbar_right")
-
         # The textedit widget to display packeting comments
         packet_textedit = self.findChild(QtWidgets.QTextEdit, "packet_textedit")
         
@@ -2845,10 +3174,10 @@ class UITimetable(QtWidgets.QMainWindow):
         working_object = self.Timetable.packeting_repacketing
         packet_worker = Tt_threads.TtWorker(working_object, finished_string="Successful. Packeting operation complete",
             error_string="Packeting operation unsuccessful!", nil_error_string="Packeting not permitted. Assignment operation yet to be carried out", 
-            aux_function=self.load_packeting_frame.hide)
+            aux_function=None)
 
         # connect slots to the progressbars
-        packet_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
+        packet_worker.signals.progress.connect(lambda int_val: load_frame.animate_progbars(int_val))
         packet_worker.signals.finished.connect(lambda msg: _finished(msg))
         packet_worker.signals.error.connect(lambda err_msg: _error(err_msg))
         packet_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation error", icon="Critical", text=nil_msg))
@@ -2862,61 +3191,48 @@ class UITimetable(QtWidgets.QMainWindow):
 
         def _finished(msg): 
             self.messagebox(title="Packet status", icon="Information", text=msg)
-            # self.load_packeting_frame.hide()
+
 
         def _error(err_msg):
             self.messagebox(title="Packeting error", icon="Critical", text=err_msg)
-            # self.load_packeting_frame.hide()
         # ----------------------------------------------------------------
 
-        self.load_packeting_frame.show()
-        # get the progressbars
-        progbar_left = self.findChild(QtWidgets.QProgressBar, "packet_progbar_left")
-        progbar_right = self.findChild(QtWidgets.QProgressBar, "packet_progbar_right")
+
+        load_frame = LoadFrame("Undoing pre-arrangement")
         
         self.threadpool = QtCore.QThreadPool()
         working_object = self.Timetable.undo_packeting_repacketing
         packet_worker = Tt_threads.TtWorker(working_object, finished_string="Packeting successfully undone!", 
             error_string="Error occured in undoing the packeting operation", nil_error_string="Sorry, undoing packeting not permitted.", 
-            aux_function=self.load_packeting_frame.hide)
+            aux_function=None)
 
         # connect slots to the progressbars
-        packet_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
+        packet_worker.signals.progress.connect(lambda int_val: load_frame.animate_progbars(int_val))
         packet_worker.signals.finished.connect(lambda msg: _finished(msg))
         packet_worker.signals.error.connect(lambda err_msg: _error(err_msg))
         packet_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation error", icon="Critical", text=nil_msg))
-        packet_worker.signals.deadend.connect(lambda :self.load_packeting_frame.hide())
+        packet_worker.signals.deadend.connect(lambda :load_frame.close())
         self.threadpool.start(packet_worker)
 
 
 
     # ------------------------ THE SORTING OPERATION PROPER!!! -------------------------------
-    def refresh_day_arm(self):
-        """ This method fires when the button to refresh reference day and arm is clicked """
-
-        # Get the list of the full_names of all the days and arms.
-        all_days = self.Timetable.get_model_items("days")[0]
-        all_arms = self.Timetable.get_model_items("class_arms")[0]
-
-        # Load them into the comboboxes
-        self.ref_day_combobox.addItems(all_days)
-        self.ref_arm_combobox.addItems(all_arms)
-
-
-    # ...............................THE SORTING METHOS ITSELF ..................................................
+    
+    # ...............................THE SORTING METHODS ..................................................
     
     def full_sort(self):
         """ THE BIG-BOY FUNCTION. Handles the entire sorting process and the progressbars to show the progress """
 
         def _finished(msg): 
-            self.messagebox(title="Packet status", icon="Information", text=msg)
+            self.messagebox(title="Pre-arrangement status", icon="Information", text=msg)
 
         def _error(err_msg):
-            self.messagebox(title="Packeting error", icon="Critical", text=err_msg)
+            self.messagebox(title="Pre-arrangement error", icon="Critical", text=err_msg)
             
         def _finally():
-            self.load_sorting_frame.hide()
-            load_sort_details_html_into_textedit(sort_worker.comment, sort_textEdit, num_all_teachers, num_all_subjects, num_all_arms)
+            load_frame.close()
+            load_sort_details_html_into_textedit(sort_worker.comment, sort_textEdit, num_all_teachers, 
+                num_all_subjects, num_all_arms)
         # ----------------------------------------------------------------
 
         # Get the reference_day, reference_arm values and the sort algorithm
@@ -2932,27 +3248,26 @@ class UITimetable(QtWidgets.QMainWindow):
         # check to see if ref_day_text and ref_arm_text are not empty
         if not self.check_fields_or_error(fields_values_list=[ref_day_text, ref_arm_text]):
             # Raise messagebox
-            self.messagebox(title="Not permitted", icon="Warning", text="Criteria not met. Packeting has not been successfully carried out.", 
+            self.messagebox(title="Not permitted", icon="Warning", text="Criteria not met. Pre-arrangement unsuccessful.", 
                 buttons=None, callback=None)
             return
 
 
-        self.load_sorting_frame.show()
+        load_frame = LoadFrame(loading_text="Sorting, arrangement (and re-arrangement) underway")
         # ---  get the progressbar and sort textEdit widgets
-        progbar_left = self.findChild(QtWidgets.QProgressBar, "sort_progbar_left")
-        progbar_right = self.findChild(QtWidgets.QProgressBar, "sort_progbar_right")
+       
         sort_textEdit = self.findChild(QtWidgets.QTextEdit, "sort_textedit")
         
         self.threadpool = QtCore.QThreadPool()
         working_object = self.Timetable.algosort_handle_cleanup_periodmap
         sort_worker = Tt_threads.TtWorker(working_object, finished_string="Sorting successful!", 
-            error_string="Error occured in the sorting operation", nil_error_string="Sorry, Sorting operation not permitted.", 
-            aux_function=self.load_sorting_frame.hide)
+            error_string="Alert. Some teachers/tutors are stranded", nil_error_string="Sorry, Sorting operation not permitted.", 
+            aux_function=None)
 
         # ---- Run with whatever arguments are necessary
         sort_worker.run_working_object(algorithm_text, ref_day_text, ref_arm_text)
         # connect slots to the progressbars
-        sort_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
+        sort_worker.signals.progress.connect(lambda int_val: load_frame.animate_progbars(int_val))
         sort_worker.signals.finished.connect(lambda msg: _finished(msg))
         sort_worker.signals.error.connect(lambda err_msg: _error(err_msg))
         sort_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation error", icon="Critical", text=nil_msg))
@@ -2962,18 +3277,76 @@ class UITimetable(QtWidgets.QMainWindow):
 
     def undo_full_sort(self):
         """ Undoes the full sort method """
-        pass
 
+        def _finished(msg): 
+            self.messagebox(title="Sort status", icon="Information", text=msg)
+
+        def _error(err_msg):
+            self.messagebox(title="Sort error", icon="Critical", text=err_msg)
+
+
+        load_frame = LoadFrame(loading_text="Undoing sort operation")       
+        # sort_textEdit = self.findChild(QtWidgets.QTextEdit, "sort_textedit")
+        self.threadpool = QtCore.QThreadPool()
+        working_object = self.Timetable.undo_sort_operation
+        undo_sort_worker = Tt_threads.TtWorker(working_object, finished_string="Sorting successfully undone!", 
+            error_string="Undoing sort operation UNSUCCESSFUL", nil_error_string="Not permitted..", 
+            aux_function=None)
+
+        # ---- Run with whatever arguments are necessary
+        undo_sort_worker.run_working_object()
+        # connect slots to the progressbars
+        undo_sort_worker.signals.progress.connect(lambda int_val: load_frame.animate_progbars(int_val))
+        undo_sort_worker.signals.finished.connect(lambda msg: _finished(msg))
+        undo_sort_worker.signals.error.connect(lambda err_msg: _error(err_msg))
+        undo_sort_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation error", icon="Critical", text=nil_msg))
+        # undo_sort_worker.signals.deadend.connect(_finally)
+        self.threadpool.start(undo_sort_worker)
+
+
+
+    def auto_fix_displaced_teachers(self):
+        """ Handles the final decisive fixing of the timetable for when teachers are displaced """
+
+        def _finished():
+            # The function that fires when the auto-fix btn has finished executing and shows the message on the textEdit
+            extra_teachers_dict = self.Timetable.return_xtra_teachers_dict()
+            self.Timetable.clear_out_jobless_teachers()
+            load_sort_correction_details_textedit(extra_teachers_dict, sort_textEdit)
+
+        # --------------------------------------------------------------------------------------------------------------
+        sort_textEdit = self.findChild(QtWidgets.QTextEdit, "sort_textedit")
+        load_frame = LoadFrame("Auto-fixing underway")
+
+        # ---  get the progressbar and sort textEdit widgets
+        sort_textEdit = self.findChild(QtWidgets.QTextEdit, "sort_textedit")
+        
+        self.threadpool = QtCore.QThreadPool()
+        working_object = self.Timetable.create_sort_xtra_teachers_for_balance
+        fixer_worker = Tt_threads.TtWorker(working_object, finished_string="Auto-fix successful!", 
+            error_string="Error occured during auto-fix", nil_error_string="Sorry, Auto-fix operation not permitted.", 
+            aux_function=None)
+
+        # ---- Run with whatever arguments are necessary
+        fixer_worker.run_working_object()
+        # connect slots to the progressbars
+        fixer_worker.signals.progress.connect(lambda int_val: load_frame.animate_progbars(int_val))
+        fixer_worker.signals.finished.connect(lambda msg: _finished())
+        fixer_worker.signals.error.connect(lambda err_msg: _error(err_msg))
+        fixer_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation error", icon="Critical", text=nil_msg))
+        fixer_worker.signals.deadend.connect(lambda :load_frame.close())
+        self.threadpool.start(fixer_worker)
+
+        
 # ------------------------------------------------------------------------------------------------------------------------------
 # ---------------------------- THE FULL 'ADVANCED' SECTION SPORTING TEACHERS SPACING ET AL -------------------------------------
-    
-    def teachers_spacing(self):
-        """ TENTATIVE? prints out the spacing dictionary for the all the algorithms """
-        ref_day_text, ref_arm_text = self.ref_day_combobox.currentText(), self.ref_arm_combobox.currentText()
-        self.Timetable.teachers_relative_spacing_per_algorithm(ref_day_text, ref_arm_text)
+    # def teachers_spacing(self):
+    #     """ TENTATIVE? prints out the spacing dictionary for the all the algorithms """
+    #     ref_day_text, ref_arm_text = self.ref_day_combobox.currentText(), self.ref_arm_combobox.currentText()
+    #     self.Timetable.teachers_relative_spacing_per_algorithm(ref_day_text, ref_arm_text)
     
 
-# -------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------------------
 # ----------------------------- SEMI-FINISH: DISPLAY SORTED RESULTS INTO FRAME: DIALS AND STUFF TOO ---------------------------------
     def display_by_arm_or_day(self):
         """ This method fires when the display_by_btn is clicked and extracts the radiobutton that is checked from the frame """
@@ -3003,7 +3376,6 @@ class UITimetable(QtWidgets.QMainWindow):
         model_item_for_display = self.Timetable.return_item_from_dial_value(display_mod_type_label.text(), dial_value)
         display_mod_item_label.setText(model_item_for_display)
             
-        
 
 
     def scroll_model_item_by_btn(self, dial_widget, display_mod_item_label, display_mod_type_label, k):
@@ -3037,9 +3409,7 @@ class UITimetable(QtWidgets.QMainWindow):
 
         self.timetable_title_label.setText(model_item_str)
 
-        # Get the progressbars
-        progbar_left = self.findChild(QtWidgets.QProgressBar, "display_progbar_left")
-        progbar_right = self.findChild(QtWidgets.QProgressBar, "display_progbar_right")
+        load_frame = LoadFrame(loading_text="Periods display underway...")
 
         # The frame object on the gui
         frame = PeriodsDisplayFrame(frame=self.periods_display_frame, spacing=6, padding=(2,2,2,2))
@@ -3053,11 +3423,11 @@ class UITimetable(QtWidgets.QMainWindow):
         # ---- supply arguments for the working objects to run
         display_fin_periods_worker.run_working_object(model_type_str, model_item_str)
         # connect slots to the progressbars
-        display_fin_periods_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
+        display_fin_periods_worker.signals.progress.connect(lambda int_val: load_frame.animate_progbars(int_val))
         # display_fin_periods_worker.signals.finished.connect(lambda msg: _finished(msg))
         display_fin_periods_worker.signals.error.connect(lambda err_msg: self.messagebox(title="Operation error", icon="Critical", text=err_msg))
         display_fin_periods_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation error", icon="Critical", text=nil_msg))
-        # display_fin_periods_worker.signals.deadend.connect(_finally)
+        display_fin_periods_worker.signals.deadend.connect(lambda : load_frame.close())
         display_fin_periods_worker.signals.progress_with_info.connect(_make_frame)
         self.threadpool.start(display_fin_periods_worker)
 
@@ -3069,9 +3439,15 @@ class UITimetable(QtWidgets.QMainWindow):
         for widget in self.track_models_by_frame.children():
             if isinstance(widget, QtWidgets.QRadioButton) and widget.isChecked():
                 # enable the frame that holds the track dials and btns
+                model_type = widget.text()
                 self.track_dial_and_btns_frame.setEnabled(True)
                 # set the track_model_type label to the text of the radiobutton
-                self.track_model_type_label.setText(widget.text().strip())
+                self.track_model_type_label.setText(model_type.strip())
+                # Also set the first model item
+                dial_val = 1
+                self.track_dial.setValue(dial_val)
+                model_item = self.Timetable.return_item_from_dial_value(model_type, dial_val)
+                self.track_item_label.setText(model_item)
                 return
     
         # if no breaking, i.e. no checked radiobuttons found
@@ -3087,6 +3463,7 @@ class UITimetable(QtWidgets.QMainWindow):
         self.match_item = "Nil"
 
 
+
     def track_model_item(self):
         """ This method calls the manager to track the item as given on the track frame on all the period widgets available on screen.
         the tracking and display on the screen is done here """
@@ -3098,22 +3475,33 @@ class UITimetable(QtWidgets.QMainWindow):
              frame.set_width_height()
              frame.add_widget_to_frames_vbox()
 
+        def _finally():
+            # load the track details on the track textEdit widget
+            load_frame.close()
+            # self.track_details_frame.show()
+            # match_item, track_details_dict = self.Timetable.track_item_throughout(self.match_item)
+            # load_tracked_model_details(match_item, track_details_dict, self.track_details_textedit)
+
+        def finished(msg):
+            # Does this only when the tracking is SUCCESSFULLY FINISHED
+            self.messagebox(title="Tracking successful", icon="Information", text=msg)
+            self.track_details_frame.show()
+            match_item, track_details_dict = self.Timetable.track_item_throughout(self.match_item)
+            load_tracked_model_details(match_item, track_details_dict, self.track_details_textedit)
+
+
 
         # model_type = self.track_model_type_label.text()
+        # The subject, teacher or department to match
         self.match_item = self.track_item_label.text()
-
         model_type_str = self.model_type_label.text()
         model_item_str = self.model_item_label.text()
 
         self.timetable_title_label.setText(model_item_str)
 
         # Send these values to the manager and have it glow up every search with a packet_worker
-        # ------------------
-        progbar_left = self.findChild(QtWidgets.QProgressBar, "track_progbar_left")
-        progbar_right = self.findChild(QtWidgets.QProgressBar, "track_progbar_right")
-
-        self.load_track_frame.show()
-
+        # Frame to load the progressbars showing progress of the track operation
+        load_frame = LoadFrame(loading_text=f"Tracking of {model_item_str} underway...")
 
         # The frame object on the gui
         frame = PeriodsDisplayFrame(frame=self.periods_display_frame, spacing=6, padding=(2,2,2,2))
@@ -3122,23 +3510,34 @@ class UITimetable(QtWidgets.QMainWindow):
         working_object = self.Timetable.yield_arm_or_days_period_data
 
         track_worker = Tt_threads.WorkerForFrames(working_object, finished_string="Tracking successful! your selection appears in distinctive colouring.", 
-            error_string="Error occured in the tracking operation", nil_error_string="Sorry, tracking operation not permitted.", 
-            aux_function=self.load_track_frame.hide)
+            error_string="Cannot carry out tracking operation, requirements not fully met.", nil_error_string="Tracking operation not permitted.")
 
         # ---- supply arguments for the working objects to run
         track_worker.run_working_object(model_type_str, model_item_str)
         # connect slots to the progressbars
-        track_worker.signals.progress.connect(lambda int_val: self._set_progressbar_to_val((progbar_left, progbar_right), int_val))
-        track_worker.signals.finished.connect(lambda msg: self.messagebox(title="Tracking successful", icon="Information", text=msg))
+        track_worker.signals.progress.connect(lambda int_val: load_frame.animate_progbars(int_val))
+        track_worker.signals.finished.connect(finished)
         track_worker.signals.error.connect(lambda err_msg: self.messagebox(title="Operation error", icon="Critical", text=err_msg))
         track_worker.signals.nil_error.connect(lambda nil_msg: self.messagebox(title="Operation error", icon="Critical", text=nil_msg))
-        # track_worker.signals.deadend.connect(_finally)
+        track_worker.signals.deadend.connect(_finally)
         track_worker.signals.progress_with_info.connect(_make_frame)
         self.threadpool.start(track_worker)
 
 
     # --------------------------------------------------------------------------------------------------------------
     # ------------------------ FINISHED REPORT AND DIAGNOSTICS REPORT GENERATION SECTION ---------------------------
+    def set_max_min_for_margins(self, unit):
+        """ The method that sets the max, min and current alues to the spinboxes for margins in the GUI.
+        Unit is an int. the index of the current item """
+        spinboxes = (self.left_dspinbox, self.right_dspinbox, self.top_dspinbox, self.bottom_dspinbox)
+        unit_dict = {0: "I", 1:"P", 2:"M", 3:"C"}
+
+        max_, min_, curr_val = self.Timetable.inch_cm_mm_convert(unit_dict[unit], max_coeff=1.5, min_coeff=0.5)
+        for spinbox in spinboxes:
+            spinbox.setRange(min_, max_)
+            spinbox.setValue(curr_val)
+
+
     def generate_finished_report(self):
         """ This method serves as a slot for the gen_report_btn. It facilitates the generation of the finished
         timetable either into docx, PDF or HTML formats. """
@@ -3148,10 +3547,20 @@ class UITimetable(QtWidgets.QMainWindow):
         format_ = self.report_format_combobox.currentText()
 
         if "docx" in format_.lower():
+            # Margins (Left right top bottom)
+            unit = self.margin_combobox.currentText()
+            margin_tup = self.left_dspinbox.value(), self.right_dspinbox.value(), self.top_dspinbox.value(), self.bottom_dspinbox.value()
+            margins = (unit[0], margin_tup)
             file_ext = ".docx"
+
         elif "pdf" in format_.lower():
+            unit = self.margin_combobox.currentText()
+            margin_tup = self.left_dspinbox.value(), self.right_dspinbox.value(), self.top_dspinbox.value(), self.bottom_dspinbox.value()
+            margins = (unit[0], margin_tup)
             file_ext = ".pdf"
+
         else:
+            margins = None
             file_ext = ".html"
 
 
@@ -3160,8 +3569,45 @@ class UITimetable(QtWidgets.QMainWindow):
         
         if file_path:
             file_path = QtCore.QDir.toNativeSeparators(file_path)
-            self.Timetable.generate_timetable_file(file_path, format_, basis)
+            # self.Timetable.generate_timetable_file(file_path, format_, basis)
 
+
+            perpetual_load_frame = PerpetualLoadFrame(loading_text=f"{format_} export ongoing")
+            perpetual_load_frame.animate_progbars()
+
+            self.threadpool = QtCore.QThreadPool()
+            export_worker = Tt_threads.WorkerForSingleTask()
+
+            # ---- supply arguments for the working objects to run
+            export_worker.add_task_and_args(self.Timetable.generate_timetable_file, f"{format_} export failed!", file_path, format_, basis, margins)
+            export_worker.signals.error.connect(lambda err_msg: self.messagebox(title="Export error", icon="critical", 
+                text=f"{format_} export failed.", extratext="You might want to look your work over again."))
+            export_worker.signals.deadend.connect(lambda : perpetual_load_frame.stop_animation())
+            self.threadpool.start(export_worker)
+
+  
+    # def tent_test(self):
+    #     """ TENTATIVE. WILL BE WIPED OUT """
+    #     self.Timetable.TimetableSorter.inspect_timetable_thru()
+
+
+    def perp_load(self):
+        """ TENTATIVE. WILL BE WIPED OUT """
+        def load_me():
+            if self.count == 0:
+                load_window.animate_progbars()
+            self.count +=1            
+            if self.count >= 150:
+                load_window.stop_animation()
+
+
+        self.timer = QtCore.QTimer()
+        self.count = 0
+        load_window = PerpetualLoadFrame(time_interval=50)
+        self.timer.timeout.connect(load_me)
+        self.timer.start(200)
+
+        
 
 
 
@@ -3215,7 +3661,7 @@ class UITimetable(QtWidgets.QMainWindow):
 
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle(title)
-        msg.setWindowIcon(QtGui.QIcon("TIMETABLE/Icons-mine/App_logo.png"))
+        msg.setWindowIcon(QtGui.QIcon("TIMETABLE/Icons-mine/App_logo_white.jpg"))
         msg.setText(text)
 
         cast_ = lambda arg:getattr(QtWidgets.QMessageBox, arg.capitalize())

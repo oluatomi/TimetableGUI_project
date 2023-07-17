@@ -96,6 +96,13 @@ for fac, subj_list in zip(All_models('faculties')[0], SUBJECTS):
         Manager.create_department(deptname, hos=None, is_parallel=is_parallel, faculty=fac, A=1,T=1,P=1,G=1, update=False)
 
 
+# Create NON-ACAD SUBJECTS
+Manager.create_special_department("Short Break", update=False)
+Manager.create_special_department("Long Break", update=False)
+
+nonacad_tuple_list = [(nonacad_dept, "00:35:00", str(k + 6)) 
+for k, nonacad_dept in enumerate(Manager.get_model_items("nonacads")[0])]
+
 
 # Create periods
 g_box_id = "by_duration"
@@ -104,7 +111,7 @@ acad_dict = {"start":"00:05:30", "duration":"00:55:00", "freq":10, "interval":"0
 
 # Pin days to class arms and generate periods
 Manager.pin_day_generate_periods(g_box_id, selected_arms_list=selected_arms, selected_days_list=selected_days, 
-    normal_periods_dict=acad_dict, nonacad_tuple_list=[])
+    normal_periods_dict=acad_dict, nonacad_tuple_list=nonacad_tuple_list)
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -152,7 +159,6 @@ def get_dept_fullname(name):
 def make_teacher(freq, course_list):
     # Find the subjects with fullnames
     course_list_ = [get_dept_fullname(rough_name) for rough_name in course_list]
-
     Manager.generate_teachers(frequency=freq, teaching_days=All_models("days")[0], specialty="All",
 designation="Member of staff", course_list=course_list_, update=False)
 

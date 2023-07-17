@@ -1,6 +1,4 @@
-#--THIS MODULE HANDLES THE MANAGEMENT OF THE 'cls_pers' MODULE
-#--THIS DOES NOT TAKE CARE OF THE ALGORITHM TO SORT, BUT PROVIDES VITAL INFORMATION
-#--FOR THE MODULE THAT HANDLES THE ALGORITHM FOR SORTING.
+#--THIS DOES NOT TAKE CARE OF THE ALGORITHM TO SORT, BUT PROVIDES VITAL INFORMATION FOR THE MODULE THAT HANDLES THE ALGORITHM FOR SORTING.
 #-- THE 'cls_pers' MODULE HANDLES THE OBJECTS 
 #-- (MOSTLY), WITH ITS STATIC METHODS DOING SOME OF THE NEEDED (SMALL)
 #--CALCULATIONS THAT ARE ALBEIT STILL NEEDED.
@@ -35,7 +33,6 @@ def get_obj_from_param(g_list, attr, param):
             if isfunction(getattr(item, attr)):
                 if getattr(item, attr)().lower() == param.lower():
                     return item
-
             else:
                 if str(getattr(item, attr)).lower() == param.lower():
                     return item
@@ -46,8 +43,10 @@ def get_obj_from_param(g_list, attr, param):
 # ---------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------
 class TimeTableManager:
-    """ This class serves as the intermediary between the GUI and the Tt_models and Tt_algo modules """
-
+    """ This class serves as the intermediary between the GUI and the Tt_models and Tt_algo and also the GUI modules """
+    extension = '.tmtb'
+    recent_files_path = 'TIMETABLE/gui/TimeTable Extras/File_paths_for_recent.txt'
+    conversion_constants_dict = {"I": 1, "P": 96, "C": 2.54, "M": 25.4}
     def __init__(self, tt_obj=None):
         self.Timetable_obj = TimeTable() if not tt_obj else tt_obj
         self.TimetableSorter = TimetableSorter(tt_obj=self.Timetable_obj)
@@ -56,7 +55,7 @@ class TimeTableManager:
         self.pre_existing = None
         self.regex_time_pattern = "\d+:\d+:\d+"
         self.regex_position_pattern = "^(\d+,?)+$"
-        self.extension = '.tmtb'
+        
 
 
     def _authorize_assign_op(self):
@@ -93,11 +92,12 @@ class TimeTableManager:
         limit = 10
         project_file_path = project_file_path if project_file_path.endswith(self.extension) else project_file_path + self.extension
         # Read any already stored paths from the external file
-        with open('TIMETABLE/gui/TimeTable Extras/File_paths_for_recent.txt', 'r') as file:
+        with open(self.recent_files_path, 'r') as file:
             recent_paths = file.readlines()
         recent_file_paths_list = [] if recent_paths == ["\n"] else [path.strip("\n") for path in recent_paths]
 
-        # Now add to the beginning of the list. and check for if it was already in the list before
+        # Now add to the beginning of the list. and check for if it was already in the list before and add it to the front
+        # of the list, whether or not
         if project_file_path in recent_file_paths_list:
             recent_file_paths_list.remove(project_file_path)
         recent_file_paths_list.insert(0, project_file_path)
@@ -108,14 +108,14 @@ class TimeTableManager:
             recent_file_paths_list[limit - len_recent_paths_list:] = []
 
         # Now load back into the external file
-        with open('TIMETABLE/gui/TimeTable Extras/File_paths_for_recent.txt', 'w') as file:
+        with open(self.recent_files_path, 'w') as file:
             for line in recent_file_paths_list:
                 file.writelines(line + "\n")
 
 
     def load_recent_projects(self):
         """ returns a list of all the recent files """
-        with open('TIMETABLE/gui/TimeTable Extras/File_paths_for_recent.txt', 'r') as file:
+        with open(self.recent_files_path, 'r') as file:
             recent_paths = file.readlines()
         recent_file_paths_list = [] if recent_paths == ["\n"] else [path.strip("\n") for path in recent_paths]
         return recent_file_paths_list
@@ -130,14 +130,19 @@ class TimeTableManager:
                 try:
                     tt_object = pickle.load(file)
                 except Exception:
-                    raise Tt_exceptions.SomethingWentWrong(f"A problem arose in loading file {project_file_path}. The file has probably been tampered with.")
+                    raise Tt_exceptions.SomethingWentWrong(f"A problem arose in loading file {project_file_path}. The file is compromised.")
             return tt_object
+
+
+    def clear_recent_files(self):
+        """ Clears the file that carries the list of the recent files. Replaces the text inside with an empty string """
+        with open(self.recent_files_path, 'w') as file:
+            file.writelines("")
 
 
     def reset_tt_obj(self):
         """ resets the timetable object """
         self.Timetable_obj.reset_timetable()
-
 
     # ----------------------------------------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------
@@ -187,12 +192,27 @@ class TimeTableManager:
         try:
             model_obj = self.object_getter(model_list, attr, str(identifier))
         except ValueError:
-            raise Tt_exceptions.SomethingWentWrong(f"No class arm with ID: {identifier}")
+            raise Tt_exceptions.SomethingWentWrong(f"None amongst {model_name} with ID: {identifier}")
         return model_obj
 
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # ---------------------------UTILITY FUNCTIONS ABOVE, MODEL FUNCTIONS BELOW -----------------------------------------------------------
+    def set_workrate_inflexion_num(self, inflx_num):
+        """ (Re-)Sets the workrate inflexion number on the timetable object """
+        self.Timetable_obj.set_workrate_inflexion(inflx_num)
+
+
+    def get_workrate_coefficient(self):
+        """ Retrieves the timetable object's workrate_inflexion_coefficient for the GUI """
+        return str(self.Timetable_obj.workrate_inflexion_coefficient)
+
+
+    def get_ATPG_parameters(self):
+        """ (Tuple of tuples) Gets the ATPG paramters (and weights) from the timetable object """
+        return self.Timetable_obj.analytic, self.Timetable_obj.theoretical, self.Timetable_obj.practical, self.Timetable_obj.grammatical
+
+
     def set_ATPG_parameters(self, analytic_tuple, theoretical_tuple, practical_tuple, grammatical_tuple):
         """ Set the timetable object's ATPG parameters """
 
@@ -221,7 +241,7 @@ class TimeTableManager:
         self.Timetable_obj.create_department(name, faculty=faculty_obj, hos=hos, is_parallel=is_parallel, A=A, T=T,P=P,G=G, preexisting_obj=pre_existing, update=update)
 
 
-    def create_special_department(self, name, update=None):
+    def create_special_department(self, name, update=False):
         """ handles creation or update of a non-academic subject e.g. break-time """
         pre_existing = self.pre_existing if update else None
         self.Timetable_obj.create_department(name, is_special=True, update=update, preexisting_obj=pre_existing)
@@ -332,10 +352,6 @@ class TimeTableManager:
 
     def generate_teachers(self, frequency=1, teaching_days=None, specialty="All", designation="Member of staff", course_list=None, update=False):
         #  ...
-        #  ...
-        #  set the prerequisite[assigned] dict to False, so sorting or packeting cannot be done
-        
-        # self.prerequisites["assigned"] = False
 
         dept_objs_list = [self.object_getter(self.Timetable_obj.list_of_departments, "full_name", course_fullname) for course_fullname in course_list]
         # get all the teaching day objects
@@ -464,6 +480,65 @@ class TimeTableManager:
                 self.Timetable_obj.del_nonacad_department(nonacad_obj)
 
 
+
+    # --------------- FUNCTION REGARDING DETAILS TO BE DISPLAYED IN THE TAB 
+    def day_range(self, day_fullname_str):
+        """ Retrieves the day range (DAY START AND DAY END) from the timetable object.
+        To be displayed in the top tab bar of the GUI """
+        day_obj = self.get_model_item_object("days", day_fullname_str)
+        return self.Timetable_obj.day_range(day_obj)
+
+
+    def periods_total(self, day_fullname_str):
+        """ Returns a tuple (acads, non-acads, total) """
+        day_obj = self.get_model_item_object("days", day_fullname_str)
+        total, acads, non_acads = self.Timetable_obj.periods_total(day_obj)
+        return str(total), str(acads), str(non_acads)
+
+
+
+    def average_num_periods(self, day_fullname_str):
+        """ INT. Returns the average of all the periods today """
+        day_obj = self.get_model_item_object("days", day_fullname_str)
+        return str(self.Timetable_obj.average_num_periods(day_obj))
+
+
+    def arm_with_max_periods(self, day_fullname_str):
+        """ (INT, list(class_arm_obj)) class arm_obj or None """
+        day_obj = self.get_model_item_object("days", day_fullname_str)
+        arms_today_len = int(day_obj.class_arms_today(as_int_str=True))
+        max_val, arms_len = self.Timetable_obj.arm_with_max_periods(day_obj)
+
+        if arms_len == arms_today_len:
+            arm_comment = "All arms today"
+        elif arms_today_len // 2 < arms_len < arms_today_len:
+            arm_comment = "A majority (class arms) today"
+        elif arms_len == arms_today_len // 2:
+            arm_comment = "About half (class arms) today"
+        elif arms_len < arms_len_today // 2:
+            arm_comment = f"A few arms today"
+        return str(max_val), arm_comment
+
+
+    def arm_with_min_periods(self, day_fullname_str):
+        """ Calls a function that returns two INTs. One for the max (or min) value, and the other
+        for number of class arms today that actually have that number of periods """
+        day_obj = self.get_model_item_object("days", day_fullname_str)
+        arms_today_len = int(day_obj.class_arms_today(as_int_str=True))
+        min_val, arms_len = self.Timetable_obj.arm_with_min_periods(day_obj)
+
+        if arms_len == arms_today_len:
+            arm_comment = "All arms today"
+        elif arms_today_len // 2 < arms_len < arms_today_len:
+            arm_comment = "A majority"
+        elif arms_len == arms_today_len // 2:
+            arm_comment = "About half"
+        elif arms_len < arms_len_today // 2:
+            arm_comment = "A few"
+        return str(min_val), arm_comment
+
+
+
     # -----------------------------------------------------------------------------------------
     # ----------------------------- PERIOD GENERATION SECTION ---------------------------------
     def add_days_to_selected_classarms(self, selected_arms_list=None, selected_days_list=None):
@@ -510,6 +585,7 @@ class TimeTableManager:
 
     def pin_day_generate_periods(self, g_box_id, selected_arms_list=None, selected_days_list=None, normal_periods_dict=None, nonacad_tuple_list=None):
         """ Handles adding days selected to class arms selected and generates periods from the GUI """
+        
         def _to_time_tuple(time_str):
             """ Convers string of format hh:mm:ss to the time tuple to be used in calculations """
             var = time_str.split(":")
@@ -556,7 +632,6 @@ class TimeTableManager:
             name = self.object_getter(self.Timetable_obj.list_of_nonacad_depts, "full_name", name)
             nonacad_tuple_list[index] = (name, _to_time_tuple(duration), _to_int_list(positions))
 
-        # print(f"nonacad_tuple_list: {nonacad_tuple_list}")
 
 
         arm_objs = [self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", arm_fullname) for arm_fullname in selected_arms_list]
@@ -601,33 +676,15 @@ class TimeTableManager:
             iterable_from_gui[index] = subj_freq_chunk(dept, freq, chunk)
 
 
-        # 2. Compile list of tuples bearing: (arm_fullnames, periods sum, frequency_sum, feasible)
-        for arm in arm_objs:
-            full_name = arm.full_name
-            periods_sum = arm.period_count_total()
-            frequency_sum = total_frequency
-            feasible_bool = arm.total_period_contains_freq(total_frequency)
-            feasible = str(feasible_bool)
-            # An extra parameter to help colour the entry in the table
-            feasible_colour = "#000" if feasible_bool else "#df0000"
-            # populate the table_data list
-            # table_data.append((full_name, periods_sum, frequency_sum, feasible, feasible_colour))
-
-            # Now packet the "iterable_from_gui" into each arm if it is feasible, i.e. arm's number of periods can contain it
-            if feasible_bool:
-                # Store thids particulrs in the arm
-                arm.store_iterable_from_gui(iterable_from_gui)
-                arm.store_arms_feasible_table_data([periods_sum, frequency_sum, feasible, feasible_colour])
-
         # Add the courses in iterable_from_gui to the class arm
         self.iterable_from_gui = iterable_from_gui
         self.add_depts_to_selected_classarms(arm_objs_list=arm_objs, iterable_from_gui=iterable_from_gui)
 
     
 
-    def get_arms_feasible_table_data(self):
-        """ Returns the arms_feasible_table_data for every class arm to be used in the GUI """
-        return [arm.get_arms_feasible_table_data() for arm in self.Timetable_obj.list_of_school_class_arms]
+    def get_arms_viable_table_data(self):
+        """ Returns the arms_viable_table_data for every class arm to be used in the GUI """
+        return [arm.get_arms_viable_table_data() for arm in self.Timetable_obj.list_of_school_class_arms]
 
 
 # --------------------------------------------------------------------------------------------------------
@@ -682,17 +739,46 @@ class TimeTableManager:
             return algosort, handle, cleanup, map_to_period
 
 
+    def create_sort_xtra_teachers_for_balance(self):
+        """ Faciltitates the extra teachers needed if there were initially displaced teachers """
+        xtra_teachers_for_balance = self.TimetableSorter.xtra_teachers_for_balance()
+        map_to_period = self.TimetableSorter.map_chunk_to_arms_periods(beam_max_value=40, prev_max_value=60)
+        map_to_teacher = self.TimetableSorter.map_finished_arm_chunk_dept_to_teacher()
+        return xtra_teachers_for_balance, map_to_period, map_to_teacher
+
+
+    def return_xtra_teachers_dict(self):
+        """ Returns the dict of {dept: extra_teachers} """
+        return self.TimetableSorter.xtra_teachers_dict
+
+
+    def clear_out_jobless_teachers(self):
+        """ Calls on the sorter object to clear out any teachers who does not teacher any class arm """
+        self.TimetableSorter.clear_out_jobless_teachers()
+
+
+    def undo_sort_operation(self):
+        """ Returns a generator. Nullifies the sort operation. """
+        undo_sort = self.TimetableSorter.unsort_operation_gen(beam_max_value=100)
+        return undo_sort,
+
+
+    # def undo_sort_packeting_func(self):
+    #     """ Method (not generator) to undo sorting and packeting
+    #     WHEN A MODELS IS ABOUT TO BE DELETED? """
+        
+
+
+
 # -----------------------------------------------------------------------------------------------------------
 # ------------------ HANDLES THE 'ADVANCED' SECTION, WITH TEACHERS'SPACING ETC ------------------------------
-    def teachers_relative_spacing_per_algorithm(self, ref_day, ref_arm):
-        """ Handles the inner function that calculates the teacher's spacing """
-        # try:
-        ref_day_obj = self.object_getter(self.Timetable_obj.list_of_days, "full_name", ref_day.strip()) 
-        ref_arm_obj = self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", ref_arm.strip())
-        self.TimetableSorter.calc_teachers_spacing_per_algorithm(ref_arm_obj, ref_day_obj)
-        # except Exception:
-            # print("CALCULATING SPACING NOT ALLOWED!")
-
+    # def teachers_relative_spacing_per_algorithm(self, ref_day, ref_arm):
+    #     """ Handles the inner function that calculates the teacher's spacing """
+    #     # try:
+    #     ref_day_obj = self.object_getter(self.Timetable_obj.list_of_days, "full_name", ref_day.strip()) 
+    #     ref_arm_obj = self.object_getter(self.Timetable_obj.list_of_school_class_arms, "full_name", ref_arm.strip())
+    #     self.TimetableSorter.calc_teachers_spacing_per_algorithm(ref_arm_obj, ref_day_obj)
+        
 
 
 #--------------------------------------------------------------------------------------------------------------- 
@@ -728,7 +814,6 @@ class TimeTableManager:
         """ Takes the dial value, does some things to it and returns the corresponding model item to it """
 
         # ------- HERE. CREATE A CAN_DISPLAY ATTRIBUTE ON THE TIMETABLE CLASS ITSELF TO HELP CHECK
-        
         model_list = self.model_list_for_dial(by_day_or_arm_str)
         model_list_length = len(model_list)
         index = self.dial_value_to_index(dial_val, model_list_length, min_=1, max_=100)
@@ -777,7 +862,7 @@ class TimeTableManager:
 
         # if the model object is a class_arm
         if isinstance(model_object, self.Timetable_obj.SchoolClassArm):
-            # Gethe length of the periods dictionary
+            # Get the length of the periods dictionary
             len_arms_periods_dict = len(model_object.periods)
 
             for count, (day, periods_list) in enumerate(model_object.periods.items(), start=1):
@@ -834,18 +919,36 @@ class TimeTableManager:
             yield beam_val
 
 
-    def generate_timetable_file(self, file_path, format_, basis):
+    def track_item_throughout(self, model_item_str):
+        """ {day_fullname: (arm_full_name, period)}Tracks the model_item_str throughout the entire timetable (through the backend) """
+        return model_item_str, self.TimetableSorter.track_model_item_thru_backend(model_item_str)
+
+
+
+    def inch_cm_mm_convert(self, unit, max_coeff=1.5, min_coeff=0.5):
+        """ Calcultates the max, min and the current value for 'val' given unit.
+        useful for setting the widgets to set margin to docx reports. """
+        key = unit[0].upper()
+        max_val = round(max_coeff * self.conversion_constants_dict[key],2)
+        min_val = round(min_coeff * self.conversion_constants_dict[key],2)
+        curr_val = round(self.conversion_constants_dict[key],2)
+        return max_val, min_val, curr_val
+
+
+
+    def generate_timetable_file(self, file_path, format_, basis, margins_tuple):
         """ Handles generating the .docx, html or PDF files for the timetable. The 'basis' argument is what the report files will
         be based on, (days, class category or departments) and format is whether it is PDF, DOCX or HTML """
-        
+        print(f"Margins tuple in Manager: {margins_tuple}")
         if "docx" in format_.lower():
-            report = Tt_docx_reports.Reporter(self.Timetable_obj)
+            report = Tt_docx_reports.Reporter(self.Timetable_obj, margins_tuple)
             report.runs_models_by_basis(basis, file_path, convert_to_pdf=False)
 
         elif "pdf" in format_.lower():
-            report = Tt_docx_reports.Reporter(self.Timetable_obj)
+            report = Tt_docx_reports.Reporter(self.Timetable_obj, margins_tuple)
             report.runs_models_by_basis(basis, file_path, convert_to_pdf=True)
 
         elif "html" in format_.lower():
             Tt_html_reports.HTMLReporter(self.Timetable_obj, basis, file_path)
              
+

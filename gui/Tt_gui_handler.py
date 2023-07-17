@@ -9,7 +9,6 @@ def load_manual():
     with open('TIMETABLE/gui/TimeTable Extras/Time_table.html', 'r', encoding="UTF-8") as file:
         contents = file.readlines()
 
-    # print(contents)
     content_dict = {}
 
     for line_num,line in enumerate(contents):

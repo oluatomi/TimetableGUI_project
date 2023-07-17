@@ -1,16 +1,16 @@
 # - ************************************************************************
 # -- WRITTEN AND OWNED BY OWOEYE, OLUWATOMILAYO INIOLUWA. APRIL, 2022.
 # -- All rights (whichever apply) reserved!
-# --- OLUTOMI'S SHELVA
+# --- OLUTOMI'S SHEFFL
 # **************************************************************************
 
 
 # Main module for class definition of classes(school)
 # ------------------------------------------
 
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from . import Tt_exceptions, Tt_algo_calc
-import string, datetime, itertools, math, pickle, time
+import string, datetime, math, pickle, time
 
 #-----------------------------------------------------------------------------------
 # --------------------------- THE TIMETABLE OBJECT ITSELF ----------------------------
@@ -48,10 +48,16 @@ class TimeTable:
         self.fac_id, self.dept_id, self.nonacad_id, self.teacher_id = 0,0,0,0
         self.clsgroup_id, self.cls_id, self.self = 0,0,0
         self.clsarm_id, self.day_id = 0, 0
+
+        self.analytic = "Analytic", 3
+        self.theoretical = "Theoretical", 2
+        self.practical = "Practical", 3
+        self.grammatical = "Grammatical", 2
+
+        self.workrate_inflexion_coefficient = 75
         
         # --- initialize the file path to which this timetable file will be saved
         self.project_file_path = ""
-
         # the actual file name of the project
         self.project_file_name = "Timetable_file (UNSAVED)"
 
@@ -97,7 +103,6 @@ class TimeTable:
 
     def del_faculty(self, faculty_obj):
         """ Remove this faculty from the list of all this timetable's faculties """
-
         self.list_of_faculties.remove(faculty_obj)
         # go through every dept object in its courselist and delete them too
         for dept in faculty_obj.course_list:
@@ -212,7 +217,6 @@ class TimeTable:
         return class_arm
     
 
-
     def del_school_class_arm(self, arm):
         # Removes a school class from the list todays list of class arms
         self.list_of_school_class_arms.remove(arm)
@@ -226,8 +230,8 @@ class TimeTable:
             teacher.classes_taught.remove(arm)
 
 
-
-    def create_teacher(self, frequency=0, dept_objs_list=None, teaching_days=None, specialty=None, designation=None, update=False, preexisting_obj=None):
+    def create_teacher(self, frequency=0, dept_objs_list=None, teaching_days=None, specialty=None,
+        designation=None, update=False, preexisting_obj=None):
         """Hangles the creation of a teacher object under a department dept_obj (Under a course, not faculty)"""
         # -------------------------------------------------------------------------
         def _create_single_teacher():
@@ -248,16 +252,16 @@ class TimeTable:
         # -----------------------------------------------------------------------------
         # -------------- OUTSIDE THE INNER FUNCTION ----------------------
         #--- WHEN CREATING TEACHER
-
         if not update:
-            # dept_objs (in the args) is now a list of all the depts(subjects) the teacher teaches
-            teachers_by_freq = [_create_single_teacher() for _ in range(frequency)]
+            # dept_objs (in the parameters) is now a list of all the depts(subjects) the teacher teaches
+            teachers_by_freq = None
             for dept in dept_objs_list:
-                # Add this departments to the teacher if this
+                # Add this departments to the teacher if this dept(subject) does not have is_parallel set to True
                 if not dept.is_parallel:
-                    # for _ in range(frequency):
+                    if teachers_by_freq == None:
+                        teachers_by_freq = [_create_single_teacher() for _ in range(frequency)]
+
                     for teacher_obj in teachers_by_freq:
-                        # teacher = _create_single_teacher()
                         self.map_teacher_to_dept(teacher_obj, dept)
 
                 else:
@@ -270,29 +274,27 @@ class TimeTable:
 
                     # Reset the dept.teachers_list based on the teachers generated for the parallel dept
                     dept.adapt_teachers_list_for_parallel()
-            return
+        
+        else:
+            # -------- TO UPDATE TEACHER ----------
+            # The preexisting teacher object ---
+            preexisting_obj.teachers_depts_list = []
+            preexisting_obj.teaching_days = []
+            for course in dept_objs_list:
+                preexisting_obj.add_dept_to_teacher(course)
+            for tday in teaching_days:
+                preexisting_obj.add_day_to_teacher(tday)
+            preexisting_obj.specialty = specialty
+            preexisting_obj.designation = designation
 
-        # -------- TO UPDATE TEACHER ----------
-        # The preexisting teacher object ---
-        preexisting_obj.teachers_depts_list = []
-        preexisting_obj.teaching_days = []
-
-        for course in dept_objs_list:
-            preexisting_obj.add_dept_to_teacher(course)
-
-        for tday in teaching_days:
-            preexisting_obj.add_day_to_teacher(tday)
-
-        preexisting_obj.specialty = specialty
-        preexisting_obj.designation = designation
-    # --------------------------------------------------------------------------------------
 
     def del_teacher(self, teacher_obj):
         """ Deletes a teacher object """
         self.list_of_all_teachers.remove(teacher_obj)
 
         for dept in teacher_obj.teachers_depts_list:
-            dept.teachers_list.remove(teacher_obj)
+            dept.remove_teacher_from_dept(teacher_obj)
+            
 
 
     def create_day(self, day_name, rating=None, update=False, preexisting_obj=None):
@@ -377,10 +379,21 @@ class TimeTable:
 
 
     # --------------------------------------------------------------------------------------------------
-    # ----------- METHODs TO CARRY OUT OPERATIONS BETWEEN THE AFOREMENTIONED CONTAINERS -----------------
+    # ----------- METHODS TO CARRY OUT OPERATIONS BETWEEN THE AFOREMENTIONED CONTAINERS -----------------
     # --------------------------------------------------------------------------------------------------
+    def set_workrate_inflexion(self, inflx_num):
+        """ Sets the work-rate inflexion number, (the number beginning from 
+        which the teacher would be considered "overworked") """
+        self.workrate_inflexion_coefficient = inflx_num
+
+
     def set_ATPG_parameters(self, analytic_tuple, theoretical_tuple, practical_tuple, grammatical_tuple):
         """ Sets the ATPG values to the new user-specified values. tuple contains (int_val, parameter_name) """
+        self.analytic = analytic_tuple
+        self.theoretical = theoretical_tuple
+        self.practical = practical_tuple
+        self.grammatical = grammatical_tuple
+        
         for dept in self.list_of_departments:
             dept.analytic_parameter = analytic_tuple
             dept.theoretical_parameter = theoretical_tuple
@@ -449,28 +462,34 @@ class TimeTable:
 
         if class_arm in dept_obj.teachers_for_client_class_arms:
             # The generated teacher
-            gen_teacher = dept_obj.assign_teacher(class_arm, teacher=teacher_obj)
+            gen_teacher = dept_obj.assign_teacher(class_arm, teacher=None) if not teacher_obj else teacher_obj
             if gen_teacher:
                 # Add this class and the teacher to the department's records
                 dept_obj.teachers_for_client_class_arms[class_arm] = gen_teacher
                 # Add the department and teacher to the class' records
                 class_arm.add_teacher_to_class_arm_for_dept(gen_teacher, dept_obj)
-                # Add the class arm to the teacher's list of class arms they are teaching
                 # Add this dept and arm to teacher's dept_and_arms dictionary, with chunk set to None (not assigned any chunk yet)
-                gen_teacher.add_dept_to_teacher(dept_obj)
-
                 # Also add the class arm's frequency details (BUT NOT THE CHUNK) to the teacher object
                 freq, _ = class_arm.depts_and_freq_details[dept_obj]
-                gen_teacher.add_dept_arm_freq_to_teacher(dept_obj, class_arm, frequency=freq)
+                
+                # Add this teachers pairs if this teacher is parallel
+                if not dept_obj.is_parallel:
+                    # gen_teacher.add_dept_to_teacher(dept_obj)
+                    gen_teacher.add_dept_arm_freq_to_teacher(dept_obj, class_arm, frequency=freq)
+                else:
+                    para_teachers = dept_obj.get_teacher_pair_given_teacher(gen_teacher)
+                    for each in para_teachers:
+                        each.add_dept_arm_freq_to_teacher(dept_obj, class_arm, frequency=freq)
         else:
             raise ProjectExceptions.SomethingWentWrong("Teachers could not be assigned to class arm")
 
 
-    def unmap_teacher_from_dept_from_arm(self, dept_obj, class_arm):
-        """ Removes assigned teacher from class arm and all the other stuff that goes with it """
 
-        teacher = class_arm.depts_and_teachers[dept_obj]
-        # teacher could be None, but in the event that it isn't
+    def unmap_teacher_from_dept_from_arm(self, dept_obj, class_arm, teacher=None):
+        """ Removes teacher (assigned or not) from class arm and all the other stuff that goes with it """
+        
+        teacher = class_arm.depts_and_teachers[dept_obj] if not teacher else teacher
+        # teacher could be None, if teacher has not been assigned to a class arm
         if teacher:
             dept_obj.teachers_for_client_class_arms[class_arm] = None
             # remove this class from the teacher's record
@@ -479,12 +498,6 @@ class TimeTable:
             class_arm.remove_teacher_from_class_arm_for_dept(teacher, dept_obj)
 
 
-    # def load_teachers_from_all_depts(self, ascending=True):
-    #     """ TO BE CALLED ONLY ONCE BEFORE ASSIGNMENT!! 
-    #     Makes the internal operations that 'yield' teachers for assignment to class arms FOR ALL DEPTS (SUBJECTS) """
-    #     for dept in self.list_of_departments:
-    #         dept.load_teachers_for_classgroup(ascending=ascending)
-    
 
     def auto_assign_teachers_to_all_arms(self, ascending=True, beam_val_max=100):
         """ Assigns teachers  to every dept(subject) offered by every class arm. AUTOMATED """
@@ -526,9 +539,41 @@ class TimeTable:
             beamed_val = round(count * beam_val_max / len_arms)
             yield beamed_val
             
-    # ------------------------------------------------------------------------------
-    # ---------- FUNCTION DEFINITIONS ABOVE AND CLASS DEFINITIONS BELOW ------------
-    # ------------------------------------------------------------------------------
+
+    # --------------------------------------------------------------------------------
+    # --------- METHOD DEFINITIONS FOR OVERALL TIMETABLE OBJECT INFO -----------------
+    # --------------------------------------------------------------------------------
+    def day_range(self, day_obj):
+        """ Returns the day range as time strings 'hh:mm:ss' (rather than time tuples) """
+        start, end, duration = day_obj.time_span()
+        start, end, duration = TimeTable.to_time_str(start), TimeTable.to_time_str(end), TimeTable.to_time_str(duration)
+        return start, end, duration
+        
+
+    def periods_total(self, day_obj):
+        """ INT.Returns a tuple (acads, non-acads, total) """
+        return day_obj.all_periods_today_num()
+
+
+    def average_num_periods(self, day_obj):
+        """ INT """
+        return day_obj.get_average_period_length_today()
+
+
+    def arm_with_max_periods(self, day_obj):
+        """ (INT, list(class_arm_obj)) class arm_obj or None """
+        return day_obj.max_or_min_period_length_today(max_or_min=max)
+
+
+    def arm_with_min_periods(self, day_obj):
+        """ (INT, list(class_arm_obj)) class arm_obj or None """
+        return day_obj.max_or_min_period_length_today(max_or_min=min)
+
+
+
+    # --------------------------------------------------------------------------------
+    # ---------- FUNCTION DEFINITIONS ABOVE AND CLASS DEFINITIONS BELOW --------------
+    # --------------------------------------------------------------------------------
 
     class Faculty:
         """ Merely a container fir related departments(courses). On the gui, it is referenced as "Department" """
@@ -550,9 +595,13 @@ class TimeTable:
         def full_name(self):
             """The full name of the faculty as will be shown in the app"""
             return f"DEPT. ID:{self.id}  {self.name}"
+
+        @property
+        def official_name(self):
+            return self.name
+        
             
         
-
     class Department:
         '''This is the Course/Subject class, where teachers come from
         This is referenced as "SUBJECT/COURSE" in the GUI
@@ -628,8 +677,6 @@ class TimeTable:
                 self.practical = P
                 self.grammatical = G
 
-                # A tuple of seven prime numbers
-                self.ATPG_primes = (2,3,5,7,11,13,17)
                 # --------------------------------------------------------------------------------------------------
                 # -- This is_para attr is to test whether this department should always feature in the timetable alongside another
                 # department during the same period.
@@ -648,10 +695,15 @@ class TimeTable:
                     # all the chunk process for us. we only record values for the other teachers as soon as the chunking process is done
 
 
-        # ...................................................................................................................................
+        # --------------------------------------------------------------------------------------------------------------------------------
         # ----------------------------- PARALLEL METHODS (METHODS WHEN THE DEPT HAS IS_PARALLEL SET TO TRUE) -----------------------------
+        def constituent_num(self):
+            """ Return the number of split names (parallel names) if dept is parallel or 1 if it isn't """
+            return len(self.parallel_names) if self.is_parallel else 1
+
+
         def add_teachers_tuple_to_parallel_dept(self, split_name, teacher_list):
-            """ this adds a teacher_tuple to the self.parallel_teachers_list if of course, is_parallel is true """
+            """ Adds adds a teacher_tuple to the self.parallel_teachers_list if, of course, is_parallel is true """
             if self.is_parallel:
                 if not split_name in self.parallel_teachers_dict:
                     self.parallel_teachers_dict[split_name] = []
@@ -708,12 +760,12 @@ class TimeTable:
         def get_teacher_pair_given_teacher(self, teacher):
             """ Returns a teacher_pair if 'teacher' object is found there """
             for teacher_pair_tuple in self.return_teacher_pairs_for_parallel():
+                # print(f"Teacher tuple: {teacher_pair_tuple}")
                 if teacher in teacher_pair_tuple:
                     return teacher_pair_tuple
 
         # ----------------------------------------------------------------------------------------------------------------------------------
         # ......................................................................................................................................
-
         @property
         def class_group_span(self):
             """ IMPORTANT! This method retrieves all the classgroups across which all the school classes taking this 
@@ -723,23 +775,38 @@ class TimeTable:
                 return {arm.school_class.school_class_group for arm in self.teachers_for_client_class_arms}
 
 
+        def get_teachers_number(self, include_parallel=False):
+            """ INT. Returns the total number of teachers for this dept. """
+            if not include_parallel:
+                return len(self.teachers_list)
+            count = 0
+            for teacher_pair_tuple in self.return_teacher_pairs_for_parallel():
+                count += len(teacher_pair_tuple)
+            return count
+        
+
         def dept_ATPG(self):
             """ This method handles the calculation of assigning a weight to the course by the elements in the course description.
             ATPG is merely an acronym for analytic, theoretical... """
-            return (self.ATPG_primes[self.analytic_parameter[0] - 1]**self.analytic + self.ATPG_primes[self.theoretical_parameter[0] - 1]**self.theoretical +\
-            self.ATPG_primes[self.practical_parameter[0] - 1]**self.practical + self.ATPG_primes[self.theoretical_parameter[0] - 1]**self.theoretical) / 10000
+            # the base constant
+            K = 2
+            return self.analytic_parameter[0] * K**self.analytic + self.theoretical_parameter[0] * K**self.theoretical +\
+            self.practical_parameter[0] * K**self.practical + self.grammatical_parameter[0] * K**self.grammatical 
 
 
-        def remove_teacher_from_dept(self, teacher_obj):
-            """Removes a teacher object from the department!"""
-            if teacher_obj in self.teachers_list:
-                self.teachers_list.remove(teacher_obj)
+        # ---------------------------------------------------------
+        # Pro-Tip: first add a classarm using the function below before assigning a teacher
+        # using the function below below
 
-            # Completely remove teacher's posse if this dept is parallel
-            if self.is_parallel:
-                for teacher_tuple in self.return_teacher_pairs_for_parallel():
-                    if teacher_obj in teacher_tuple:
-                        self.remove_teacher_pair_for_parallel(teacher_tuple)
+        def add_arm_to_dept(self, class_arm):
+            """ To add a school class arm to the set of departments (client_classes) of the department """
+            # below is a dictionary with 'arm' as key and 'teacher' as value
+            self.teachers_for_client_class_arms[class_arm] = None
+
+
+        def remove_arm_from_dept(self, class_arm):
+            """Removes a class arm from a department. along with the teacher!"""
+            del self.teachers_for_client_class_arms[class_arm]
 
 
         def add_ready_made_teacher(self, teacher_obj):
@@ -747,6 +814,22 @@ class TimeTable:
             This really is adding a teacher from another department, e.g a further maths teacher to teach math"""
             if teacher_obj not in self.teachers_list:
                 self.teachers_list.append(teacher_obj)
+
+
+        def remove_teacher_from_dept(self, teacher_obj):
+            """Removes a teacher object from the department!"""
+            if teacher_obj in self.teachers_list:
+                self.teachers_list.remove(teacher_obj)
+
+            for arm, _teacher in self.teachers_for_client_class_arms.copy().items():
+                if _teacher == teacher_obj:
+                    self.teachers_for_client_class_arms[arm] = None
+
+            # Completely remove teacher's posse if this dept is parallel
+            if self.is_parallel:
+                for teacher_tuple in self.return_teacher_pairs_for_parallel():
+                    if teacher_obj in teacher_tuple:
+                        self.remove_teacher_pair_for_parallel(teacher_tuple)
 
 
         def __repr__(self):
@@ -761,24 +844,24 @@ class TimeTable:
                 ])
 
 
-        def how_many_more_teachers(self, all_days_len=5):
-            """ Returns a tuple (minimun amount of teachers needed, how many more teachers needed based on what you have)
-             Does all the calculation on how many more teachers need to be generated for this department,
-             using the pattern of the number of subjects handled by the previous teachers. Using a mathematical equation I drafted out """
-
-            # compute all the frequencies of the arms of all the teachers
+        def _calc_teachers_average_freq(self):
+            """ Returns the average frequency of all the teachers in this dept """
             all_freqs_for_average = []
             for teacher in self.teachers_list:
                 all_freqs_for_average += teacher.get_freqs_of_arms_with_dept(self)
             # Calculate the average frequency
-            average_freq = sum(all_freqs_for_average) / len(all_freqs_for_average)
+            return sum(all_freqs_for_average) / len(all_freqs_for_average)
+
+
+        def how_many_more_teachers(self, all_days_len=5):
+            """ Returns a tuple (minimun amount of teachers needed, how many more teachers needed based on what you have)
+             Does all the calculation on how many more teachers need to be generated for this department,
+             using the pattern of the number of subjects handled by the previous teachers. Using a mathematical equation I drafted out """
+            
             # sum all the blames
             sum_blames = sum([teacher.blame_by_dept(self) for teacher in self.teachers_list])
-
-            total_min_teachers = math.ceil(len(self.teachers_list) + (sum_blames / average_freq))
+            total_min_teachers = math.ceil(len(self.teachers_list) + (sum_blames / self._calc_teachers_average_freq()))
             extra = total_min_teachers - len(self.teachers_list)
-
-            print(f"In Models: min of: {total_min_teachers} --- extra: {extra}")
             return total_min_teachers, extra
             
 
@@ -807,20 +890,17 @@ class TimeTable:
 
         @property
         def full_name(self):
-            return f"C-{self.id}: {self.dept_name}{' -{{P}}' if self.is_parallel else ''}"
-        # ---------------------------------------------------------
-        # Pro-Tip: first add a classarm using the function below before assigning a teacher
-        # using the function below below
-
-        def add_arm_to_dept(self, class_arm):
-            """ To add a school class arm to the set of departments (client_classes) of the department """
-            # below is a dictionary with 'arm' as key and 'teacher' as value
-            self.teachers_for_client_class_arms[class_arm] = None
+            if not self.is_special:
+                return f"C-{self.id}: {self.dept_name}{' -{P}' if self.is_parallel else ''}"
+            return self.dept_name
 
 
-        def remove_arm_from_dept(self, class_arm):
-            """Removes a class arm from a department. along with the teacher!"""
-            del self.teachers_for_client_class_arms[class_arm]
+        @property
+        def official_name(self):
+            if not self.is_special:
+                return f"{self.dept_name}{' -{P}' if self.is_parallel else ''}"
+            return self.dept_name     
+            
 
 
         # ----------------------------------------------------------------------------------------------------------
@@ -896,10 +976,8 @@ class TimeTable:
                 # check if the list of teachers is the same as in assignment_last_memory_list and increment by 1 if True otherwise, restart to 0
                 try:
                     if set(self._render_teachers_based_on_classgroup()[classgroup]) == set(self.assignment_last_memory_list):
-
                         new_list = Tt_algo_calc.Translate_list_items(self.teachers_for_classgroup[classgroup].copy(), index=self.teacher_track_count)
                         # update the self.teacher_track_count
-                        
                         for teacher, weight, count in new_list:
                             if count <= weight:
                                 teacher_returned = teacher
@@ -919,11 +997,6 @@ class TimeTable:
                     # update self.teacher_track_count
                     self.teacher_track_count = (self.teacher_track_count + 1) % len(self.assignment_last_memory_list)
 
-                    # Update this teacher's count
-                    # print(f"Dict to check WORKS: {self._render_teachers_based_on_classgroup()}")
-                    # print(f"class arm: {class_arm} --> {classgroup} --> {self}")
-                    # print()
-
                     for index, (_teacher, _, count) in enumerate(self.teachers_for_classgroup[classgroup].copy()):
                         if _teacher == teacher:
                             self.teachers_for_classgroup[classgroup][index][-1] = count + 1
@@ -931,8 +1004,8 @@ class TimeTable:
             
                 except KeyError:
                     print(f"KEYERROR HERE: class arm: {class_arm} --> {classgroup} -- {self}")
-                    print(f"Dict to check NOT WORK: {self._render_teachers_based_on_classgroup()}")
-                    print()
+                    # print(f"Dict to check NOT WORK: {self._render_teachers_based_on_classgroup()}")
+                    # print()
                     return
                 
 
@@ -950,9 +1023,12 @@ class TimeTable:
             teacher = self.teachers_for_client_class_arms[classarm]
             if teacher:
                 if self.is_parallel:
-                    return [teacher_obj.full_name for teacher_obj in self.get_teacher_pair_given_teacher(teacher)]
+                    try:
+                        return [teacher_obj.full_name for teacher_obj in self.get_teacher_pair_given_teacher(teacher)]
+                    except Exception:
+                        raise(f"MODELS: {teacher} for subject: {self}, arm: {classarm}")
                 return [teacher.full_name]
-            return tuple()
+            return []
 
 
         def get_teacher_or_para_teachers_fullname_given_arm_as_str(self, classarm):
@@ -967,13 +1043,14 @@ class TimeTable:
         def __init__(self):
             self.id = 0
             self.teachers_depts_list = []
+            # Whether or not this teacher was created as an extra teacher to make the timetable work or not
+            self.space_filler = False
 
             # The set containing the days in which the teacher can teach
             self.teaching_days = []
             # Specialty refers to the LIST of class groups across which teacher can teach
             self.specialty = None
-
-            self.designation = "Staff member"
+            self.designation = "Staff Member"
             # A dictionary that stores (dept, arm) as key and frequency as value
             self.dept_and_arms = {}
             # --- WILL BE CANCELED LATER. A dictionary that of day_obj:[arms_taught]
@@ -1019,21 +1096,16 @@ class TimeTable:
 
 
         def add_dept_to_teacher(self, dept_obj):
-            """Apparently, a teacher can teach more than one subject (e.g. math and further maths).
-            This function adds a new unique department object to the list of departments owned by the teacher"""
+            """ Apparently, a teacher can teach more than one subject (e.g. math and further maths).
+            This function adds a new unique department object to the list of departments owned by the teacher """
 
             # -- To check to make sure no duplicates exist
             if not dept_obj in self.teachers_depts_list:
                 self.teachers_depts_list.append(dept_obj)
 
 
-        # def teaches_para_depts(self):
-        #     """ Returns a tuple of (bool, and a list of tuples of the dept_objs fullname and the para_dept_name string """
-        #     return bool(self.teachers_para_depts_list), [(dept_obj.full_name, para_name) for dept_obj, para_name in self.teachers_para_depts_list]
-
         # --------------------------------------------------------------------------------------------------------
         # --------------------------------------------------------------------------------------------------------
-
         def str_teaching_days(self, tt_obj):
             """For GUI. This function checks if teacher teaches on all the registered days"""
             day_diff = set(tt_obj.list_of_days) - self.teaching_days_s
@@ -1067,14 +1139,6 @@ class TimeTable:
             return len(self.classes_taught)
 
 
-        @property
-        def all_teacher_depts_id(self):
-            # Get all the unique ids for the departments this oga is teaching as values 
-            # and depts as keys
-            self.teachers_dept_id = {dept: dept.id for dept in self.teachers_depts_list}
-            return self.teachers_dept_id
-
-
         def __repr__(self):
             return f"Teacher id: {self.id}"
 
@@ -1106,24 +1170,32 @@ class TimeTable:
 
         def add_day_to_teacher(self, day_obj):
             """ Adds a day object to the list of days in which the teacher can teach """
-            
-            # is needed. sets do not preserve the order, so sets are no longer used
             if day_obj not in self.teaching_days:
                 self.teaching_days.append(day_obj)
 
 
+        # -----------------------------------------------
         def add_finished_day_arm_chunk_dept_to_teacher(self, day, arm_chunk_dept_tuple):
-            """ Adds the arm, chunk and dept to the self.day_arm_chunk_and_dept dictionary.
-            arm_chunk_dept is a tuple culled from the namedtuple from Teachers_and_chunked_val after the sorting is all done """
-            if day not in self.day_arm_chunk_dept:
+            """ Adds the arm, chunk and dept to the self.day_arm_chunk_and_dept dictionary. arm_chunk_dept is a tuple 
+            culled from the namedtuple from Teachers_and_chunked_val after the sorting is all done """
+            if not day in self.day_arm_chunk_dept:
                 self.day_arm_chunk_dept[day] = []
+                
             if not arm_chunk_dept_tuple in self.day_arm_chunk_dept[day]:
                 self.day_arm_chunk_dept[day].append(arm_chunk_dept_tuple)
 
 
+        def remove_all_finished_day_arm_chunk_dept_to_teacher(self):
+            """ completely removes all the arm,chunk,dept combinations for eery day """
+            self.day_arm_chunk_dept.clear()
+
+
+        # ------------------------------------------------------
         def remove_day_from_teacher(self, day_obj):
             """Removes the day_obj from the self.teaching_days set"""
             self.teaching_days.remove(day_obj)
+            if day_obj in self.day_arm_chunk_dept:
+                del self.day_arm_chunk_dept[day_obj]
 
 
         def teachers_sequence(self):
@@ -1148,6 +1220,11 @@ class TimeTable:
             return len(self.teachers_depts_list) <= 1
 
 
+        def is_departmentally_exclusive(self):
+            """ BOOL. Returns true if teacher's subjects are only from one faculty (DEPARTMENT in real life) """
+            return len({dept.faculty for dept in self.teachers_depts_list}) <= 1
+            
+
         def other_depts_taught(self, dept):
             """ Returns any other dept(subject) this teacher teaches apart from the "dept" """
             return [dept_ for dept_ in self.teachers_depts_list if dept_ != dept]
@@ -1168,12 +1245,20 @@ class TimeTable:
             """ Returns all the class arms for which a teacher teaches a particular
             subject (dept). """
             return [arm for dept_,arm in self.teachers_sequence() if dept_ == dept]
-        
+
 
         def classarms_taught_based_on_dept_str(self, dept):
             """ FOR REPORT. Renders all the arms teacher takes a particular subject "dept" in string form """
             return ", ".join([arm.arm_and_id for arm in self.classarms_taught_based_on_dept(dept)])
 
+
+        def classgroups_taught_based_on_dept(self, dept):
+            """ Returns the class groups across which theis teacher teaches the subject 'dept' """
+            return {arm.school_class.school_class_group for arm in self.classarms_taught_based_on_dept(dept)}
+
+        def classgroups_taught_based_on_dept_str(self, dept):
+            return ", ".join({classgroup.full_name for classgroup in self.classgroups_taught_based_on_dept(dept)})
+        
 
         @property
         def teachers_total_frequency(self):
@@ -1186,7 +1271,6 @@ class TimeTable:
         def total_frequency_spillover(self):
             """ Returns the amount with which teachers total frequency exceeds the legal amount  """
             pers = [len(periods) for arm in self.classarms_taught for periods in arm.periods.values()]
-            print(f"This is the pers {pers}, {self}")
 
             min_freq = max([0] + [len(periods)
                 for arm in self.classarms_taught
@@ -1201,9 +1285,6 @@ class TimeTable:
             to the frequencies of the other depts."""
 
             total_frequency = sum(self.dept_and_arms.values())
-            print()
-            print(f"In models: {self.dept_and_arms}")
-            print()
             # Find the total frequency for all the items in self.depts_and_arms whose dept_obj is 'dept'
             sum_freq_by_dept = sum([freq for (_dept, _), freq in self.dept_and_arms.items() if _dept == dept])
             blame = sum_freq_by_dept * self.total_frequency_spillover / total_frequency
@@ -1236,39 +1317,50 @@ class TimeTable:
             """ Returns the average frequency of the teacher per day """
             return math.ceil(self.teachers_total_frequency/len(self.teaching_days))
 
-        @property
-        def full_name(self):
-            return f"ID: {self.id}. {self.designation}"
+
+        def teacher_period_details_for_dept(self, dept_obj, day_obj):
+            """ Returns a dictionary of {day: [arms, periods]} for which he teaches dept """
+            arm_and_periods_list = []
+
+            for arm, period_chunk, dept in self.day_arm_chunk_dept.setdefault(day_obj, []):
+                if dept == dept_obj:
+                    # sort the chunk values from smaller to highest
+                    arm_and_periods_list.append((arm, Tt_algo_calc.strip_list_wrapper([period_chunk])))
+            
+            # Now sort the list in list (value) of each day according to chunk value so that periods are in ascending order
+            try:
+                arm_and_periods_list.sort(key=lambda arm_period: arm_period[1][0])
+            except IndexError:
+                print(f"Error in teachers build: {arm_and_periods_list}")
+
+            return arm_and_periods_list
+
+
+
+        def period_det_for_dept_str(self, dept, day):
+            """ Returns a grammatically correct (string) version of self.teacher_period_details_for_dept(), i.e.
+            of the periods the teacher teaches every day for a subject 'dept' """
+            # --------------------------------------------------------------------------------------
+            def chunk_to_position(chunk):
+                """ Converts all the chunk period numbers (chunk is a list of integers) to English positions with the appropriate suffix
+                Returns (Anglicized string of all the periods, whether or not chunk is one single item list or not) """
+                output = [Tt_algo_calc.nth_suffix(k + 1) for k in chunk]
+                return ", ".join(output), len(output) == 1
+            
+            # --------------------------------------------------------------------------------------
+            det_str = ""
+            for arm, periods in self.teacher_period_details_for_dept(dept, day):
+                periods_str, one_or_no = chunk_to_position(periods)
+                period_pl = f"period{'' if one_or_no else 's'}"
+                det_str += f"{arm.full_name} ({periods_str} {period_pl}); "
+            return det_str
 
 
         def get_teaching_efficiency(self):
             """ This method calculates the teaching efficiency of said teacher (a measure of how much space is between each of his lessons)
             in all of the different arms in which he teaches """
 
-            # def calc_spacing_function(space, denominator):
-            #     """ Inner function to calculate the spacing of an item based on the sine curve """
-            #     return round(math.sin(math.pi*space/denominator), 4)
-
-
-            # def calc_spacing(list_argument, denominator):
-            #     """ Handles the teaching efficiency calculation for the items in a list (list of integers) """
-            #     list_arg = Tt_algo_calc.strip_list_wrapper(list_argument)
-            #     list_arg_length = len(list_arg)
-            #     if list_arg_length <= 1:
-            #         return 0
-            #     # Rank-order (in reverse) list_arg and hold that new rank-ordered list in the variable below
-            #     list_arg_ = sorted(list_arg, reverse=True)
-            #     eff_list = []
-            #     for k in range(list_arg_length):
-            #         if k == 0:
-            #             eff.append(list_arg_[k])
-            #         else:
-            #             eff.append(list_arg_[k + 1] - list_arg_[k] - 1)
-            #     return sum([calc_spacing_function(m, denominator) for m in eff])
-            
-            # ----------------------------------------------------------------------------
-            # ----------------------------------------------------------------------------
-            #Get all of his chunk values per day (in a list)
+            # Get all of his chunk values per day (in a list)
             spacing_cummulative = 0
             for day, arm_chunk_dept_list in self.day_arm_chunk_dept.items():
                 chunk_numbers = [elem.chunk for elem in arm_chunk_dept_list]
@@ -1277,6 +1369,30 @@ class TimeTable:
             
             # Find the average of E across all the days in which he teaches
             return round(spacing_cummulative/len(self.day_arm_chunk_dept), 3)
+
+
+        def how_busy_count(self, day, workrate_threshold=75):
+            """ STR. Gives an idea of how busy  the teacher is for a given day, given the workrate"""
+            count, day_average_period = 0, day.get_average_period_length_today()
+            for _, period_chunk, _ in self.day_arm_chunk_dept.setdefault(day, []):
+                count += len(Tt_algo_calc.strip_list_wrapper([period_chunk]))
+            workrate = count * 100 / day_average_period
+            if 0.9*workrate_threshold <= workrate <= 1.1*workrate_threshold:
+                response = "Fairly busy today."
+            elif workrate < 0.9*workrate_threshold:
+                response = "Hardly busy"
+            else:
+                response = "Very busy"
+            return response
+
+
+        @property
+        def full_name(self):
+            return f"ID: {self.id}. {self.designation}"
+
+        @property
+        def official_name(self):
+            return self.designation
 
 
 # ---------------------------------------------------------------------------------------
@@ -1305,9 +1421,52 @@ class TimeTable:
             """ Name tag to prefix child school classes """
             return self.abbreviation if self.abbreviation else self.class_group_name
 
+
+        # --------------------------------------------------------------------------------------
+        # ----------------------------- REPORT-ORIENTED FUNCTIONS ------------------------------
+        def child_sch_classes_num(self, as_str=True):
+            """ INT. Number of the school classes housed by this class group """
+            classes = len(self.school_class_list)
+            return str(classes) if as_str else classes
+
+
+        def child_class_arms_num(self, as_str=True):
+            """ INT. Number of the class arms housed by all the school classes """
+            arms =  sum([len(clss.school_class_arm_list) for clss in self.school_class_list])
+            return str(arms) if as_str else arms
+
+
+        def teachers_all(self, as_str=True):
+            """ INT. Total number of teachers, both teachers handling parallel subjects or not """
+            teachers = set()
+
+            for clss in self.school_class_list:
+                for arm in clss.school_class_arm_list:
+                    teachers.update(arm.all_teachers_for_class_arm(include_parallels=True, as_int=False))
+            num_teachers = len(teachers)
+            return str(num_teachers) if as_str else num_teachers
+
+
+        def subjects_all(self, as_str=True):
+            """ INT. Total number of subjects """
+            subjs = []
+            # get all the arms and cast it into a set to make it unique
+            for clss in self.school_class_list:
+                for arm in clss.school_class_arm_list:
+                    subjs += arm.get_depts_for_class_arm()
+            subjs = len(set(subjs))
+            return str(subjs) if as_str else subjs
+
+        # ----------------------------------------------------------------------------------
+
         @property
         def full_name(self):
-            return f"ID: {self.id}. {self.class_group_name}"
+            return f"CC-ID: {self.id}. {self.class_group_name}"
+
+        @property
+        def official_name(self):
+            return f"{self.class_group_name}{f' - {self.abbreviation}' if self.abbreviation else ''}"
+        
 
         def delete(self, tt_obj):
             """This function deletes the instance of this class from the any of the lists that house it"""
@@ -1342,14 +1501,27 @@ class TimeTable:
             except Exception:
                 pass
 
+        def allows_specialization(self):
+            """BOOL. returns true if all the arms offer different subjects. This implies that
+            some form of specialization is allowed"""
+            for k in range(1, len(self.school_class_arm_list)):
+                if set(self.school_class_arm_list[k].depts_and_teachers.keys()) != set(self.school_class_arm_list[k - 1].depts_and_teachers.keys()):
+                    return True
+            return False
+
+
         def __repr__(self):
             return self.full_name
 
         @property
         def full_name(self):
             return f"CL-ID:{self.id}. {self.sch_class_alias}"
-        
 
+        @property
+        def official_name(self):
+            return self.sch_class_alias
+        
+        
 
     class SchoolClassArm:
         """ This class models every arm that a school class has. It can represent the arms 
@@ -1361,6 +1533,7 @@ class TimeTable:
             self.school_class = school_class_obj
             self.id = 0
             self.days_list = []
+            self.alphabetized = as_alpha
 
             # --A dictionary of all the periods for every day (the dict has a key-value pair of the day_obj: list of periods)
             self.periods = {}
@@ -1369,34 +1542,43 @@ class TimeTable:
 
             self.local_identifier = self.school_class.school_class_arm_list.index(self)
 
-            if as_alpha:
-                self.local_id = TimeTable.stringify(self.local_identifier)
-            else:
-                self.local_id = self.local_identifier + 1
-
             # -- Dictionary to hold... dept(key) and teacher(value)
             self.depts_and_teachers = {}
             # --- Dictionary of dept: (frequency, chunk)
             self.depts_and_freq_details = {}
             # below is a variable to store the iterable_from_gui list of tuples
-            self.iterable_from_gui = None
+            # self.iterable_from_gui = None
 
-            # Variable to store this arms properties for the arms_feasible_periods
-            self.arms_feasible_table_data = [None, None, False, "#df0000"]
+            # Variable to store this arms properties for the arms_
             # --- Tentative dictionary (below) to hold the list of subjects offered per day
-            #  'day' is the key and the list of subjects is the value. It is first put as None for ease
             self.temp_dept_holder_for_days = {}
             self.perm_dept_holder_for_days = {}
-            # 
             #-------------------------------------------------------- 
             # container for when a dept has been actively assigned 
             self.depts_assigned_by_algo_per_day = {}
 
 
         @property
+        def local_id(self):
+            """ Tag that bears the class arms letter (or number) """
+            return TimeTable.stringify(self.local_identifier) if self.alphabetized else self.local_identifier + 1
+
+
+        @property
         def get_class_arm_days(self):
             """Returns a list of every school day for which the class runs"""
-            return self.days_list
+            return self.days_list  
+
+
+        def get_class_arm_days_str(self, tt_obj):
+            """ Returns a string of all the days this class arm offers """
+            if len(self.get_class_arm_days) == 0:
+                return "None"
+            if len(self.get_class_arm_days) == len(tt_obj.list_of_days):
+                return "Every day"
+            if len(self.get_class_arm_days) < len(tt_obj.list_of_days):
+                days_less = len(tt_obj.list_of_days) - len(self.get_class_arm_days)
+                return f"Every day, less {days_less}"
 
 
         def add_day_to_arm(self, day_obj):
@@ -1432,17 +1614,17 @@ class TimeTable:
             return self.iterable_from_gui
 
 
-        def store_arms_feasible_table_data(self, data):
-            """ method stores the properties of the arms_feasible_table """
-            self.arms_feasible_table_data = data
+        def store_arms_viable_table_data(self, data):
+            """ method stores the properties of the arms_viable_table """
+            self.arms_viable_table_data = data
 
-
-        def get_arms_feasible_table_data(self):
-            """ retrieves the arms_feasible _table_data """
-            # the arm's full_name is added
-            return tuple([self.full_name] + self.arms_feasible_table_data)
 
         # -------------------------------------------------------------------------------------------------------------
+        def get_depts_for_class_arm(self):
+            """ ITERABLE. Returns the list of the subjects offered by this clas arm """
+            return self.depts_and_teachers.keys()
+
+
         def add_dept_to_class_arm(self, dept_obj, descent=False, auto=True, teacher_index=None):
             """ Adds to the dictionary a tuple of as the key and the teacher object as the value. The teacher is first set None. 
             The 'get_teacher_for_department_in_arm method' is called to assign the teacher given by the department to this subject for this class.
@@ -1463,6 +1645,7 @@ class TimeTable:
         
         def add_dept_details_to_class_arm(self, dept_obj, freq, chunk):
             """ Adds a tuple of (frequency and chunk) as value to the dept (key) """
+            chunk = max((chunk, math.ceil(freq/len(self.get_class_arm_days))))
             self.depts_and_freq_details[dept_obj] = freq, chunk
 
 
@@ -1473,7 +1656,7 @@ class TimeTable:
 
 
         def get_dept_teacher_freq_chunk_list(self):
-            """PRIMARILY FOR THE 'PACKETING OPERATION'. Returns a list of tuples of the arm's (dept, teacher, freq, chunk)"""
+            """PRIMARILY FOR THE 'PRE-ARRANGEMENT OPERATION'. Returns a list of tuples of the arm's (dept, teacher, freq, chunk)"""
             response_list = []
             for dept, teacher in self.depts_and_teachers.items():
                 freq, chunk = self.depts_and_freq_details[dept]
@@ -1521,10 +1704,19 @@ class TimeTable:
             return dept.get_teacher_or_para_teachers_fullname_given_arm_as_str(self)
 
 
-        def all_teachers_for_class_arm(self):
-            """ Returns a set of all the teachers teaching this particular arm
-            from the self.depts_and_teachers attribute, just in case some teachers repeat """
-            return {teacher for teacher in self.depts_and_teachers.values()}
+        def all_teachers_for_class_arm(self, include_parallels=False, as_int=False):
+            """ Returns a set of all the teachers teaching this particular arm from the self.depts_and_teachers attribute, 
+            just in case some teachers repeat. 'include_parallels' also adds all the parallel teachers for each of the parallel subjects.
+            Returns the number of teachers if as_int is true, else just returns a set of all the teachers """
+            
+            if include_parallels:
+                staff = set()
+                for dept in self.depts_and_teachers:
+                    staff.update(set(dept.get_teacher_or_para_teachers_fullname_given_arm(self)))
+            else:
+                staff = {teacher for teacher in self.depts_and_teachers.values()}
+            return staff if not as_int else len(staff)
+
 
 
         def period_count_per_day(self, day_obj, include_nonacads=False):
@@ -1535,32 +1727,41 @@ class TimeTable:
                 return len([period for period in self.periods[day_obj] if period.is_acad])
             return 0
 
+
         @property
         def max_period_length(self):
             """ Returns the number of periods for this arm """
             return max([self.period_count_per_day(day_obj, include_nonacads=True) for day_obj in self.periods])
+
 
         def period_count_total(self, include_nonacads=False):
             """ INT. Returns the total number of all the periods for all the days available for this arm """
             return sum([self.period_count_per_day(day, include_nonacads=include_nonacads) for day in self.periods])
 
 
-        def contains_all_depts_frequencies(self):
-            """ BOOL. checks whether the sum of frequencies is greater than the total number of periods or not. in other words, checks if
-            num can be contained in the total number of periods. """
-            freq_sum = sum([freq for freq,_ in self.depts_and_freq_details.values()])
-            return self.period_count_total() >= freq_sum
-            
+        def period_count_nonacad_total(self):
+            """ INT. Returns the total number of non_acad periods every day """
+            return self.period_count_total(include_nonacads=True) - self.period_count_total(include_nonacads=False)
 
-        def total_period_contains_freq(self, total_frequency):
-            """ TO BE WIPED OUT SOON!!!!! """
-            return self.period_count_total() >= total_frequency
+
+        def total_freq_all_depts(self):
+            """ INT. Returns the total frequency of all the subjects (depts) offered by this class arm """
+            return sum([freq for freq,_ in self.depts_and_freq_details.values()])
+
+
+        def contains_all_depts_frequencies(self):
+            """ BOOL. checks whether the sum of frequencies is greater than the total number of academic periods or not.
+            In other words, checks if can be contained in the total number of periods. """
+            return self.period_count_total() >= self.total_freq_all_depts()
+
+
+        def get_arms_viable_table_data(self):
+            """ Returns a tuple of (full_name, sum of acad periods, freq(feature) sum, viable_or_no(bool)) """
+            return self.full_name, self.period_count_total(), self.total_freq_all_depts(), self.contains_all_depts_frequencies()
 
 
         def add_algoassigned_dept_today(self, dept_obj, day_obj):
-            """ Method ädds all department objects (subjects) that the algorithma assigns to 
-            this class for today """
-
+            """ Method ädds all department objects (subjects) that the algorithma assigns to this class for today """
             if day_obj in self.depts_assigned_by_algo_per_day:
                 # if day obj is in the dict, add dept to the already made set
                 self.depts_assigned_by_algo_per_day[day_obj].add(dept_obj)
@@ -1582,6 +1783,19 @@ class TimeTable:
             return f"{self.school_class.sch_class_alias} {self.local_id}"
 
 
+        def get_timespan_per_day(self):
+            """ DICT. Returns the timespan of this class arm every day {day: timespan}, i.e. the first period and
+            last periods for every day """
+            response = {}
+            for day, periods_list in self.periods.items():
+                # Take the first period and the last
+                first, last = periods_list[0].start, periods_list[-1].end
+                duration = TimeTable.add_sub_time(last, first, add=False)
+                first, last, duration = TimeTable.to_time_str(first), TimeTable.to_time_str(last), TimeTable.to_time_str(duration)
+                response[day.full_name] = [f"{first} - {last}" ,duration]
+            return response
+
+
         def get_arm_dept_teacher_freq_chunk(self):
             """ This function extracts the dept, teacher, frequency and chunk from the dictionaries holding said values.
             Useful primarily for display in the GUI table for each arm's subjects. LIST OF TUPLES """
@@ -1589,17 +1803,31 @@ class TimeTable:
             for dept, teacher in self.depts_and_teachers.items():
                 frequency, chunk = self.depts_and_freq_details[dept]
                 return_list.append((dept, teacher, frequency, chunk))
+            return return_list
 
-            return return_list        
+
+
+        def clean_out_dept_from_periods(self):
+            """ Removes the dept content from each of the periods for this class arm, but does not affect duration
+            or whether or not the period is acad """
+            for periods_list in self.periods.values():
+                for period in periods_list:
+                    period.remove_details_from_period()
+
 
 
         def __repr__(self):
             return self.arm_and_id
 
-
         @property
         def full_name(self):
-            return f"Arm ID:{self.id}. {self.arm_and_id}"
+            # for identification n the app
+            return f"A-ID:{self.id}. {self.arm_and_id}"
+
+        @property
+        def official_name(self):
+            return self.arm_and_id
+        
         
 
     class Period:
@@ -1616,7 +1844,6 @@ class TimeTable:
             self.teacher = None 
             self.end = end
             self.duration = self.get_duration() if self.end else duration
-
             self.add_period_to_arm()
 
 
@@ -1642,12 +1869,18 @@ class TimeTable:
                 raise ProjectExceptions.SomethingWentWrong(f"{self.day} is not in the days_list of {self.school_class_arm}")
 
 
-        def add_details_to_period(self, dept, teacher):
+        def add_details_to_period(self, dept):
             """ Adds a dept object to this period """
             if self.is_acad:
                 # Add a list with only one teacher (or many if dept is parallel) to this period object
                 self.teacher = dept.get_teacher_or_para_teachers_fullname_given_arm(self.class_arm)
             self.dept = dept
+
+
+        def remove_details_from_period(self):
+            """ Cleans out any pre-existing dept and teacher details from this period object """
+            self.teacher = None
+            self.dept = None
 
 
         @property
@@ -1666,11 +1899,13 @@ class TimeTable:
         def period_title(self):
             if self.is_acad:
                 return f"Acad {self.id}"
-            return f"Non-acad"
+            return f"Non-acad {self.id}"
 
         @property
         def dept_content(self):
-            return self.dept.full_name if self.dept else "- FREE -"
+            if not self.is_acad:
+                return self.nonacad_title
+            return self.dept.official_name if self.dept else "- FREE -"
 
         @property
         def period_name(self):
@@ -1689,7 +1924,18 @@ class TimeTable:
         @property
         def period_duration_time_str(self):
             """ Returns the duration of the period in a time string hh:mm:ss format """
-            return f"{self.get_time_str(self.duration)}"           
+            return f"{self.get_time_str(self.duration)}"
+
+
+        def contents_for_tracking(self):
+            """ LIST. Returns a list of the teacher, subject, department that occupes this period  """
+            if self.dept:
+                # if it is an academic subject
+                if not self.dept.is_special and self.teacher:
+                    return [self.dept.full_name, self.dept.faculty.full_name] + list(self.teacher)
+                return []
+            return []
+
 
         def __repr__(self):
             return self.period_title
@@ -1703,7 +1949,7 @@ class TimeTable:
         """
         
         def __init__(self, day_name="Monday", rating=None):
-            self.day = day_name.capitalize()
+            self.day = day_name
             # dummy value for id (has been changed in run-time)
             self.id = 0
             # This var below helps to sort the day in the list of days especially when rating is not None
@@ -1727,24 +1973,85 @@ class TimeTable:
             # Attribute to return the set of arms today in a list
             return self.school_class_arms_today
 
-
-        def get_classgroups_today(self):
-            """ Returns the classgroup objects of all the arms featuring today """
+        # -------------------------------------------------------------------------------------------------------------
+        # ----------------- DETAILS OF TODAY (MOSTLY APPLICABLE AFTER THE FINAL SORTING PROCESS) ----------------------
+        def classgroups_today(self, as_int_str=False):
+            """ Returns the classgroup objects of all the arms featuring today or the length in string format """
             classgroups = []
             for classarm in self.school_class_arms_today:
-                if not classarm.school_class.school_class_group in classgroups:
-                    classgroups.append(classarm.school_class.school_class_group)
-            return classgroups
+                # check if after sort  operation, today is still there
+                if self in classarm.periods:
+                    if not classarm.school_class.school_class_group in classgroups:
+                        classgroups.append(classarm.school_class.school_class_group)
+            return classgroups if not as_int_str else str(len(classgroups))
 
 
-        def get_sch_classes_today(self):
+        def sch_classes_today(self, as_int_str=False):
             """ Returns a list of all the school classes of all the arms featuring today """
             sch_classes = []
             for classarm in self.school_class_arms_today:
-                if not classarm.school_class in sch_classes:
-                    sch_classes.append(classarm.school_class)
-            return sch_classes
+                # check if after sort  operation, today is still there
+                if self in classarm.periods:
+                    if not classarm.school_class in sch_classes:
+                        sch_classes.append(classarm.school_class)
+            return sch_classes if not as_int_str else str(len(sch_classes))
 
+
+        def class_arms_today(self, as_int_str=False):
+            """ This is the list of arms amongst the arms arms in self.school_class_arms_today that (after the sorting opration)
+            have periods today """
+            arms_today = [arm for arm in self.school_class_arms_today if self in arm.periods]
+            return arms_today if not as_int_str else str(len(arms_today))
+
+
+        def all_teachers_today(self, as_int_str=False):
+            """ Gets all the teachers teaching today (aplicable even after the final sorting is done) """
+            teachers_today = set()
+            for arm in self.class_arms_today():
+                # Check if the arm has lessons today
+                arm_periods = arm.periods.get(self)
+                if arm_periods:
+                    for period in arm_periods:
+                        if period.is_acad and period.teacher:
+                            teachers_today.update(set(period.teacher))
+            return teachers_today if not as_int_str else str(len(teachers_today))
+
+
+        def all_depts_today(self, as_int_str=False):
+            """ Returns all the subjects offered today across all arms, or a str of the number of subjects offered today """
+            subjs_today = set()
+            for arm in self.class_arms_today():
+                # Check if the arm has lessons today
+                arm_periods = arm.periods.get(self)
+                if arm_periods:
+                    for period in arm_periods:
+                        if period.is_acad and period.dept:
+                            subjs_today.add(period.dept)
+            return subjs_today if not as_int_str else str(len(subjs_today))
+
+
+        def all_periods_today_num(self):
+            """ INT.Returns the number of periods, (total, acad, non-acad) """
+            total = sum([arm.period_count_per_day(self, include_nonacads=True) for arm in self.class_arms_today()])
+            acads = sum([arm.period_count_per_day(self, include_nonacads=False) for arm in self.class_arms_today()])
+            return total, acads, total - acads
+
+
+        def get_average_period_length_today(self):
+            """ INT. returns the average length of all the periods of all the arms today """
+            periods_total = self.all_periods_today_num()[0]
+            return round(periods_total / len(self.class_arms_today()))
+
+
+        def max_or_min_period_length_today(self, max_or_min=max):
+            """ (INT, INT). Returns the maximum period length today """
+            max_or_min_val = max_or_min([len(arm.periods[self]) for arm in self.class_arms_today()])
+            max_or_min_num = len({arm for arm in self.class_arms_today() if len(arm.periods[self]) == max_or_min_val})
+            return max_or_min_val, max_or_min_num
+
+
+        # --------------------------------------------------------------------------------------------------------
+        # ----------------------------------------------------------------------------------------------------------
 
         def get_sch_classes_from_class_group_today(self, classgroup):
             """ Returns all the school classes a that have "classgroup" as their classgroup """
@@ -1795,7 +2102,7 @@ class TimeTable:
             in every class arm in the list (or dictionary) of today's classes
             Duplicate being true is for whether the depts appear according to thier chunk frequency or just uniquely
             """
-            
+    
             # List containing all the depts assigned by the algorithm used to packet depts into days
             all_depts = []
             for arm in self.school_class_arms_today:
@@ -1807,9 +2114,7 @@ class TimeTable:
             """ When the chunk algorithm has been carried out and depts have been assigned to a day,
             This method extracts all the teachers that teach those depts today in the class arm.
             RETURNS A DICT!!! """
-
             teach_assgn_today = {}
-
             # the items in the below (a set, by the way) are intances of the DeptEncase class
             depts_today = self.get_all_depts_for_arm_today(clss_arm)
 
@@ -1911,22 +2216,46 @@ class TimeTable:
 
 
         def get_all_depts_for_arm_today(self, class_arm):
-            """Gets all the departments offered by a particular class arm on this day
-            (as assigned by the algorithm)"""
+            """ Gets all the departments offered by a particular class arm on this day
+            (as assigned by the algorithm) """
             return class_arm.temp_dept_holder_for_days[self]
 
-        def get_average_period_length_today(self):
-            """ INT. returns the average length of all the periods of all the arms today """
-            all_widths = [len(arm.periods.get(self)) for arm in self.school_class_arms_today]
-            return round(sum(all_widths)/len(all_widths))
+
+        
+
+        def time_span(self):
+            """ (abs_start, abs_end, abs_duration) Calculates the absolute start, absolute end and duration for today. """
+
+            first_arm, *other_arms = self.class_arms_today(as_int_str=False)
+            abs_start = first_arm.periods[self][0].start
+            abs_end = first_arm.periods[self][-1].end
+
+            for arm in other_arms:
+                # the start of the forst period, and the end of the last period
+                _start = arm.periods[self][0].start
+                _end = arm.periods[self][-1].end
+                # keep abs_start if it is earlier
+                abs_start = abs_start if not TimeTable.compare_time_tuples(abs_start, _start) else _start
+                # keep abs_end if it is later
+                abs_end = _end if TimeTable.compare_time_tuples(abs_end, _end) else abs_end
+
+            duration = TimeTable.add_sub_time(abs_end, abs_start, add=False)
+            return abs_start, abs_end, duration
+
 
 
         def __repr__(self):
-            return self.day
+            return self.day 
+
 
         @property
         def full_name(self):
             return f"Day ID:{self.id}. {self.day}"
+
+        @property
+        def official_name(self):
+            return self.day
+        
 
 
 #------------------------------------------------------------------------------------------
@@ -1957,7 +2286,7 @@ class TimeTable:
 
 
     def _add_sub_time(time_tuple1, time_tuple2, add=True, base=60):
-        '''
+        '''RETURNS TIME-TUPLE.
         Adds or subtracts two (hour, minute, seconds) tuples. time_tuple1 always is a tuple, 
         However, time_tuple2 couldbe an integer or a tuple, depending on if it is an actual time
         (rendered as a tuple) or duration.
@@ -2072,6 +2401,14 @@ class TimeTable:
         # Now build up the time string with colons as a delimiter
         time_str = ":".join(t_str_list)
         return time_str
+
+
+    @staticmethod
+    def compare_time_tuples(time_tuple1, time_tuple2):
+        """ BOOL. compares the following timetuples whether time_tuple2 is greater than time_tuple1
+        (greater as in LATER, AS OPPOSED TO EARLIER) """
+        return TimeTable.tuple_to_num(time_tuple2) > TimeTable.tuple_to_num(time_tuple1)
+
 
 
     stringify = staticmethod(_stringify)

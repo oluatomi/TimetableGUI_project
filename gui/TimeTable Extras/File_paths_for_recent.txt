@@ -1,10 +1,1 @@
 FEGO_template.tmtb
-C:\Users\HP\Documents\LIBRARY\python video tutorials cbt nuggets\PYTHON\Python Personal projects\tt_test_folder\My_newest.tmtb
-C:\Users\HP\Documents\LIBRARY\python video tutorials cbt nuggets\PYTHON\Python Personal projects\tt_test_folder\Real-time-na-1.tmtb
-C:\Users\HP\Documents\LIBRARY\python video tutorials cbt nuggets\PYTHON\Python Personal projects\tt_test_folder\Shelva_13_april_1
-
-C:\Users\HP\Documents\LIBRARY\python video tutorials cbt nuggets\PYTHON\Python Personal projects\tt_test_folder\Real-time-3_
-C:\Users\HP\Documents\LIBRARY\python video tutorials cbt nuggets\PYTHON\Python Personal projects\tt_test_folder\Real-time-2_.tmtb
-C:\Users\HP\Documents\LIBRARY\python video tutorials cbt nuggets\PYTHON\Python Personal projects\tt_test_folder\Real-time-2_
-C:\Users\HP\Documents\LIBRARY\python video tutorials cbt nuggets\PYTHON\Python Personal projects\tt_test_folder\Real-time-na
-C:\Users\HP\Documents\LIBRARY\python video tutorials cbt nuggets\PYTHON\Python Personal projects\tt_test_folder\In_progress_4

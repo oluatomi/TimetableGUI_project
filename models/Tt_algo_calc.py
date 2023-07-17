@@ -168,7 +168,7 @@ def space_out(list_arg, array_end):
     This function is to help space out the items of a list at te middle in case the 
     chunking algorithms get broken (the whole arrangement collapses) and we have to begin afresh.
 
-    The 'array_end' parameter represents the very last (highest, usually) term of the array. It is a number!
+    The 'array_end' parameter represents the very last (highest, usually) term of the array. It is an INT!
     
     """
     final1 = list_arg[:int(len(list_arg)/2)]
@@ -312,8 +312,8 @@ def strip_list_wrapper(list_arg):
         """This function goes through nested lists and strips them out as bare items in the list
         e,g ([1,2,3,[4,5]] to [1,2,3,4,5])"""
         for item in list_arg:
-            # If it is not an iterator, that is a list, tuple or something
-            if not hasattr(item, "__iter__"):
+            # If it is not an iterable, that is a list, tuple or something
+            if not hasattr(item, "__iter__") or isinstance(item, str):
                 fin_list.append(item)
             else:
                 # Recursion here!
@@ -324,15 +324,30 @@ def strip_list_wrapper(list_arg):
     return strip_list(list_arg) if bool(list_arg) else fin_list
 
 
-# ________________________________________________________________________________________________
+# _______________________________________________________________________________________________________________
+# ---------------------------------------------------------------------------------------------------------------
 def check_for_overlap(list_arg):
     """ This inner function checks through a the fin_list to see if all the numbers are sorted
     such that there is no overlap, i.e when completely stripped, no number repeats, that is, when stripped, it
-    is equal in length to its set"""
+    is equal in length to its set.
+    Returns TRUE if there is overlap"""
     return len(strip_list_wrapper(list_arg)) > len(set(strip_list_wrapper(list_arg)))
 
 
-# ---------------------------------------------------------------------------------------------------
+def check_and_beam_overlaps(iterable):
+    """ checks if all the items in 'iterable' overlap and it returns the indices of of the item that overlaps
+    its predecessor """
+    beamed_overlaps = []
+    for index, item in enumerate(iterable):
+        if index == 0:
+            init_item = []
+        else:
+            init_item += list(item)
+            if check_for_overlap(init_item):
+                beamed_overlaps.append(index)
+    return beamed_overlaps
+
+
 def check_match_get_container(list_arg, x):
     """Checks if a single x is in list_arg and returns the list container holding it, if it is a list"""
 
@@ -462,7 +477,6 @@ def Moveover_with_fixed(list_arg, array,fixed_item=None, fixed_index=0):
     over function and giving the first value with fixed item in it. """
 
     fixed = fixed_item if fixed_item else list_arg[fixed_index]
-
     poss_with_fixed = Possible_combs_with_fixed(list_arg,fixed,array)
     return poss_with_fixed[0]
 
@@ -474,10 +488,9 @@ def Moveover_fixed(list_arg_, array,fixed_item=None, fixed_index=0):
     """
 
     # --------------------------------------------------------------------------
-    # def slide_right_left(list_arg,array, trans=1):
     def slide_right_left(in_list, rightward=True):
-    # Stores the elements of list_arg ind its index in a tuple, so we can refer back to it
-        # global pos, sorted_list_arg, fin_dict, test_li st
+        """Stores the elements of list_arg ind its index in a tuple, so we can refer back to it"""
+        global pos, sorted_list_arg, fin_dict, test_list
 
         test_list = []
         sorted_list_ = in_list.copy() if rightward else list(reversed(in_list))

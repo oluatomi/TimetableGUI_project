@@ -8,7 +8,8 @@ class ModelReportHTML:
     def __init__(self, template_name, output_filepath):
         self.template_name = template_name
         self.output_filepath = output_filepath if output_filepath.endswith("html") else output_filepath + ".html"
-        self.stylesheet_filepath = "TIMETABLE/reports/report_templates/HTML_templates/shelva_stylesheet.css"
+        self.stylesheet_filepath = "TIMETABLE/reports/report_templates/HTML_templates/sheffl_stylesheet.css"
+        self.sheffl_logo_path = "TIMETABLE/Icons-mine/sheffl_logo_strip.png"
         self.context = {}
         self.institution=None
         self.director=None
@@ -44,10 +45,19 @@ class ModelReportHTML:
         with open(self.stylesheet_filepath, 'r') as file:
             stylesheet_ = file.read()
 
+        # Copy out the byte content of the logo picture
+        with open(self.sheffl_logo_path, "rb") as logo_file:
+            sheffl_logo = logo_file.read()
+
         # load into a stylesheet 
-        stylesheet_filepath = os.path.join(os.path.dirname(self.output_filepath), "shelva_stylesheet.css")
+        stylesheet_filepath = os.path.join(os.path.dirname(self.output_filepath), "sheffl_stylesheet.css")
         with open(stylesheet_filepath, 'w') as file:
             file.write(stylesheet_)
+
+        # load shelffl logo
+        logo_file_path = os.path.join(os.path.dirname(self.output_filepath), "sheffl_logo_strip.png")
+        with open(logo_file_path, "wb") as logo_file:
+            logo_file.write(sheffl_logo)
 
 
 

@@ -9,6 +9,7 @@ Author = "Oluwatomilayo Inioluwa OWOEYE"
 
 class TtWorkerSignals(QtCore.QObject):
     """ The worker class to handle the "emmission" of signals to be caught by the progressbar in the GUI """
+    # start = QtCore.pyqtSignal()
     finished = QtCore.pyqtSignal(str)
     # the Error string
     nil_error = QtCore.pyqtSignal(str)
@@ -17,6 +18,10 @@ class TtWorkerSignals(QtCore.QObject):
     # Runs at the end of the entire process, error or no
     deadend = QtCore.pyqtSignal()
     progress_with_info = QtCore.pyqtSignal(tuple)
+
+
+    error_no_str = QtCore.pyqtSignal()
+
 
 
 
@@ -54,12 +59,16 @@ class TtWorker(QtCore.QRunnable):
     def run(self):
         """ To emit signals... """
 
-        operations = self.working_object if self.working_object else self.working_obj()
+        operations = self.working_object if self.working_object else self.working_obj() 
+
+        # self.signals.start
 
         if operations is None:
             if self.auxiliary_object:
                 self.auxiliary_object()
+                
             self.signals.nil_error.emit(self.nil_error_str)
+            self.signals.deadend.emit()
             return
 
 
@@ -128,19 +137,16 @@ class WorkerForFrames(QtCore.QRunnable):
             self.signals.nil_error.emit(self.nil_error_str)
             return
         # -----------------------------------------------------------------------------------
+        
         operations = operations if isinstance(operations, tuple) else (operations,)
         # print(f"THIS IS OPERATION 11 {operations}")    
 
         for count, operation in enumerate(operations, start=1):
             loop, keep = True, True
 
-            # print(f"THIS IS OPERATION {operation}")
-            
             while loop:
                 try:
                     beamed_val, beamed_info = next(operation)
-
-                    # print(f"beamed val and info {beamed_val, beamed_info}")
 
                 except StopIteration:
                     loop = False
@@ -164,4 +170,35 @@ class WorkerForFrames(QtCore.QRunnable):
         self.signals.deadend.emit()
 
 
+
+class WorkerForSingleTask(QtCore.QRunnable):
+    """ This is a worker class for handling tasks that take an unpredictable time to finish, and cannot be represented with
+    progressbars. Whole tasks that may not necessarily be able to be cut into iterations """
+    def __init__(self, sleep_time=0.5):
+        super().__init__()
+        self.signals = TtWorkerSignals()
+        self.sleep_time = sleep_time
+        # ---------------
+        self.tasks_and_args_dict = {}
+
+    def add_task_and_args(self, task, error_info_str, *args, **kwargs):
+        """ adds a task and its arguments (tuple and dict) to the self.tasks_and_args dictionary """
+        self.tasks_and_args_dict[task] = [args, kwargs, error_info_str]
+
+
+    @QtCore.pyqtSlot()
+    def run(self):
+        """ To emit signals... """
+        
+        # -----------------------------------------------------------------------------------
+        for task, (args, kwargs, error_info_str) in self.tasks_and_args_dict.items():
+            time.sleep(self.sleep_time)
+            try:
+                task(*args, **kwargs)
+            except Exception as err:
+                self.signals.error.emit(f"{error_info_str}")
+                print(f"Error is::: {err}")
+                continue
+        
+        self.signals.deadend.emit()
 

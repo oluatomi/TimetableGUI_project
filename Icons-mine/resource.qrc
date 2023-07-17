@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="images">
+    <file>top_tab_background.jpg</file>
+  </qresource>
+</RCC>

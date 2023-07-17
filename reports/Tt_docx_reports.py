@@ -1,6 +1,6 @@
 import docxtpl, docx
 import math, os
-from docx.shared import Inches
+from docx.shared import Inches, Cm, Mm
 from docxcompose.composer import Composer
 from TIMETABLE.models.Tt_algo_calc import nth_suffix, unique_id_str
 from docx2pdf import convert
@@ -18,12 +18,11 @@ class ModelReport:
 
 
     THE SAME FILENAME IS USED FOR THE DOCX-ADJSUTED TEMPLATE FILE, SO IT GETS OVERRIDDEN EVERYTIME!!   """
-    def __init__(self, template_name, output_filename):
+    def __init__(self, template_name, output_filename, margins_tuple):
         self.template_file = template_name
-
         self.document = docx.Document(self.template_file)
-        # self._doc = docxtpl.DocxTemplate(self.template_file)
-
+        self.margins_tuple = margins_tuple
+        self.units_dict = {"C": Cm, "I": Inches, "M": Mm, "P": Inches}
         self.sections = self.document.sections
         self.output_filename = output_filename if output_filename.endswith((".docx",".doc")) else output_filename + ".docx"
         self.context = {}
@@ -43,7 +42,8 @@ class ModelReport:
         width_limit = self._get_max_period_length() + 1
         # The width and height of an A4 document
         if width_limit <= column_lower_bound:
-            paper_size = map(Inches, paper_size)
+            # maps the Inches class to each element of paper_size
+            paper_size = tuple(map(Inches, paper_size))
             return paper_size, "P"
 
         scale_factor = math.ceil((width_limit - column_lower_bound) / (column_upper_bound - column_lower_bound))
@@ -58,6 +58,21 @@ class ModelReport:
         # Change the orientation to portrait of landscape depending...
         size = (width, height) if orient == "P" else (height, width)
         self.sections[0].page_width, self.sections[0].page_height = size
+
+
+    def set_margins(self):
+        """ Sets margins left, right, top, bottom """
+        unit_id, margins = self.margins_tuple
+        if unit_id == "P":
+            margins = map(lambda x: round(x/96, 2), margins)
+
+        docx_class = self.units_dict[unit_id]
+        left, right, top, bottom = margins
+        for section in self.sections:
+            section.top_margin = docx_class(top)
+            section.bottom_margin = docx_class(bottom)
+            section.left_margin = docx_class(left)
+            section.right_margin = docx_class(right)
 
 
     def save_adjusted_template_file(self):
@@ -85,6 +100,7 @@ class ModelReport:
 
         # ---- Integrate the needed methods to readjust this file should the need arise
         self.set_size_and_orientation()
+        self.set_margins()
         self.save_adjusted_template_file()
         self.begin_template_rendering()
 
@@ -97,8 +113,8 @@ class ModelReport:
 # -----------------------------------------------------------------------------------------------------------------------------
 class ReportBySchoolClass(ModelReport):
     """ Generates report by on a School class category - School class - school class arm basis """
-    def __init__(self, classgroup, template_name, output_filename="/report_by_class"):
-        super().__init__(template_name, output_filename)
+    def __init__(self, classgroup, template_name, margins_tuple, output_filename="/report_by_class"):
+        super().__init__(template_name, output_filename, margins_tuple)
         self.classgroup = classgroup
 
 
@@ -111,11 +127,16 @@ class ReportBySchoolClass(ModelReport):
     def populate_context(self):
         """ populates the context dictionary with school class and school class arm data to be used to generate templates """
         super().populate_context()
-        self.context["classgroup_name"] = self.classgroup.tag()
+        self.context["classgroup_name"] = self.classgroup.official_name
         self.context["classgroup_fullname_id"] = self.classgroup.full_name
         self.context["classgroup_position"] = nth_suffix(self.classgroup.id)
-        self.context["sch_class_list"] = [{"sch_class_name":sch_class.sch_class_alias, "sch_class_fullname":sch_class.full_name,
-                "arms_list": [{"arm_name": arm.full_name, "periods_per_day":[{"day":day.day, "periods":[{"period_name":period.period_name, "boundary":period.period_boundary_time_str} for period in periods_list]}
+        self.context["num_sch_classes"] = self.classgroup.child_sch_classes_num(as_str=True)
+        self.context["num_arms"] = self.classgroup.child_class_arms_num(as_str=True)
+        self.context["num_teachers"] = self.classgroup.teachers_all(as_str=True)
+        self.context["num_subjs"] = self.classgroup.subjects_all(as_str=True)
+
+        self.context["sch_class_list"] = [{"sch_class_name":sch_class.official_name, "sch_class_fullname":sch_class.full_name,
+                "arms_list": [{"arm_name": arm.official_name, "periods_per_day":[{"day":day.official_name, "periods":[{"period_name":period.period_name, "boundary":period.period_boundary_time_str} for period in periods_list]}
                 for day, periods_list in arm.periods.items()]} for arm in sch_class.school_class_arm_list]} 
                 for sch_class in self.classgroup.school_class_list]
 
@@ -124,13 +145,13 @@ class ReportBySchoolClass(ModelReport):
 class ReportByDay(ModelReport):
     """ Generates Ms-Word report of all the class arms and the subjects they offer on a day-by-day basis.
     day is an object, not a string """
-    def __init__(self, day, template_name, output_filename="/report_by_day"):
-        super().__init__(template_name, output_filename)
+    def __init__(self, day, template_name, margins_tuple, output_filename="/report_by_day"):
+        super().__init__(template_name, output_filename, margins_tuple)
         self.day = day
 
     @property
     def class_groups(self):
-        return self.day.get_classgroups_today()
+        return self.day.classgroups_today()
 
     def _get_max_period_length(self):
         """ Returns the max number of periods for all the class arms that feature today """
@@ -141,11 +162,18 @@ class ReportByDay(ModelReport):
         """ populates the context dictionary which will be used on the .docx template """
         super().populate_context()
 
-        self.context["day_name"] = self.day.day
+        self.context["day_name"] = self.day.official_name
         self.context["day_position"] = nth_suffix(self.day.id)
         self.context["day_fullname_id"] = self.day.full_name
-        self.context["class_groups"] = [{"classgroup_name":classgroup.full_name, "description":classgroup.description,
-        "sch_classes_list":[{"name":sch_class.full_name,"arms_list":[{"name": arm.full_name, "periods": [period.period_name
+        self.context["num_classcats"] = self.day.classgroups_today(as_int_str=True)
+        self.context["num_sch_classes"] = self.day.sch_classes_today(as_int_str=True)
+        self.context["num_arms"] = self.day.class_arms_today(as_int_str=True)
+        self.context["num_teachers"] = self.day.all_teachers_today(as_int_str=True)
+        self.context["num_subjs"] = self.day.all_depts_today(as_int_str=True)
+
+
+        self.context["class_groups"] = [{"classgroup_name":classgroup.official_name, "description":classgroup.description,
+        "sch_classes_list":[{"name":sch_class.official_name,"arms_list":[{"name": arm.official_name, "periods": [period.period_name
                 for period in self.day.get_classarm_periods_for_today(arm)]} for arm in self.day.get_classarms_from_sch_classes(sch_class)]
 
             } for sch_class in self.day.get_sch_classes_from_class_group_today(classgroup)]
@@ -157,15 +185,14 @@ class ReportByFaculty(ModelReport):
     """ generates ms-word reports on departments(faculty) - subject - teacher - basis. <template_filename>, <output_filename>
     are strings of the path into which the template is to be generated. dept_obj is the faculty (or department) object to be generated.
     faculty is rendered as DEPARTMENT in the code. bear with me """
-    def __init__(self, faculty, template_name, output_filename="/report_by_departments"):
-        super().__init__(template_name, output_filename)
+    def __init__(self, faculty, template_name, margins_tuple, output_filename="/report_by_departments"):
+        super().__init__(template_name, output_filename, margins_tuple)
         self.faculty = faculty
         # self.output_filename = output_filename if output_filename.endswith((".docx",".doc")) else output_filename + ".docx"
 
     def _get_max_period_length(self):
-        """ Returns the maximum number of periods for all the class arms of the classes that feature in this faculty """
-        # return max([len(periods_list) for subj in self.faculty.depts_list for arm in subj.teachers_for_client_class_arms
-        #     for periods_list in arm.periods.values()])
+        """ Returns the maximum number of periods for all the 
+        class arms of the classes that feature in this faculty """
         return 5
 
 
@@ -173,7 +200,7 @@ class ReportByFaculty(ModelReport):
         """ populates the context dictionary so it can be rendered in the word template.
         the subjects are definitely academic periods """
         super().populate_context()
-        self.context["department_name"] = self.faculty.name
+        self.context["department_name"] = self.faculty.official_name
         self.context["department_fullname_id"] = self.faculty.full_name
         self.context["department_description"] = self.faculty.description
         self.context["department_hod"] = self.faculty.HOD
@@ -183,15 +210,18 @@ class ReportByFaculty(ModelReport):
             "name":dept.dept_name, "hos":dept.hos,
             "teachers":[{"fullname": teacher.full_name, "is_exclusive": teacher.is_exclusive(), "other_subjects":teacher.other_depts_taught_str(dept),
             "classarms_taught":teacher.classarms_taught_based_on_dept_str(dept), "specialization":teacher.specialization,
-            "designation":teacher.designation, "regularity": "Full-time" if teacher.regularity else "Part-time"} for teacher in dept.teachers_list]
+            "designation":teacher.designation, "regularity": "Full-time" if teacher.regularity else "Part-time", "classcat_span": teacher.classgroups_taught_based_on_dept_str(dept),
+            "is_departmentally_exclusive": teacher.is_departmentally_exclusive(), "arms_and_periods_per_day": [{"day_name":day_.official_name, "periods_details": teacher.period_det_for_dept_str(dept, day_)}
+            for day_ in teacher.teaching_days]} for teacher in dept.teachers_list]
         } for dept in self.faculty.depts_list]
 
 
 
 class Reporter:
     """ Container class to supply the necessary faculty, dept or day data to the classes that generate their reports """
-    def __init__(self, tt_obj):
+    def __init__(self, tt_obj, margins_tuple):
         self.tt_obj = tt_obj
+        self.margins_tuple = margins_tuple
 
 
     def merge_into_one_file(self, files_list, file_path, convert_to_pdf):
@@ -212,7 +242,7 @@ class Reporter:
         if convert_to_pdf:
             master_filename_pdf = os.path.splitext(file_path)[0] + ".pdf"
             # Edit the master filename and insert a uuid to be docx file before converting it to PDF and then deleting it
-            print(f"Old and new: {master_filename} <-----> {master_filename_pdf}")
+            # print(f"Old and new: {master_filename} <-----> {master_filename_pdf}")
             convert(master_filename, master_filename_pdf)
             os.remove(master_filename)
 
@@ -225,7 +255,7 @@ class Reporter:
         faculty_files = []
         for fac_obj in self.tt_obj.list_of_faculties:
             report = ReportByFaculty(fac_obj, "TIMETABLE/reports/report_templates/Department-subject-template.docx", 
-            output_filename=f"{fac_obj.full_name}.docx")
+            self.margins_tuple, output_filename=f"{fac_obj.full_name}.docx")
 
             report.institution = self.tt_obj.institution
             report.director = self.tt_obj.director
@@ -245,7 +275,7 @@ class Reporter:
         days_files = []
         for day_obj in self.tt_obj.list_of_days:
             report = ReportByDay(day_obj, "TIMETABLE/reports/report_templates/day_template.docx",
-            output_filename=f"{day_obj.full_name}.docx")
+            self.margins_tuple, output_filename=f"{day_obj.full_name}.docx")
 
             report.institution = self.tt_obj.institution
             report.director = self.tt_obj.director
@@ -264,7 +294,7 @@ class Reporter:
         classgroup_files = []
         for classgroup in self.tt_obj.list_of_school_class_groups:
             report = ReportBySchoolClass(classgroup, "TIMETABLE/reports/report_templates/class_template.docx",
-            output_filename=f"{classgroup.full_name}.docx")
+                self.margins_tuple, output_filename=f"{classgroup.full_name}.docx")
 
             report.institution = self.tt_obj.institution
             report.director = self.tt_obj.director
